@@ -1,0 +1,18 @@
+{
+  "noAccountAtAll": {
+    "err": {
+      "errorCode": "no_account_error",
+      "message": "See https://aka.ms/msal.js.errors#no_account_error for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  },
+  "unknownAccount": {
+    "err": {
+      "errorCode": "authority_mismatch",
+      "message": "See https://aka.ms/msal.js.errors#authority_mismatch for details",
+      "name": "ClientConfigurationError",
+      "subError": null
+    }
+  }
+}

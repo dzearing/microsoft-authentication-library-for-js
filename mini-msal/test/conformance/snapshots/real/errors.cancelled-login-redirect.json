@@ -1,0 +1,58 @@
+{
+  "events": [
+    {
+      "error": null,
+      "eventType": "msal:initializeStart",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 0
+    },
+    {
+      "error": null,
+      "eventType": "msal:initializeEnd",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 1
+    },
+    {
+      "error": null,
+      "eventType": "msal:handleRedirectStart",
+      "interactionType": "redirect",
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 2
+    },
+    {
+      "error": {
+        "errorCode": "access_denied",
+        "message": "AADSTS65004: User declined to consent.",
+        "name": "ServerError",
+        "subError": null
+      },
+      "eventType": "msal:acquireTokenFailure",
+      "interactionType": "redirect",
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 3
+    },
+    {
+      "error": null,
+      "eventType": "msal:handleRedirectEnd",
+      "interactionType": "redirect",
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 4
+    }
+  ],
+  "hashAfter": "",
+  "result": {
+    "err": {
+      "errorCode": "access_denied",
+      "message": "AADSTS65004: User declined to consent.",
+      "name": "ServerError",
+      "subError": null
+    }
+  }
+}

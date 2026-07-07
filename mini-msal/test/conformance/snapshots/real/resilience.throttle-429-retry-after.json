@@ -1,0 +1,20 @@
+{
+  "first": {
+    "err": {
+      "errorCode": "temporarily_throttled",
+      "message": "Error(s): Not Available - Timestamp: Not Available - Description: AADSTS90101: too many requests - Correlation ID: Not A",
+      "name": "ServerError",
+      "subError": null
+    }
+  },
+  "immediateRetry": {
+    "err": {
+      "errorCode": "",
+      "message": "AADSTS90101: too many requests",
+      "name": "ServerError",
+      "subError": null
+    }
+  },
+  "throttleEntriesInStorage": 1,
+  "tokenEndpointHits": 1
+}

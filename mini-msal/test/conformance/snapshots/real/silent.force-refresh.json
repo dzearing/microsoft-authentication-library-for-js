@@ -1,0 +1,200 @@
+{
+  "events": [
+    {
+      "error": null,
+      "eventType": "msal:initializeStart",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 0
+    },
+    {
+      "error": null,
+      "eventType": "msal:initializeEnd",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 1
+    },
+    {
+      "error": null,
+      "eventType": "msal:acquireTokenStart",
+      "interactionType": "popup",
+      "payloadAccount": null,
+      "payloadKeys": [
+        "correlationId",
+        "redirectUri",
+        "scopes"
+      ],
+      "seq": 2
+    },
+    {
+      "error": null,
+      "eventType": "msal:popupOpened",
+      "interactionType": "popup",
+      "payloadAccount": null,
+      "payloadKeys": [
+        "popupWindow"
+      ],
+      "seq": 3
+    },
+    {
+      "error": null,
+      "eventType": "msal:acquireTokenSuccess",
+      "interactionType": "popup",
+      "payloadAccount": "ada@contoso.com",
+      "payloadKeys": [
+        "accessToken",
+        "account",
+        "authority",
+        "cloudGraphHostName",
+        "code",
+        "correlationId",
+        "expiresOn",
+        "extExpiresOn",
+        "familyId",
+        "fromCache",
+        "fromPlatformBroker",
+        "idToken",
+        "idTokenClaims",
+        "msGraphHost",
+        "refreshOn",
+        "requestId",
+        "scopes",
+        "state",
+        "tenantId",
+        "tokenType",
+        "uniqueId"
+      ],
+      "seq": 4
+    },
+    {
+      "error": null,
+      "eventType": "msal:loginSuccess",
+      "interactionType": "popup",
+      "payloadAccount": "ada@contoso.com",
+      "payloadKeys": [
+        "authorityType",
+        "dataBoundary",
+        "environment",
+        "homeAccountId",
+        "idToken",
+        "idTokenClaims",
+        "kmsi",
+        "localAccountId",
+        "loginHint",
+        "name",
+        "nativeAccountId",
+        "tenantId",
+        "tenantProfiles",
+        "upn",
+        "username"
+      ],
+      "seq": 5
+    },
+    {
+      "error": null,
+      "eventType": "msal:initializeStart",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 6
+    },
+    {
+      "error": null,
+      "eventType": "msal:initializeEnd",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 7
+    },
+    {
+      "error": null,
+      "eventType": "msal:acquireTokenStart",
+      "interactionType": "silent",
+      "payloadAccount": "ada@contoso.com",
+      "payloadKeys": [
+        "account",
+        "correlationId",
+        "forceRefresh",
+        "redirectUri",
+        "scopes"
+      ],
+      "seq": 8
+    },
+    {
+      "error": null,
+      "eventType": "msal:acquireTokenFromNetworkStart",
+      "interactionType": "silent",
+      "payloadAccount": "ada@contoso.com",
+      "payloadKeys": [
+        "account",
+        "authenticationScheme",
+        "authority",
+        "correlationId",
+        "forceRefresh",
+        "redirectUri",
+        "scopes"
+      ],
+      "seq": 9
+    },
+    {
+      "error": null,
+      "eventType": "msal:acquireTokenSuccess",
+      "interactionType": "silent",
+      "payloadAccount": "ada@contoso.com",
+      "payloadKeys": [
+        "accessToken",
+        "account",
+        "authority",
+        "cloudGraphHostName",
+        "code",
+        "correlationId",
+        "expiresOn",
+        "extExpiresOn",
+        "familyId",
+        "fromCache",
+        "fromPlatformBroker",
+        "idToken",
+        "idTokenClaims",
+        "msGraphHost",
+        "refreshOn",
+        "requestId",
+        "scopes",
+        "state",
+        "tenantId",
+        "tokenType",
+        "uniqueId"
+      ],
+      "seq": 10
+    }
+  ],
+  "networkCalls": [
+    "discovery",
+    "token:refresh_token"
+  ],
+  "result": {
+    "ok": {
+      "accessToken": "mock-access-token-0",
+      "account": {
+        "homeAccountId": "oid-123.tenant-123",
+        "tenantId": "tenant-123",
+        "username": "ada@contoso.com"
+      },
+      "authority": "https://localhost:4599/tenant/",
+      "correlationIdPresent": true,
+      "expiresInFuture": true,
+      "expiresOnType": "Date",
+      "fromCache": false,
+      "fromPlatformBroker": false,
+      "idToken": "<jwt>",
+      "scopes": [
+        "User.Read",
+        "openid",
+        "profile"
+      ],
+      "state": null,
+      "tokenType": "Bearer"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "events": [
+    {
+      "error": null,
+      "eventType": "msal:initializeStart",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 0
+    },
+    {
+      "error": null,
+      "eventType": "msal:initializeEnd",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 1
+    }
+  ],
+  "result": {
+    "ok": null
+  }
+}

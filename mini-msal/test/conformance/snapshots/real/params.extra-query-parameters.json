@@ -1,0 +1,15 @@
+{
+  "authorizeExtras": {
+    "dc": "ESTS-PUB",
+    "slice": "testslice"
+  },
+  "tokenBodyHasExtras": {
+    "slice": null,
+    "tokenslice": null
+  },
+  "tokenQuery": {
+    "client-request-id": "<dynamic>",
+    "dc": "ESTS-PUB",
+    "slice": "testslice"
+  }
+}

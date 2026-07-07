@@ -1,0 +1,44 @@
+{
+  "authorizeClaims": {
+    "access_token": {
+      "nbf": {
+        "essential": true,
+        "value": "<epoch-s>"
+      },
+      "xms_cc": {
+        "values": [
+          "cp1"
+        ]
+      }
+    },
+    "id_token": {
+      "login_hint": {
+        "essential": false
+      },
+      "signin_state": {
+        "essential": false
+      }
+    }
+  },
+  "tokenClaims": {
+    "access_token": {
+      "nbf": {
+        "essential": true,
+        "value": "<epoch-s>"
+      },
+      "xms_cc": {
+        "values": [
+          "cp1"
+        ]
+      }
+    },
+    "id_token": {
+      "login_hint": {
+        "essential": false
+      },
+      "signin_state": {
+        "essential": false
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "customStateEcho": "app-state-123",
+  "wireStateContainsCustom": true,
+  "wireStateEqualsCustom": false
+}

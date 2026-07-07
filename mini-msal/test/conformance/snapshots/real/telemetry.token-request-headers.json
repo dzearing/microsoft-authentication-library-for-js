@@ -1,0 +1,8 @@
+{
+  "anyTelemetryHttpHeaders": [],
+  "currentTelemetry": "",
+  "lastTelemetry": "",
+  "libCapability": "retry-after, h429",
+  "sku": "msal.js.browser",
+  "ver": "5.16.0"
+}

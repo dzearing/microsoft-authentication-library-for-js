@@ -1,0 +1,14 @@
+{
+  "networkCalls": [
+    "discovery",
+    "token:refresh_token"
+  ],
+  "results": {
+    "ok": {
+      "aFromCache": false,
+      "bFromCache": false,
+      "sameToken": true
+    }
+  },
+  "tokenEndpointHits": 1
+}

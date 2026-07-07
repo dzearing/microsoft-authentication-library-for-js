@@ -1,0 +1,264 @@
+{
+  "accounts": {
+    "ok": [
+      {
+        "environment": "localhost:4599",
+        "hasIdTokenClaims": true,
+        "homeAccountId": "oid-123.tenant-123",
+        "localAccountId": "oid-123",
+        "name": "Ada Lovelace",
+        "tenantId": "tenant-123",
+        "username": "ada@contoso.com"
+      },
+      {
+        "environment": "localhost:4599",
+        "hasIdTokenClaims": true,
+        "homeAccountId": "oid-456.tenant-123",
+        "localAccountId": "oid-456",
+        "name": "Grace Hopper",
+        "tenantId": "tenant-123",
+        "username": "grace@contoso.com"
+      }
+    ]
+  },
+  "activeAfterSecondLogin": {
+    "ok": null
+  },
+  "events": [
+    {
+      "error": null,
+      "eventType": "msal:initializeStart",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 0
+    },
+    {
+      "error": null,
+      "eventType": "msal:initializeEnd",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 1
+    },
+    {
+      "error": null,
+      "eventType": "msal:acquireTokenStart",
+      "interactionType": "popup",
+      "payloadAccount": null,
+      "payloadKeys": [
+        "correlationId",
+        "redirectUri",
+        "scopes"
+      ],
+      "seq": 2
+    },
+    {
+      "error": null,
+      "eventType": "msal:popupOpened",
+      "interactionType": "popup",
+      "payloadAccount": null,
+      "payloadKeys": [
+        "popupWindow"
+      ],
+      "seq": 3
+    },
+    {
+      "error": null,
+      "eventType": "msal:acquireTokenSuccess",
+      "interactionType": "popup",
+      "payloadAccount": "ada@contoso.com",
+      "payloadKeys": [
+        "accessToken",
+        "account",
+        "authority",
+        "cloudGraphHostName",
+        "code",
+        "correlationId",
+        "expiresOn",
+        "extExpiresOn",
+        "familyId",
+        "fromCache",
+        "fromPlatformBroker",
+        "idToken",
+        "idTokenClaims",
+        "msGraphHost",
+        "refreshOn",
+        "requestId",
+        "scopes",
+        "state",
+        "tenantId",
+        "tokenType",
+        "uniqueId"
+      ],
+      "seq": 4
+    },
+    {
+      "error": null,
+      "eventType": "msal:loginSuccess",
+      "interactionType": "popup",
+      "payloadAccount": "ada@contoso.com",
+      "payloadKeys": [
+        "authorityType",
+        "dataBoundary",
+        "environment",
+        "homeAccountId",
+        "idToken",
+        "idTokenClaims",
+        "kmsi",
+        "localAccountId",
+        "loginHint",
+        "name",
+        "nativeAccountId",
+        "tenantId",
+        "tenantProfiles",
+        "upn",
+        "username"
+      ],
+      "seq": 5
+    },
+    {
+      "error": null,
+      "eventType": "msal:initializeStart",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 6
+    },
+    {
+      "error": null,
+      "eventType": "msal:initializeEnd",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 7
+    },
+    {
+      "error": null,
+      "eventType": "msal:acquireTokenStart",
+      "interactionType": "popup",
+      "payloadAccount": null,
+      "payloadKeys": [
+        "correlationId",
+        "prompt",
+        "redirectUri",
+        "scopes"
+      ],
+      "seq": 8
+    },
+    {
+      "error": null,
+      "eventType": "msal:popupOpened",
+      "interactionType": "popup",
+      "payloadAccount": null,
+      "payloadKeys": [
+        "popupWindow"
+      ],
+      "seq": 9
+    },
+    {
+      "error": null,
+      "eventType": "msal:acquireTokenSuccess",
+      "interactionType": "popup",
+      "payloadAccount": "grace@contoso.com",
+      "payloadKeys": [
+        "accessToken",
+        "account",
+        "authority",
+        "cloudGraphHostName",
+        "code",
+        "correlationId",
+        "expiresOn",
+        "extExpiresOn",
+        "familyId",
+        "fromCache",
+        "fromPlatformBroker",
+        "idToken",
+        "idTokenClaims",
+        "msGraphHost",
+        "refreshOn",
+        "requestId",
+        "scopes",
+        "state",
+        "tenantId",
+        "tokenType",
+        "uniqueId"
+      ],
+      "seq": 10
+    },
+    {
+      "error": null,
+      "eventType": "msal:loginSuccess",
+      "interactionType": "popup",
+      "payloadAccount": "grace@contoso.com",
+      "payloadKeys": [
+        "authorityType",
+        "dataBoundary",
+        "environment",
+        "homeAccountId",
+        "idToken",
+        "idTokenClaims",
+        "kmsi",
+        "localAccountId",
+        "loginHint",
+        "name",
+        "nativeAccountId",
+        "tenantId",
+        "tenantProfiles",
+        "upn",
+        "username"
+      ],
+      "seq": 11
+    }
+  ],
+  "logins": {
+    "first": {
+      "ok": {
+        "accessToken": "mock-access-token-0",
+        "account": {
+          "homeAccountId": "oid-123.tenant-123",
+          "tenantId": "tenant-123",
+          "username": "ada@contoso.com"
+        },
+        "authority": "https://localhost:4599/tenant/",
+        "correlationIdPresent": true,
+        "expiresInFuture": true,
+        "expiresOnType": "Date",
+        "fromCache": false,
+        "fromPlatformBroker": false,
+        "idToken": "<jwt>",
+        "scopes": [
+          "User.Read",
+          "openid",
+          "profile"
+        ],
+        "state": "<dynamic>",
+        "tokenType": "Bearer"
+      }
+    },
+    "second": {
+      "ok": {
+        "accessToken": "mock-access-token-1",
+        "account": {
+          "homeAccountId": "oid-456.tenant-123",
+          "tenantId": "tenant-123",
+          "username": "grace@contoso.com"
+        },
+        "authority": "https://localhost:4599/tenant/",
+        "correlationIdPresent": true,
+        "expiresInFuture": true,
+        "expiresOnType": "Date",
+        "fromCache": false,
+        "fromPlatformBroker": false,
+        "idToken": "<jwt>",
+        "scopes": [
+          "User.Read",
+          "openid",
+          "profile"
+        ],
+        "state": "<dynamic>",
+        "tokenType": "Bearer"
+      }
+    }
+  }
+}

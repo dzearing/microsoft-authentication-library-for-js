@@ -1,0 +1,39 @@
+{
+  "tab2After": {
+    "accounts": [],
+    "events": [
+      {
+        "error": null,
+        "eventType": "msal:initializeStart",
+        "interactionType": null,
+        "payloadAccount": null,
+        "payloadKeys": null,
+        "seq": 0
+      },
+      {
+        "error": null,
+        "eventType": "msal:initializeEnd",
+        "interactionType": null,
+        "payloadAccount": null,
+        "payloadKeys": null,
+        "seq": 1
+      },
+      {
+        "error": null,
+        "eventType": "msal:logoutSuccess",
+        "interactionType": "popup",
+        "payloadAccount": "ada@contoso.com",
+        "payloadKeys": [
+          "account",
+          "correlationId",
+          "postLogoutRedirectUri",
+          "state"
+        ],
+        "seq": 2
+      }
+    ]
+  },
+  "tab2Initial": [
+    "ada@contoso.com"
+  ]
+}

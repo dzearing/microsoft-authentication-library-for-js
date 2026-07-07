@@ -1,0 +1,37 @@
+{
+  "acquireTokenSilent": {
+    "err": {
+      "errorCode": "uninitialized_public_client_application",
+      "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  },
+  "getAllAccounts": {
+    "ok": "resolved:0"
+  },
+  "handleRedirectPromise": {
+    "err": {
+      "errorCode": "uninitialized_public_client_application",
+      "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  },
+  "loginPopup": {
+    "err": {
+      "errorCode": "uninitialized_public_client_application",
+      "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  },
+  "logoutRedirect": {
+    "err": {
+      "errorCode": "uninitialized_public_client_application",
+      "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  }
+}

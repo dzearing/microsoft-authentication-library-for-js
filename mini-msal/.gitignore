@@ -1,0 +1,8 @@
+node_modules/
+dist/
+dist-experiment/
+dist-experiment-mini/
+.cert/
+
+# repo-root .gitignore has a NuGet rule "**/packages/*"; ours are npm workspaces
+!packages/*

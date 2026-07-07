@@ -1,0 +1,8 @@
+{
+  "storage": {
+    "localStorage": {},
+    "sessionStorage": {
+      "msal.version": "5.16.0"
+    }
+  }
+}

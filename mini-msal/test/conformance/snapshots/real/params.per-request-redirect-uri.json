@@ -1,0 +1,4 @@
+{
+  "authorizeRedirectUri": "http://localhost:4173/conformance-app/popup2.html",
+  "tokenRedirectUri": "http://localhost:4173/conformance-app/popup2.html"
+}

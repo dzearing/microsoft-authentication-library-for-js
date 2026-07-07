@@ -1,0 +1,40 @@
+{
+  "events": [
+    {
+      "error": null,
+      "eventType": "msal:initializeStart",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 0
+    },
+    {
+      "error": null,
+      "eventType": "msal:initializeEnd",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 1
+    },
+    {
+      "error": null,
+      "eventType": "msal:handleRedirectStart",
+      "interactionType": "redirect",
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 2
+    },
+    {
+      "error": null,
+      "eventType": "msal:handleRedirectEnd",
+      "interactionType": "redirect",
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 3
+    }
+  ],
+  "hashAfter": "#code=mock-code-0&state=<forged>",
+  "result": {
+    "ok": null
+  }
+}

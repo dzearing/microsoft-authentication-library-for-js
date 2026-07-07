@@ -1,0 +1,57 @@
+{
+  "networkCalls": [
+    "discovery",
+    "token:refresh_token"
+  ],
+  "result": {
+    "ok": {
+      "accessToken": "mock-access-token-0",
+      "account": {
+        "homeAccountId": "oid-123.tenant-123",
+        "tenantId": "tenant-123",
+        "username": "ada@contoso.com"
+      },
+      "authority": "https://localhost:4599/tenant/",
+      "correlationIdPresent": true,
+      "expiresInFuture": true,
+      "expiresOnType": "Date",
+      "fromCache": false,
+      "fromPlatformBroker": false,
+      "idToken": "<jwt>",
+      "scopes": [
+        "User.Read",
+        "openid",
+        "profile"
+      ],
+      "state": null,
+      "tokenType": "Bearer"
+    }
+  },
+  "tokenRequest": [
+    {
+      "body": {
+        "X-AnchorMailbox": "Oid:oid-123@tenant-123",
+        "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+        "client_id": "<guid>",
+        "client_info": "<dynamic>",
+        "grant_type": "refresh_token",
+        "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
+        "refresh_token": "mock-rt-0",
+        "scope": "User.Read openid profile offline_access",
+        "x-client-SKU": "msal.js.browser",
+        "x-client-VER": "5.16.0",
+        "x-client-current-telemetry": "",
+        "x-client-last-telemetry": "",
+        "x-ms-lib-capability": "retry-after, h429"
+      },
+      "endpoint": "token",
+      "headers": {
+        "content-type": "application/x-www-form-urlencoded;charset=utf-8",
+        "origin": "http://localhost:4173"
+      },
+      "query": {
+        "client-request-id": "<dynamic>"
+      }
+    }
+  ]
+}

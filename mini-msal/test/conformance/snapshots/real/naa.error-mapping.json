@@ -1,0 +1,34 @@
+{
+  "NO_NETWORK": {
+    "err": {
+      "errorCode": "no_network_connectivity",
+      "message": "See https://aka.ms/msal.js.errors#no_network_connectivity for details",
+      "name": "ClientAuthError",
+      "subError": null
+    }
+  },
+  "PERSISTENT_ERROR": {
+    "err": {
+      "errorCode": "fake_code",
+      "message": "fake PERSISTENT_ERROR",
+      "name": "ServerError",
+      "subError": null
+    }
+  },
+  "USER_CANCEL": {
+    "err": {
+      "errorCode": "user_canceled",
+      "message": "See https://aka.ms/msal.js.errors#user_canceled for details",
+      "name": "ClientAuthError",
+      "subError": null
+    }
+  },
+  "USER_INTERACTION_REQUIRED": {
+    "err": {
+      "errorCode": "fake_code",
+      "message": "fake USER_INTERACTION_REQUIRED",
+      "name": "InteractionRequiredAuthError",
+      "subError": null
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "result": {
+    "err": {
+      "errorCode": "redirect_in_iframe",
+      "message": "See https://aka.ms/msal.js.errors#redirect_in_iframe for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  }
+}

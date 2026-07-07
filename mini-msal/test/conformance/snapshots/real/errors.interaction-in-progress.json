@@ -1,0 +1,16 @@
+{
+  "firstEventuallyResolved": {
+    "ok": {
+      "accessToken": "mock-access-token-0",
+      "username": "ada@contoso.com"
+    }
+  },
+  "second": {
+    "err": {
+      "errorCode": "interaction_in_progress",
+      "message": "See https://aka.ms/msal.js.errors#interaction_in_progress for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "after": {
+    "ok": {
+      "accounts": 0,
+      "active": null
+    }
+  },
+  "logoutRequest": [
+    {
+      "endpoint": "logout",
+      "headers": {},
+      "query": {
+        "client-request-id": "<dynamic>",
+        "post_logout_redirect_uri": "http://localhost:4173/conformance-app/",
+        "state": "<dynamic>"
+      }
+    }
+  ],
+  "navs": [
+    {
+      "hashKeys": [],
+      "page": "http://localhost:4173/conformance-app/",
+      "queryKeys": []
+    },
+    {
+      "hashKeys": [],
+      "page": "http://localhost:4173/conformance-app/",
+      "queryKeys": [
+        "state"
+      ]
+    }
+  ],
+  "storage": {
+    "localStorage": {},
+    "sessionStorage": {
+      "msal.interaction.status": {
+        "clientId": "<guid>",
+        "type": "signout"
+      },
+      "msal.version": "5.16.0"
+    }
+  }
+}

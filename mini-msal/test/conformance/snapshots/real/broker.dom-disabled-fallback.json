@@ -1,0 +1,20 @@
+{
+  "brokerCallsAfterFirst": 2,
+  "brokerCallsAfterSecond": 2,
+  "result": {
+    "err": {
+      "errorCode": "disabled",
+      "message": "broker disabled by policy",
+      "name": "NativeAuthError",
+      "subError": null
+    }
+  },
+  "second": {
+    "err": {
+      "errorCode": "unable_to_acquire_token_from_native_platform",
+      "message": "See https://aka.ms/msal.js.errors#unable_to_acquire_token_from_native_platform for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  }
+}

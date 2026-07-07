@@ -1,0 +1,11 @@
+{
+  "result": {
+    "err": {
+      "errorCode": "service_unavailable",
+      "message": "Error(s): Not Available - Timestamp: Not Available - Description: injected 503 - Correlation ID: Not Available - Trace I",
+      "name": "ServerError",
+      "subError": null
+    }
+  },
+  "tokenEndpointHits": 1
+}

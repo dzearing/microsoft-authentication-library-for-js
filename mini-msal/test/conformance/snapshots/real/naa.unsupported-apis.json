@@ -1,0 +1,45 @@
+{
+  "acquireTokenByCode": {
+    "err": {
+      "errorCode": "unsupported_method",
+      "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+      "name": "NestedAppAuthError",
+      "subError": null
+    }
+  },
+  "addPerformanceCallback": {
+    "err": {
+      "errorCode": "unsupported_method",
+      "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+      "name": "NestedAppAuthError",
+      "subError": null
+    }
+  },
+  "handleRedirectPromise": {
+    "ok": "null"
+  },
+  "loginRedirect": {
+    "err": {
+      "errorCode": "unsupported_method",
+      "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+      "name": "NestedAppAuthError",
+      "subError": null
+    }
+  },
+  "logoutPopup": {
+    "err": {
+      "errorCode": "unsupported_method",
+      "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+      "name": "NestedAppAuthError",
+      "subError": null
+    }
+  },
+  "logoutRedirect": {
+    "err": {
+      "errorCode": "unsupported_method",
+      "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+      "name": "NestedAppAuthError",
+      "subError": null
+    }
+  }
+}

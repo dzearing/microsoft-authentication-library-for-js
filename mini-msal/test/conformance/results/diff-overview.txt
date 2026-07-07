@@ -1,0 +1,781 @@
+== core.login-redirect-roundtrip [diff]
+  events[0].eventType                                                    R:"msal:initializeStart"                                                 M:"msal:accountAdded"
+  events[0].payloadAccount                                               R:null                                                                   M:"ada@contoso.com"
+  events[0].payloadKeys                                                  R:null                                                                   M:["homeAccountId","idTokenClaims","localAccountId","name","tenantId","u
+  events[1].eventType                                                    R:"msal:initializeEnd"                                                   M:"msal:loginSuccess"
+  events[1].payloadAccount                                               R:null                                                                   M:"ada@contoso.com"
+  events[1].payloadKeys                                                  R:null                                                                   M:["accessToken","account","expiresOn","fromCache","idToken","scopes"]
+  events[2].eventType                                                    R:"msal:handleRedirectStart"                                             M:"msal:handleRedirectEnd"
+  events[2].interactionType                                              R:"redirect"                                                             M:null
+  events[3]                                                              R:{"error":null,"eventType":"msal:acquireTokenSuccess","interactionType" M:"<missing>"
+  events[4]                                                              R:{"error":null,"eventType":"msal:loginSuccess","interactionType":"redir M:"<missing>"
+  events[5]                                                              R:{"error":null,"eventType":"msal:handleRedirectEnd","interactionType":" M:"<missing>"
+  idp[1].query.claims                                                    R:"{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\": M:"<missing>"
+  idp[1].query.clidata                                                   R:"1"                                                                    M:"<missing>"
+  idp[1].query.client-request-id                                         R:"<dynamic>"                                                            M:"<missing>"
+  idp[1].query.client_info                                               R:"<dynamic>"                                                            M:"<missing>"
+  idp[1].query.nonce                                                     R:"<dynamic>"                                                            M:"<missing>"
+  idp[1].query.scope                                                     R:"User.Read openid profile offline_access"                              M:"openid profile offline_access User.Read"
+  idp[1].query.x-client-SKU                                              R:"msal.js.browser"                                                      M:"<missing>"
+  idp[1].query.x-client-VER                                              R:"5.16.0"                                                               M:"<missing>"
+  idp[2].endpoint                                                        R:"discovery"                                                            M:"token"
+  idp[2].headers.content-type                                            R:"<missing>"                                                            M:"application/x-www-form-urlencoded"
+  idp[2].body                                                            R:"<missing>"                                                            M:{"client_id":"<guid>","code":"mock-code-0","code_verifier":"<dynamic>"
+  idp[3]                                                                 R:{"body":{"claims":"{\"id_token\":{\"signin_state\":{\"essential\":fals M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.state                                                        R:"<dynamic>"                                                            M:null
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+  secondHandleRedirectCall.ok.authority                                  R:"https://localhost:4599/tenant/"                                       M:null
+  secondHandleRedirectCall.ok.correlationIdPresent                       R:true                                                                   M:false
+  secondHandleRedirectCall.ok.fromPlatformBroker                         R:false                                                                  M:null
+  secondHandleRedirectCall.ok.scopes[0]                                  R:"User.Read"                                                            M:"openid"
+  secondHandleRedirectCall.ok.scopes[1]                                  R:"openid"                                                               M:"profile"
+  secondHandleRedirectCall.ok.scopes[2]                                  R:"profile"                                                              M:"user.read"
+  secondHandleRedirectCall.ok.state                                      R:"<dynamic>"                                                            M:null
+  secondHandleRedirectCall.ok.tokenType                                  R:"Bearer"                                                               M:null
+== core.handle-redirect-clean-load [diff]
+  events[0].eventType                                                    R:"msal:initializeStart"                                                 M:"msal:handleRedirectEnd"
+  events[1]                                                              R:{"error":null,"eventType":"msal:initializeEnd","interactionType":null, M:"<missing>"
+== core.login-popup-roundtrip [diff]
+  events[0].eventType                                                    R:"msal:initializeStart"                                                 M:"msal:accountAdded"
+  events[0].payloadAccount                                               R:null                                                                   M:"ada@contoso.com"
+  events[0].payloadKeys                                                  R:null                                                                   M:["homeAccountId","idTokenClaims","localAccountId","name","tenantId","u
+  events[1].eventType                                                    R:"msal:initializeEnd"                                                   M:"msal:loginSuccess"
+  events[1].payloadAccount                                               R:null                                                                   M:"ada@contoso.com"
+  events[1].payloadKeys                                                  R:null                                                                   M:["accessToken","account","expiresOn","fromCache","idToken","scopes"]
+  events[2]                                                              R:{"error":null,"eventType":"msal:acquireTokenStart","interactionType":" M:"<missing>"
+  events[3]                                                              R:{"error":null,"eventType":"msal:popupOpened","interactionType":"popup" M:"<missing>"
+  events[4]                                                              R:{"error":null,"eventType":"msal:acquireTokenSuccess","interactionType" M:"<missing>"
+  events[5]                                                              R:{"error":null,"eventType":"msal:loginSuccess","interactionType":"popup M:"<missing>"
+  idp[1].query.claims                                                    R:"{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\": M:"<missing>"
+  idp[1].query.clidata                                                   R:"1"                                                                    M:"<missing>"
+  idp[1].query.client-request-id                                         R:"<dynamic>"                                                            M:"<missing>"
+  idp[1].query.client_info                                               R:"<dynamic>"                                                            M:"<missing>"
+  idp[1].query.nonce                                                     R:"<dynamic>"                                                            M:"<missing>"
+  idp[1].query.scope                                                     R:"User.Read openid profile offline_access"                              M:"openid profile offline_access User.Read"
+  idp[1].query.x-client-SKU                                              R:"msal.js.browser"                                                      M:"<missing>"
+  idp[1].query.x-client-VER                                              R:"5.16.0"                                                               M:"<missing>"
+  idp[2].body.claims                                                     R:"{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\": M:"<missing>"
+  idp[2].body.client_info                                                R:"<dynamic>"                                                            M:"<missing>"
+  idp[2].body.scope                                                      R:"User.Read openid profile offline_access"                              M:"openid profile offline_access User.Read"
+  idp[2].body.x-client-SKU                                               R:"msal.js.browser"                                                      M:"<missing>"
+  idp[2].body.x-client-VER                                               R:"5.16.0"                                                               M:"<missing>"
+  idp[2].body.x-client-current-telemetry                                 R:""                                                                     M:"<missing>"
+  idp[2].body.x-client-last-telemetry                                    R:""                                                                     M:"<missing>"
+  idp[2].body.x-ms-lib-capability                                        R:"retry-after, h429"                                                    M:"<missing>"
+  idp[2].headers.content-type                                            R:"application/x-www-form-urlencoded;charset=utf-8"                      M:"application/x-www-form-urlencoded"
+  idp[2].query                                                           R:{"client-request-id":"<dynamic>"}                                      M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.state                                                        R:"<dynamic>"                                                            M:null
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== core.acquire-token-popup [diff]
+  events[0].eventType                                                    R:"msal:initializeStart"                                                 M:"msal:accountAdded"
+  events[0].payloadAccount                                               R:null                                                                   M:"ada@contoso.com"
+  events[0].payloadKeys                                                  R:null                                                                   M:["homeAccountId","idTokenClaims","localAccountId","name","tenantId","u
+  events[1].eventType                                                    R:"msal:initializeEnd"                                                   M:"msal:loginSuccess"
+  events[1].payloadAccount                                               R:null                                                                   M:"ada@contoso.com"
+  events[1].payloadKeys                                                  R:null                                                                   M:["accessToken","account","expiresOn","fromCache","idToken","scopes"]
+  events[2]                                                              R:{"error":null,"eventType":"msal:acquireTokenStart","interactionType":" M:"<missing>"
+  events[3]                                                              R:{"error":null,"eventType":"msal:popupOpened","interactionType":"popup" M:"<missing>"
+  events[4]                                                              R:{"error":null,"eventType":"msal:acquireTokenSuccess","interactionType" M:"<missing>"
+  events[5]                                                              R:{"error":null,"eventType":"msal:loginSuccess","interactionType":"popup M:"<missing>"
+  events[6]                                                              R:{"error":null,"eventType":"msal:acquireTokenStart","interactionType":" M:"<missing>"
+  events[7]                                                              R:{"error":null,"eventType":"msal:popupOpened","interactionType":"popup" M:"<missing>"
+  events[8]                                                              R:{"error":null,"eventType":"msal:acquireTokenSuccess","interactionType" M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.state                                                        R:"<dynamic>"                                                            M:null
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== core.sso-silent-cold [diff]
+  events[0]                                                              R:{"error":null,"eventType":"msal:initializeStart","interactionType":nul M:"<missing>"
+  events[1]                                                              R:{"error":null,"eventType":"msal:initializeEnd","interactionType":null, M:"<missing>"
+  events[2]                                                              R:{"error":null,"eventType":"msal:acquireTokenStart","interactionType":" M:"<missing>"
+  events[3]                                                              R:{"error":{"errorCode":"login_required","message":"no session","name":" M:"<missing>"
+  idp[1].query.X-AnchorMailbox                                           R:"UPN:ada@contoso.com"                                                  M:"<missing>"
+  idp[1].query.claims                                                    R:"{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\": M:"<missing>"
+  idp[1].query.clidata                                                   R:"1"                                                                    M:"<missing>"
+  idp[1].query.client-request-id                                         R:"<dynamic>"                                                            M:"<missing>"
+  idp[1].query.client_info                                               R:"<dynamic>"                                                            M:"<missing>"
+  idp[1].query.nonce                                                     R:"<dynamic>"                                                            M:"<missing>"
+  idp[1].query.scope                                                     R:"User.Read openid profile offline_access"                              M:"openid profile offline_access User.Read"
+  idp[1].query.x-client-SKU                                              R:"msal.js.browser"                                                      M:"<missing>"
+  idp[1].query.x-client-VER                                              R:"5.16.0"                                                               M:"<missing>"
+  result.err.name                                                        R:"InteractionRequiredAuthError"                                         M:"Error"
+== core.sso-silent-warm [diff]
+  events[0].eventType                                                    R:"msal:initializeStart"                                                 M:"msal:accountAdded"
+  events[0].payloadAccount                                               R:null                                                                   M:"ada@contoso.com"
+  events[0].payloadKeys                                                  R:null                                                                   M:["homeAccountId","idTokenClaims","localAccountId","name","tenantId","u
+  events[1]                                                              R:{"error":null,"eventType":"msal:initializeEnd","interactionType":null, M:"<missing>"
+  events[2]                                                              R:{"error":null,"eventType":"msal:acquireTokenStart","interactionType":" M:"<missing>"
+  events[3]                                                              R:{"error":null,"eventType":"msal:acquireTokenSuccess","interactionType" M:"<missing>"
+  events[4]                                                              R:{"error":null,"eventType":"msal:loginSuccess","interactionType":"silen M:"<missing>"
+  idp[1].query.X-AnchorMailbox                                           R:"UPN:ada@contoso.com"                                                  M:"<missing>"
+  idp[1].query.claims                                                    R:"{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\": M:"<missing>"
+  idp[1].query.clidata                                                   R:"1"                                                                    M:"<missing>"
+  idp[1].query.client-request-id                                         R:"<dynamic>"                                                            M:"<missing>"
+  idp[1].query.client_info                                               R:"<dynamic>"                                                            M:"<missing>"
+  idp[1].query.nonce                                                     R:"<dynamic>"                                                            M:"<missing>"
+  idp[1].query.scope                                                     R:"User.Read openid profile offline_access"                              M:"openid profile offline_access User.Read"
+  idp[1].query.x-client-SKU                                              R:"msal.js.browser"                                                      M:"<missing>"
+  idp[1].query.x-client-VER                                              R:"5.16.0"                                                               M:"<missing>"
+  idp[2].body.X-AnchorMailbox                                            R:"UPN:ada@contoso.com"                                                  M:"<missing>"
+  idp[2].body.claims                                                     R:"{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\": M:"<missing>"
+  idp[2].body.client_info                                                R:"<dynamic>"                                                            M:"<missing>"
+  idp[2].body.scope                                                      R:"User.Read openid profile offline_access"                              M:"openid profile offline_access User.Read"
+  idp[2].body.x-client-SKU                                               R:"msal.js.browser"                                                      M:"<missing>"
+  idp[2].body.x-client-VER                                               R:"5.16.0"                                                               M:"<missing>"
+  idp[2].body.x-client-current-telemetry                                 R:""                                                                     M:"<missing>"
+  idp[2].body.x-client-last-telemetry                                    R:""                                                                     M:"<missing>"
+  idp[2].body.x-ms-lib-capability                                        R:"retry-after, h429"                                                    M:"<missing>"
+  idp[2].headers.content-type                                            R:"application/x-www-form-urlencoded;charset=utf-8"                      M:"application/x-www-form-urlencoded"
+  idp[2].query                                                           R:{"client-request-id":"<dynamic>"}                                      M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.state                                                        R:"<dynamic>"                                                            M:null
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== core.acquire-token-redirect [diff]
+  idp[0].query.X-AnchorMailbox                                           R:"Oid:oid-123@tenant-123"                                               M:"<missing>"
+  idp[0].query.claims                                                    R:"{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\": M:"<missing>"
+  idp[0].query.clidata                                                   R:"1"                                                                    M:"<missing>"
+  idp[0].query.client-request-id                                         R:"<dynamic>"                                                            M:"<missing>"
+  idp[0].query.client_info                                               R:"<dynamic>"                                                            M:"<missing>"
+  idp[0].query.login_hint                                                R:"ada@contoso.com"                                                      M:"<missing>"
+  idp[0].query.nonce                                                     R:"<dynamic>"                                                            M:"<missing>"
+  idp[0].query.scope                                                     R:"Mail.Read openid profile offline_access"                              M:"openid profile offline_access Mail.Read"
+  idp[0].query.x-client-SKU                                              R:"msal.js.browser"                                                      M:"<missing>"
+  idp[0].query.x-client-VER                                              R:"5.16.0"                                                               M:"<missing>"
+  idp[1].endpoint                                                        R:"discovery"                                                            M:"token"
+  idp[1].headers.content-type                                            R:"<missing>"                                                            M:"application/x-www-form-urlencoded"
+  idp[1].body                                                            R:"<missing>"                                                            M:{"client_id":"<guid>","code":"mock-code-0","code_verifier":"<dynamic>"
+  idp[2]                                                                 R:{"body":{"X-AnchorMailbox":"Oid:oid-123@tenant-123","claims":"{\"id_to M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.state                                                        R:"<dynamic>"                                                            M:null
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== core.redirect-state-tampered [diff]
+  events[0].error                                                        R:null                                                                   M:{"errorCode":"state_mismatch","message":"State does not match","name":
+  events[0].eventType                                                    R:"msal:initializeStart"                                                 M:"msal:loginFailure"
+  events[1].eventType                                                    R:"msal:initializeEnd"                                                   M:"msal:handleRedirectEnd"
+  events[2]                                                              R:{"error":null,"eventType":"msal:handleRedirectStart","interactionType" M:"<missing>"
+  events[3]                                                              R:{"error":null,"eventType":"msal:handleRedirectEnd","interactionType":" M:"<missing>"
+  result.ok                                                              R:null                                                                   M:"<missing>"
+  result.err                                                             R:"<missing>"                                                            M:{"errorCode":"state_mismatch","message":"State does not match","name":
+== core.storage-shape-after-login [diff]
+  storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|access R:"<epoch-ms>"                                                           M:"<missing>"
+  storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|idtoke R:"<epoch-ms>"                                                           M:"<missing>"
+  storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|refres R:"<epoch-ms>"                                                           M:"<missing>"
+  storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|tenant R:862                                                                    M:"<missing>"
+  storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|tenant R:"<epoch-ms>"                                                           M:"<missing>"
+  storage.sessionStorage.msal.version                                    R:"5.16.0"                                                               M:"<missing>"
+  storage.sessionStorage.msal.<guid>.active-account-filters              R:"<missing>"                                                            M:{"homeAccountId":"oid-123.tenant-123","localAccountId":"oid-123","tena
+  storage.sessionStorage.msal.meta.https://localhost:4599/tenant         R:"<missing>"                                                            M:{"authorization_endpoint":"https://localhost:4599/authorize","end_sess
+== silent.cache-hit-fresh [diff]
+  networkCalls[0]                                                        R:"discovery"                                                            M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== silent.expiry-window-refresh [diff]
+  networkCalls[0]                                                        R:"discovery"                                                            M:"token:refresh_token"
+  networkCalls[1]                                                        R:"token:refresh_token"                                                  M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== silent.refresh-token-grant [diff]
+  networkCalls[0]                                                        R:"discovery"                                                            M:"token:refresh_token"
+  networkCalls[1]                                                        R:"token:refresh_token"                                                  M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+  tokenRequest[0].body.X-AnchorMailbox                                   R:"Oid:oid-123@tenant-123"                                               M:"<missing>"
+  tokenRequest[0].body.claims                                            R:"{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\": M:"<missing>"
+  tokenRequest[0].body.client_info                                       R:"<dynamic>"                                                            M:"<missing>"
+  tokenRequest[0].body.redirect_uri                                      R:"http://localhost:4173/conformance-app/popup.html"                     M:"http://localhost:4173/conformance-app/"
+  tokenRequest[0].body.scope                                             R:"User.Read openid profile offline_access"                              M:"openid profile offline_access User.Read"
+  tokenRequest[0].body.x-client-SKU                                      R:"msal.js.browser"                                                      M:"<missing>"
+  tokenRequest[0].body.x-client-VER                                      R:"5.16.0"                                                               M:"<missing>"
+  tokenRequest[0].body.x-client-current-telemetry                        R:""                                                                     M:"<missing>"
+  tokenRequest[0].body.x-client-last-telemetry                           R:""                                                                     M:"<missing>"
+  tokenRequest[0].body.x-ms-lib-capability                               R:"retry-after, h429"                                                    M:"<missing>"
+  tokenRequest[0].headers.content-type                                   R:"application/x-www-form-urlencoded;charset=utf-8"                      M:"application/x-www-form-urlencoded"
+  tokenRequest[0].query                                                  R:{"client-request-id":"<dynamic>"}                                      M:"<missing>"
+== silent.iframe-fallback-no-rt [diff]
+  authorizeParams[0].query.X-AnchorMailbox                               R:"Oid:oid-123@tenant-123"                                               M:"<missing>"
+  authorizeParams[0].query.claims                                        R:"{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\": M:"<missing>"
+  authorizeParams[0].query.clidata                                       R:"1"                                                                    M:"<missing>"
+  authorizeParams[0].query.client-request-id                             R:"<dynamic>"                                                            M:"<missing>"
+  authorizeParams[0].query.client_info                                   R:"<dynamic>"                                                            M:"<missing>"
+  authorizeParams[0].query.nonce                                         R:"<dynamic>"                                                            M:"<missing>"
+  authorizeParams[0].query.scope                                         R:"User.Read openid profile offline_access"                              M:"openid profile offline_access User.Read"
+  authorizeParams[0].query.x-client-SKU                                  R:"msal.js.browser"                                                      M:"<missing>"
+  authorizeParams[0].query.x-client-VER                                  R:"5.16.0"                                                               M:"<missing>"
+  networkCalls[0]                                                        R:"discovery"                                                            M:"authorize:prompt=none"
+  networkCalls[1]                                                        R:"authorize:prompt=none"                                                M:"token:authorization_code"
+  networkCalls[2]                                                        R:"token:authorization_code"                                             M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== silent.policy-access-token-valid [diff]
+  networkCalls[0]                                                        R:"discovery"                                                            M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== silent.policy-access-token-expired [diff]
+  networkCalls[0]                                                        R:"discovery"                                                            M:"token:refresh_token"
+  result.err                                                             R:{"errorCode":"token_refresh_required","message":"See https://aka.ms/ms M:"<missing>"
+  result.ok                                                              R:"<missing>"                                                            M:{"accessToken":"mock-access-token-0","account":{"homeAccountId":"oid-1
+== silent.policy-at-and-rt [diff]
+  networkCalls[0]                                                        R:"discovery"                                                            M:"token:refresh_token"
+  networkCalls[1]                                                        R:"token:refresh_token"                                                  M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== silent.policy-refresh-token [diff]
+  networkCalls[0]                                                        R:"discovery"                                                            M:"<missing>"
+  networkCalls[1]                                                        R:"token:refresh_token"                                                  M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromCache                                                    R:false                                                                  M:true
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== silent.policy-rt-and-network [diff]
+  networkCalls[0]                                                        R:"discovery"                                                            M:"<missing>"
+  networkCalls[1]                                                        R:"token:refresh_token"                                                  M:"<missing>"
+  networkCalls[2]                                                        R:"authorize:prompt=none"                                                M:"<missing>"
+  networkCalls[3]                                                        R:"token:authorization_code"                                             M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromCache                                                    R:false                                                                  M:true
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== silent.policy-skip [diff]
+  networkCalls[0]                                                        R:"discovery"                                                            M:"token:refresh_token"
+  networkCalls[1]                                                        R:"authorize:prompt=none"                                                M:"<missing>"
+  networkCalls[2]                                                        R:"token:authorization_code"                                             M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== silent.concurrent-dedupe [diff]
+  networkCalls[0]                                                        R:"discovery"                                                            M:"token:refresh_token"
+  tokenEndpointHits                                                      R:1                                                                      M:2
+== silent.force-refresh [diff]
+  events[0].eventType                                                    R:"msal:initializeStart"                                                 M:"msal:accountAdded"
+  events[0].payloadAccount                                               R:null                                                                   M:"ada@contoso.com"
+  events[0].payloadKeys                                                  R:null                                                                   M:["homeAccountId","idTokenClaims","localAccountId","name","tenantId","u
+  events[1].eventType                                                    R:"msal:initializeEnd"                                                   M:"msal:loginSuccess"
+  events[1].payloadAccount                                               R:null                                                                   M:"ada@contoso.com"
+  events[1].payloadKeys                                                  R:null                                                                   M:["accessToken","account","expiresOn","fromCache","idToken","scopes"]
+  events[2].eventType                                                    R:"msal:acquireTokenStart"                                               M:"msal:acquireTokenSuccess"
+  events[2].interactionType                                              R:"popup"                                                                M:null
+  events[2].payloadAccount                                               R:null                                                                   M:"ada@contoso.com"
+  events[2].payloadKeys[0]                                               R:"correlationId"                                                        M:"accessToken"
+  events[2].payloadKeys[1]                                               R:"redirectUri"                                                          M:"account"
+  events[2].payloadKeys[2]                                               R:"scopes"                                                               M:"expiresOn"
+  events[2].payloadKeys[3]                                               R:"<missing>"                                                            M:"fromCache"
+  events[2].payloadKeys[4]                                               R:"<missing>"                                                            M:"idToken"
+  events[2].payloadKeys[5]                                               R:"<missing>"                                                            M:"scopes"
+  events[3]                                                              R:{"error":null,"eventType":"msal:popupOpened","interactionType":"popup" M:"<missing>"
+  events[4]                                                              R:{"error":null,"eventType":"msal:acquireTokenSuccess","interactionType" M:"<missing>"
+  events[5]                                                              R:{"error":null,"eventType":"msal:loginSuccess","interactionType":"popup M:"<missing>"
+  events[6]                                                              R:{"error":null,"eventType":"msal:initializeStart","interactionType":nul M:"<missing>"
+  events[7]                                                              R:{"error":null,"eventType":"msal:initializeEnd","interactionType":null, M:"<missing>"
+  events[8]                                                              R:{"error":null,"eventType":"msal:acquireTokenStart","interactionType":" M:"<missing>"
+  events[9]                                                              R:{"error":null,"eventType":"msal:acquireTokenFromNetworkStart","interac M:"<missing>"
+  events[10]                                                             R:{"error":null,"eventType":"msal:acquireTokenSuccess","interactionType" M:"<missing>"
+  networkCalls[0]                                                        R:"discovery"                                                            M:"<missing>"
+  networkCalls[1]                                                        R:"token:refresh_token"                                                  M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromCache                                                    R:false                                                                  M:true
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== accounts.multi-account [diff]
+  accounts.ok[0].environment                                             R:"localhost:4599"                                                       M:null
+  accounts.ok[1].environment                                             R:"localhost:4599"                                                       M:null
+  activeAfterSecondLogin.ok                                              R:null                                                                   M:{"environment":null,"hasIdTokenClaims":true,"homeAccountId":"oid-123.t
+  events[0].eventType                                                    R:"msal:initializeStart"                                                 M:"msal:accountAdded"
+  events[0].payloadAccount                                               R:null                                                                   M:"ada@contoso.com"
+  events[0].payloadKeys                                                  R:null                                                                   M:["homeAccountId","idTokenClaims","localAccountId","name","tenantId","u
+  events[1].eventType                                                    R:"msal:initializeEnd"                                                   M:"msal:loginSuccess"
+  events[1].payloadAccount                                               R:null                                                                   M:"ada@contoso.com"
+  events[1].payloadKeys                                                  R:null                                                                   M:["accessToken","account","expiresOn","fromCache","idToken","scopes"]
+  events[2].eventType                                                    R:"msal:acquireTokenStart"                                               M:"msal:accountAdded"
+  events[2].interactionType                                              R:"popup"                                                                M:null
+  events[2].payloadAccount                                               R:null                                                                   M:"grace@contoso.com"
+  events[2].payloadKeys[0]                                               R:"correlationId"                                                        M:"homeAccountId"
+  events[2].payloadKeys[1]                                               R:"redirectUri"                                                          M:"idTokenClaims"
+  events[2].payloadKeys[2]                                               R:"scopes"                                                               M:"localAccountId"
+  events[2].payloadKeys[3]                                               R:"<missing>"                                                            M:"name"
+  events[2].payloadKeys[4]                                               R:"<missing>"                                                            M:"tenantId"
+  events[2].payloadKeys[5]                                               R:"<missing>"                                                            M:"username"
+  events[3].eventType                                                    R:"msal:popupOpened"                                                     M:"msal:loginSuccess"
+  events[3].interactionType                                              R:"popup"                                                                M:null
+  events[3].payloadAccount                                               R:null                                                                   M:"grace@contoso.com"
+  events[3].payloadKeys[0]                                               R:"popupWindow"                                                          M:"accessToken"
+  events[3].payloadKeys[1]                                               R:"<missing>"                                                            M:"account"
+  events[3].payloadKeys[2]                                               R:"<missing>"                                                            M:"expiresOn"
+  events[3].payloadKeys[3]                                               R:"<missing>"                                                            M:"fromCache"
+  events[3].payloadKeys[4]                                               R:"<missing>"                                                            M:"idToken"
+  events[3].payloadKeys[5]                                               R:"<missing>"                                                            M:"scopes"
+  events[4]                                                              R:{"error":null,"eventType":"msal:acquireTokenSuccess","interactionType" M:"<missing>"
+  events[5]                                                              R:{"error":null,"eventType":"msal:loginSuccess","interactionType":"popup M:"<missing>"
+  events[6]                                                              R:{"error":null,"eventType":"msal:initializeStart","interactionType":nul M:"<missing>"
+  events[7]                                                              R:{"error":null,"eventType":"msal:initializeEnd","interactionType":null, M:"<missing>"
+  events[8]                                                              R:{"error":null,"eventType":"msal:acquireTokenStart","interactionType":" M:"<missing>"
+  events[9]                                                              R:{"error":null,"eventType":"msal:popupOpened","interactionType":"popup" M:"<missing>"
+  events[10]                                                             R:{"error":null,"eventType":"msal:acquireTokenSuccess","interactionType" M:"<missing>"
+  events[11]                                                             R:{"error":null,"eventType":"msal:loginSuccess","interactionType":"popup M:"<missing>"
+  logins.first.ok.authority                                              R:"https://localhost:4599/tenant/"                                       M:null
+  logins.first.ok.correlationIdPresent                                   R:true                                                                   M:false
+  logins.first.ok.fromPlatformBroker                                     R:false                                                                  M:null
+  logins.first.ok.scopes[0]                                              R:"User.Read"                                                            M:"openid"
+  logins.first.ok.scopes[1]                                              R:"openid"                                                               M:"profile"
+== accounts.get-account-filters [diff]
+  filters.ok.allWithFilter[0]                                            R:"grace@contoso.com"                                                    M:"ada@contoso.com"
+  filters.ok.allWithFilter[1]                                            R:"<missing>"                                                            M:"grace@contoso.com"
+  filters.ok.emptyFilter                                                 R:null                                                                   M:"ada@contoso.com"
+== accounts.active-account-persistence [diff]
+  eventsAfterReload[0]                                                   R:{"error":null,"eventType":"msal:initializeStart","interactionType":nul M:"<missing>"
+  eventsAfterReload[1]                                                   R:{"error":null,"eventType":"msal:initializeEnd","interactionType":null, M:"<missing>"
+== accounts.logout-popup-per-account [diff]
+  events[0].eventType                                                    R:"msal:logoutStart"                                                     M:"msal:accountAdded"
+  events[0].interactionType                                              R:"popup"                                                                M:null
+  events[0].payloadAccount                                               R:"grace@contoso.com"                                                    M:"ada@contoso.com"
+  events[0].payloadKeys[0]                                               R:"account"                                                              M:"homeAccountId"
+  events[0].payloadKeys[1]                                               R:"correlationId"                                                        M:"idTokenClaims"
+  events[0].payloadKeys[2]                                               R:"postLogoutRedirectUri"                                                M:"localAccountId"
+  events[0].payloadKeys[3]                                               R:"<missing>"                                                            M:"name"
+  events[0].payloadKeys[4]                                               R:"<missing>"                                                            M:"tenantId"
+  events[0].payloadKeys[5]                                               R:"<missing>"                                                            M:"username"
+  events[0].seq                                                          R:12                                                                     M:0
+  events[1].eventType                                                    R:"msal:logoutSuccess"                                                   M:"msal:accountAdded"
+  events[1].interactionType                                              R:"popup"                                                                M:null
+  events[1].payloadKeys[0]                                               R:"account"                                                              M:"homeAccountId"
+  events[1].payloadKeys[1]                                               R:"correlationId"                                                        M:"idTokenClaims"
+  events[1].payloadKeys[2]                                               R:"postLogoutRedirectUri"                                                M:"localAccountId"
+  events[1].payloadKeys[3]                                               R:"state"                                                                M:"name"
+  events[1].payloadKeys[4]                                               R:"<missing>"                                                            M:"tenantId"
+  events[1].payloadKeys[5]                                               R:"<missing>"                                                            M:"username"
+  events[1].seq                                                          R:13                                                                     M:2
+  events[2].eventType                                                    R:"msal:logoutEnd"                                                       M:"msal:accountRemoved"
+  events[2].interactionType                                              R:"popup"                                                                M:null
+  events[2].payloadAccount                                               R:null                                                                   M:"grace@contoso.com"
+  events[2].payloadKeys                                                  R:null                                                                   M:["homeAccountId","idTokenClaims","localAccountId","name","tenantId","u
+  events[2].seq                                                          R:15                                                                     M:4
+  events[3]                                                              R:"<missing>"                                                            M:{"error":null,"eventType":"msal:logoutSuccess","interactionType":null,
+  logout.ok.active                                                       R:null                                                                   M:"ada@contoso.com"
+  logoutRequest[0].query.client-request-id                               R:"<dynamic>"                                                            M:"<missing>"
+  logoutRequest[0].query.post_logout_redirect_uri                        R:"http://localhost:4173/conformance-app/popup.html"                     M:"http://localhost:4173/conformance-app/"
+  logoutRequest[0].query.state                                           R:"<dynamic>"                                                            M:"<missing>"
+  storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|access R:"<epoch-ms>"                                                           M:"<missing>"
+  storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|idtoke R:"<epoch-ms>"                                                           M:"<missing>"
+  storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|refres R:"<epoch-ms>"                                                           M:"<missing>"
+  storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|tenant R:862                                                                    M:"<missing>"
+  storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|tenant R:"<epoch-ms>"                                                           M:"<missing>"
+  storage.sessionStorage.msal.version                                    R:"5.16.0"                                                               M:"<missing>"
+  storage.sessionStorage.msal.<guid>.active-account-filters              R:"<missing>"                                                            M:{"homeAccountId":"oid-123.tenant-123","localAccountId":"oid-123","tena
+  storage.sessionStorage.msal.meta.https://localhost:4599/tenant         R:"<missing>"                                                            M:{"authorization_endpoint":"https://localhost:4599/authorize","end_sess
+== accounts.logout-redirect [diff]
+  logoutRequest[0].query.client-request-id                               R:"<dynamic>"                                                            M:"<missing>"
+  logoutRequest[0].query.state                                           R:"<dynamic>"                                                            M:"<missing>"
+  navs[1].queryKeys[0]                                                   R:"state"                                                                M:"<missing>"
+  storage.sessionStorage.msal.interaction.status                         R:{"clientId":"<guid>","type":"signout"}                                 M:"<missing>"
+  storage.sessionStorage.msal.version                                    R:"5.16.0"                                                               M:"<missing>"
+  storage.sessionStorage.msal.meta.https://localhost:4599/tenant         R:"<missing>"                                                            M:{"authorization_endpoint":"https://localhost:4599/authorize","end_sess
+== accounts.local-storage [diff]
+  login.ok.authority                                                     R:"https://localhost:4599/tenant/"                                       M:null
+  login.ok.correlationIdPresent                                          R:true                                                                   M:false
+  login.ok.fromPlatformBroker                                            R:false                                                                  M:null
+  login.ok.scopes[0]                                                     R:"User.Read"                                                            M:"openid"
+  login.ok.scopes[1]                                                     R:"openid"                                                               M:"profile"
+  login.ok.scopes[2]                                                     R:"profile"                                                              M:"user.read"
+  login.ok.state                                                         R:"<dynamic>"                                                            M:null
+  login.ok.tokenType                                                     R:"Bearer"                                                               M:null
+  storage.localStorage.msal.3.account.keys                               R:["msal.3|oid-123.tenant-123|localhost:4599|tenant-123"]                M:"<missing>"
+  storage.localStorage.msal.3.token.keys.<guid>                          R:{"accessToken":["msal.3|oid-123.tenant-123|localhost:4599|accesstoken| M:"<missing>"
+  storage.localStorage.msal.3|oid-123.tenant-123|localhost:4599|accessto R:{"data":"<dynamic>","id":"<guid>","lastUpdatedAt":"<epoch-ms>","nonce" M:"<missing>"
+  storage.localStorage.msal.3|oid-123.tenant-123|localhost:4599|idtoken| R:{"data":"<dynamic>","id":"<guid>","lastUpdatedAt":"<epoch-ms>","nonce" M:"<missing>"
+  storage.localStorage.msal.3|oid-123.tenant-123|localhost:4599|refresht R:{"data":"<dynamic>","id":"<guid>","lastUpdatedAt":"<epoch-ms>","nonce" M:"<missing>"
+  storage.localStorage.msal.3|oid-123.tenant-123|localhost:4599|tenant-1 R:{"data":"<dynamic>","id":"<guid>","lastUpdatedAt":"<epoch-ms>","nonce" M:"<missing>"
+  storage.localStorage.msal.version                                      R:"5.16.0"                                                               M:"<missing>"
+  storage.sessionStorage.msal.<guid>.active-account-filters              R:"<missing>"                                                            M:{"homeAccountId":"oid-123.tenant-123","localAccountId":"oid-123","tena
+  storage.sessionStorage.msal.3.account.keys                             R:"<missing>"                                                            M:["msal.3|oid-123.tenant-123|localhost:4599|tenant-123"]
+  storage.sessionStorage.msal.3.token.keys.<guid>                        R:"<missing>"                                                            M:{"accessToken":["msal.3|oid-123.tenant-123|localhost:4599|accesstoken|
+  storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|access R:"<missing>"                                                            M:{"cachedAt":"<dynamic>","clientId":"<guid>","credentialType":"AccessTo
+  storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|idtoke R:"<missing>"                                                            M:{"clientId":"<guid>","credentialType":"IdToken","environment":"localho
+  storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|refres R:"<missing>"                                                            M:{"clientId":"<guid>","credentialType":"RefreshToken","environment":"lo
+  storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|tenant R:"<missing>"                                                            M:{"authorityType":"MSSTS","clientInfo":"eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI
+  storage.sessionStorage.msal.meta.https://localhost:4599/tenant         R:"<missing>"                                                            M:{"authorization_endpoint":"https://localhost:4599/authorize","end_sess
+== accounts.cross-tab-events [diff]
+  tab2After.events[0]                                                    R:{"error":null,"eventType":"msal:initializeStart","interactionType":nul M:"<missing>"
+  tab2After.events[1]                                                    R:{"error":null,"eventType":"msal:initializeEnd","interactionType":null, M:"<missing>"
+  tab2After.events[2]                                                    R:{"error":null,"eventType":"msal:logoutSuccess","interactionType":"popu M:"<missing>"
+  tab2Initial[0]                                                         R:"ada@contoso.com"                                                      M:"<missing>"
+== errors.cancelled-login-redirect [diff]
+  events[0].error                                                        R:null                                                                   M:{"errorCode":"access_denied","message":"AADSTS65004: User declined to 
+  events[0].eventType                                                    R:"msal:initializeStart"                                                 M:"msal:loginFailure"
+  events[1].eventType                                                    R:"msal:initializeEnd"                                                   M:"msal:handleRedirectEnd"
+  events[2]                                                              R:{"error":null,"eventType":"msal:handleRedirectStart","interactionType" M:"<missing>"
+  events[3]                                                              R:{"error":{"errorCode":"access_denied","message":"AADSTS65004: User dec M:"<missing>"
+  events[4]                                                              R:{"error":null,"eventType":"msal:handleRedirectEnd","interactionType":" M:"<missing>"
+  result.err.name                                                        R:"ServerError"                                                          M:"Error"
+== errors.popup-blocked [diff]
+  events[0].error                                                        R:null                                                                   M:{"errorCode":"popup_window_error","message":"Popup was blocked","name"
+  events[0].eventType                                                    R:"msal:initializeStart"                                                 M:"msal:loginFailure"
+  events[1]                                                              R:{"error":null,"eventType":"msal:initializeEnd","interactionType":null, M:"<missing>"
+  events[2]                                                              R:{"error":null,"eventType":"msal:acquireTokenStart","interactionType":" M:"<missing>"
+  events[3]                                                              R:{"error":{"errorCode":"popup_window_error","message":"See https://aka. M:"<missing>"
+  result.err.message                                                     R:"See https://aka.ms/msal.js.errors#popup_window_error for details"     M:"Popup was blocked"
+  result.err.name                                                        R:"BrowserAuthError"                                                     M:"Error"
+== errors.popup-closed-by-user [diff]
+  result.err                                                             R:{"errorCode":"timed_out","message":"See https://aka.ms/msal.js.errors# M:"<missing>"
+  result.ok                                                              R:"<missing>"                                                            M:{"accessToken":"mock-access-token-0","username":"ada@contoso.com"}
+== errors.iframe-timeout [diff]
+  result.err.errorCode                                                   R:"timed_out"                                                            M:"login_required"
+  result.err.message                                                     R:"See https://aka.ms/msal.js.errors#timed_out for details"              M:"no session"
+  result.err.name                                                        R:"BrowserAuthError"                                                     M:"Error"
+  result.err.subError                                                    R:"redirect_bridge_timeout"                                              M:null
+== errors.interaction-required-variants [diff]
+  consent_required.err.name                                              R:"InteractionRequiredAuthError"                                         M:"Error"
+  interaction_required.err.name                                          R:"InteractionRequiredAuthError"                                         M:"Error"
+  login_required.err.name                                                R:"InteractionRequiredAuthError"                                         M:"Error"
+== errors.uninitialized-client [diff]
+  acquireTokenSilent.err.errorCode                                       R:"uninitialized_public_client_application"                              M:"no_account"
+  acquireTokenSilent.err.message                                         R:"See https://aka.ms/msal.js.errors#uninitialized_public_client_applica M:"Sign in first"
+  acquireTokenSilent.err.name                                            R:"BrowserAuthError"                                                     M:"Error"
+  handleRedirectPromise.err                                              R:{"errorCode":"uninitialized_public_client_application","message":"See  M:"<missing>"
+  handleRedirectPromise.ok                                               R:"<missing>"                                                            M:"resolved"
+  loginPopup.err.errorCode                                               R:"uninitialized_public_client_application"                              M:null
+  loginPopup.err.message                                                 R:"See https://aka.ms/msal.js.errors#uninitialized_public_client_applica M:"Cannot read properties of undefined (reading 'authorization_endpoint'
+  loginPopup.err.name                                                    R:"BrowserAuthError"                                                     M:"TypeError"
+  logoutRedirect.err.errorCode                                           R:"uninitialized_public_client_application"                              M:null
+  logoutRedirect.err.message                                             R:"See https://aka.ms/msal.js.errors#uninitialized_public_client_applica M:"Cannot read properties of undefined (reading 'end_session_endpoint')"
+  logoutRedirect.err.name                                                R:"BrowserAuthError"                                                     M:"TypeError"
+== errors.redirect-in-iframe [diff]
+  result.err.message                                                     R:"See https://aka.ms/msal.js.errors#redirect_in_iframe for details"     M:"Redirect interaction is not allowed in an iframe"
+  result.err.name                                                        R:"BrowserAuthError"                                                     M:"Error"
+== errors.nested-popup-guard [diff]
+  popupCall.ok                                                           R:{"accessToken":"mock-access-token-0","account":{"homeAccountId":"oid-1 M:"<missing>"
+  popupCall.err                                                          R:"<missing>"                                                            M:{"errorCode":"block_nested_popups","message":"Auth APIs blocked inside
+  silentCall.err.errorCode                                               R:"no_account_error"                                                     M:"block_nested_popups"
+  silentCall.err.message                                                 R:"See https://aka.ms/msal.js.errors#no_account_error for details"       M:"Auth APIs blocked inside MSAL-opened popups"
+  silentCall.err.name                                                    R:"BrowserAuthError"                                                     M:"Error"
+== errors.interaction-in-progress [diff]
+  firstEventuallyResolved.ok                                             R:{"accessToken":"mock-access-token-0","username":"ada@contoso.com"}     M:"<missing>"
+  firstEventuallyResolved.err                                            R:"<missing>"                                                            M:{"errorCode":"state_mismatch","message":"State does not match","name":
+  second.err.errorCode                                                   R:"interaction_in_progress"                                              M:"user_cancelled"
+  second.err.message                                                     R:"See https://aka.ms/msal.js.errors#interaction_in_progress for details M:"Window was closed"
+  second.err.name                                                        R:"BrowserAuthError"                                                     M:"Error"
+== errors.silent-unknown-account [diff]
+  noAccountAtAll.err.errorCode                                           R:"no_account_error"                                                     M:"no_account"
+  noAccountAtAll.err.message                                             R:"See https://aka.ms/msal.js.errors#no_account_error for details"       M:"Sign in first"
+  noAccountAtAll.err.name                                                R:"BrowserAuthError"                                                     M:"Error"
+  unknownAccount.err.errorCode                                           R:"authority_mismatch"                                                   M:"no_account"
+  unknownAccount.err.message                                             R:"See https://aka.ms/msal.js.errors#authority_mismatch for details"     M:"Sign in first"
+  unknownAccount.err.name                                                R:"ClientConfigurationError"                                             M:"Error"
+== params.prompt-passthrough [pass]
+== params.login-hint-domain-hint [diff]
+  anchorMailbox                                                          R:"UPN:grace@contoso.com"                                                M:null
+  domain_hint                                                            R:"contoso.com"                                                          M:null
+== params.sid-passthrough [diff]
+  sid                                                                    R:"session-id-abc123"                                                    M:null
+== params.extra-query-parameters [diff]
+  authorizeExtras.dc                                                     R:"ESTS-PUB"                                                             M:null
+  authorizeExtras.slice                                                  R:"testslice"                                                            M:null
+  tokenQuery                                                             R:{"client-request-id":"<dynamic>","dc":"ESTS-PUB","slice":"testslice"}  M:null
+== params.claims-and-cae [diff]
+  authorizeClaims                                                        R:{"access_token":{"nbf":{"essential":true,"value":"<epoch-s>"},"xms_cc" M:null
+  tokenClaims                                                            R:{"access_token":{"nbf":{"essential":true,"value":"<epoch-s>"},"xms_cc" M:null
+== params.custom-state [diff]
+  customStateEcho                                                        R:"app-state-123"                                                        M:null
+  wireStateContainsCustom                                                R:true                                                                   M:false
+== params.per-request-redirect-uri [pass]
+== params.authority-override-per-request [diff]
+  result.ok.authority                                                    R:"https://localhost:4599/other-tenant/"                                 M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromCache                                                    R:false                                                                  M:true
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== params.scopes-normalization [diff]
+  dupes.result.ok.authority                                              R:"https://localhost:4599/tenant/"                                       M:null
+  dupes.result.ok.correlationIdPresent                                   R:true                                                                   M:false
+  dupes.result.ok.fromPlatformBroker                                     R:false                                                                  M:null
+  dupes.result.ok.scopes[0]                                              R:"User.Read"                                                            M:"openid"
+  dupes.result.ok.scopes[1]                                              R:"openid"                                                               M:"profile"
+  dupes.result.ok.scopes[2]                                              R:"profile"                                                              M:"user.read"
+  dupes.result.ok.state                                                  R:"<dynamic>"                                                            M:null
+  dupes.result.ok.tokenType                                              R:"Bearer"                                                               M:null
+  dupes.scopeParam                                                       R:"User.Read USER.READ openid profile offline_access"                    M:"openid profile offline_access User.Read USER.READ openid User.Read"
+  empty.result.ok.authority                                              R:"https://localhost:4599/tenant/"                                       M:null
+  empty.result.ok.correlationIdPresent                                   R:true                                                                   M:false
+  empty.result.ok.fromPlatformBroker                                     R:false                                                                  M:null
+  empty.result.ok.scopes[0]                                              R:"User.Read"                                                            M:"openid"
+  empty.result.ok.scopes[1]                                              R:"openid"                                                               M:"profile"
+  empty.result.ok.scopes[2]                                              R:"profile"                                                              M:"user.read"
+  empty.result.ok.state                                                  R:"<dynamic>"                                                            M:null
+  empty.result.ok.tokenType                                              R:"Bearer"                                                               M:null
+  empty.scopeParam                                                       R:"openid profile offline_access"                                        M:"openid profile offline_access "
+== resilience.throttle-429-retry-after [diff]
+  first.err.message                                                      R:"Error(s): Not Available - Timestamp: Not Available - Description: AAD M:"AADSTS90101: too many requests"
+  first.err.name                                                         R:"ServerError"                                                          M:"Error"
+  immediateRetry.err                                                     R:{"errorCode":"","message":"AADSTS90101: too many requests","name":"Ser M:"<missing>"
+  immediateRetry.ok                                                      R:"<missing>"                                                            M:{"accessToken":"mock-access-token-0","account":{"homeAccountId":"oid-1
+  throttleEntriesInStorage                                               R:1                                                                      M:0
+  tokenEndpointHits                                                      R:1                                                                      M:2
+== resilience.5xx-server-error [diff]
+  result.err.message                                                     R:"Error(s): Not Available - Timestamp: Not Available - Description: inj M:"injected 503"
+  result.err.name                                                        R:"ServerError"                                                          M:"Error"
+== resilience.network-drop [diff]
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== resilience.proactive-refresh [diff]
+  refreshOnStored                                                        R:"present"                                                              M:"absent"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== init.double-initialize [diff]
+  events[0]                                                              R:{"error":null,"eventType":"msal:initializeStart","interactionType":nul M:"<missing>"
+  events[1]                                                              R:{"error":null,"eventType":"msal:initializeEnd","interactionType":null, M:"<missing>"
+== init.get-configuration [diff]
+  config.ok                                                              R:{"auth":{"authority":"https://localhost:4599/tenant","clientId":"<guid M:null
+== init.logger-callback [diff]
+  levelsSeen[0]                                                          R:2                                                                      M:"<missing>"
+  levelsSeen[1]                                                          R:3                                                                      M:"<missing>"
+  logCountOver10                                                         R:true                                                                   M:false
+  logged                                                                 R:true                                                                   M:false
+== init.exported-surface [diff]
+  ok.browserAuthErrorCodesCount                                          R:52                                                                     M:null
+  ok.browserCacheLocation                                                R:{"LocalStorage":"localStorage","MemoryStorage":"memoryStorage","Sessio M:null
+  ok.errorClassesExported.ClientAuthError                                R:true                                                                   M:false
+  ok.errorClassesExported.ServerError                                    R:true                                                                   M:false
+  ok.eventType.ACQUIRE_TOKEN_FAILURE                                     R:"msal:acquireTokenFailure"                                             M:"<missing>"
+  ok.eventType.ACQUIRE_TOKEN_NETWORK_START                               R:"msal:acquireTokenFromNetworkStart"                                    M:"<missing>"
+  ok.eventType.ACQUIRE_TOKEN_START                                       R:"msal:acquireTokenStart"                                               M:"<missing>"
+  ok.eventType.BROKERED_REQUEST_FAILURE                                  R:"msal:brokeredRequestFailure"                                          M:"<missing>"
+  ok.eventType.BROKERED_REQUEST_START                                    R:"msal:brokeredRequestStart"                                            M:"<missing>"
+  ok.eventType.BROKERED_REQUEST_SUCCESS                                  R:"msal:brokeredRequestSuccess"                                          M:"<missing>"
+  ok.eventType.BROKER_CONNECTION_ESTABLISHED                             R:"msal:brokerConnectionEstablished"                                     M:"<missing>"
+  ok.eventType.HANDLE_REDIRECT_START                                     R:"msal:handleRedirectStart"                                             M:"<missing>"
+  ok.eventType.INITIALIZE_END                                            R:"msal:initializeEnd"                                                   M:"<missing>"
+  ok.eventType.INITIALIZE_START                                          R:"msal:initializeStart"                                                 M:"<missing>"
+  ok.eventType.LOGOUT_END                                                R:"msal:logoutEnd"                                                       M:"<missing>"
+  ok.eventType.LOGOUT_FAILURE                                            R:"msal:logoutFailure"                                                   M:"<missing>"
+  ok.eventType.LOGOUT_START                                              R:"msal:logoutStart"                                                     M:"<missing>"
+  ok.eventType.POPUP_OPENED                                              R:"msal:popupOpened"                                                     M:"<missing>"
+  ok.eventType.RESTORE_FROM_BFCACHE                                      R:"msal:restoreFromBFCache"                                              M:"<missing>"
+  ok.eventType.ACCOUNT_ADDED                                             R:"<missing>"                                                            M:"msal:accountAdded"
+  ok.eventType.ACCOUNT_REMOVED                                           R:"<missing>"                                                            M:"msal:accountRemoved"
+  ok.eventType.LOGIN_FAILURE                                             R:"<missing>"                                                            M:"msal:loginFailure"
+  ok.hasCreateNestablePCA                                                R:true                                                                   M:false
+  ok.hasCreateStandardPCA                                                R:true                                                                   M:false
+  ok.hasIsPlatformBrokerAvailable                                        R:true                                                                   M:false
+  ok.interactionType.None                                                R:"none"                                                                 M:"<missing>"
+  ok.oidcDefaultScopes                                                   R:["openid","profile","offline_access"]                                  M:null
+  ok.promptValue                                                         R:{"CONSENT":"consent","CREATE":"create","LOGIN":"login","NONE":"none"," M:null
+  ok.protocolMode                                                        R:{"AAD":"AAD","EAR":"EAR","OIDC":"OIDC"}                                M:null
+  ok.version                                                             R:"5.16.0"                                                               M:null
+== init.storage-before-login [diff]
+  storage.sessionStorage.msal.version                                    R:"5.16.0"                                                               M:"<missing>"
+  storage.sessionStorage.msal.meta.https://localhost:4599/tenant         R:"<missing>"                                                            M:{"authorization_endpoint":"https://localhost:4599/authorize","end_sess
+== init.popup-without-bridge [diff]
+  result.err                                                             R:{"errorCode":"timed_out","message":"See https://aka.ms/msal.js.errors# M:"<missing>"
+  result.ok                                                              R:"<missing>"                                                            M:{"accessToken":"mock-access-token-0","account":{"homeAccountId":"oid-1
+== telemetry.perf-events-popup-login [diff]
+  perf[0]                                                                R:{"correlationId":"<dynamic>","errorCode":null,"hasDuration":true,"name M:"<missing>"
+  perf[1]                                                                R:{"correlationId":"<dynamic>","errorCode":null,"hasDuration":true,"name M:"<missing>"
+== telemetry.perf-events-silent [diff]
+  cacheHitPerf[0]                                                        R:{"correlationId":"<dynamic>","errorCode":null,"hasDuration":true,"name M:"<missing>"
+  refreshPerf[0]                                                         R:{"correlationId":"<dynamic>","errorCode":null,"hasDuration":true,"name M:"<missing>"
+== telemetry.token-request-headers [diff]
+  currentTelemetry                                                       R:""                                                                     M:null
+  lastTelemetry                                                          R:""                                                                     M:null
+  libCapability                                                          R:"retry-after, h429"                                                    M:null
+  sku                                                                    R:"msal.js.browser"                                                      M:null
+  ver                                                                    R:"5.16.0"                                                               M:null
+== telemetry.correlation-id-propagation [diff]
+  authorizeParamMatches                                                  R:true                                                                   M:false
+  perfEventWithCid                                                       R:true                                                                   M:false
+  resultMatches                                                          R:true                                                                   M:false
+== telemetry.last-telemetry-after-failure [diff]
+  failedCall.ok                                                          R:{"accessToken":"mock-access-token-0","account":{"homeAccountId":"oid-1 M:"<missing>"
+  failedCall.err                                                         R:"<missing>"                                                            M:{"errorCode":"invalid_grant","message":"injected 400","name":"Error","
+  lastTelemetryParam                                                     R:""                                                                     M:null
+  tokenCalls                                                             R:2                                                                      M:1
+== broker.dom-probe-and-interactive [diff]
+  accountShape.ok                                                        R:{"nativeAccountId":"native-acc-1","username":"ada@contoso.com"}        M:null
+  brokerLog[0]                                                           R:{"brokerId":"MicrosoftEntra","call":"getSupportedContracts"}           M:"<missing>"
+  brokerLog[1]                                                           R:{"accountId":"native-acc-1","brokerId":"MicrosoftEntra","call":"execut M:"<missing>"
+  brokerLog[2]                                                           R:{"accountId":"native-acc-1","brokerId":"MicrosoftEntra","call":"execut M:"<missing>"
+  events[0]                                                              R:{"error":null,"eventType":"msal:acquireTokenStart","interactionType":" M:"<missing>"
+  events[1]                                                              R:{"error":null,"eventType":"msal:acquireTokenStart","interactionType":" M:"<missing>"
+  events[2]                                                              R:{"error":null,"eventType":"msal:acquireTokenSuccess","interactionType" M:"<missing>"
+  result.ok                                                              R:{"accessToken":"broker-access-token","account":{"homeAccountId":"oid-1 M:"<missing>"
+  result.err                                                             R:"<missing>"                                                            M:{"errorCode":null,"message":"globalThis.__msal.acquireTokenByCode is n
+  silentResult.ok                                                        R:{"accessToken":"broker-access-token","account":{"homeAccountId":"oid-1 M:"<missing>"
+  silentResult.err                                                       R:"<missing>"                                                            M:{"errorCode":"no_account","message":"Sign in first","name":"Error","su
+== broker.dom-first-login [diff]
+  brokerLog[0]                                                           R:{"brokerId":"MicrosoftEntra","call":"getSupportedContracts"}           M:"<missing>"
+  result.ok.authority                                                    R:"https://localhost:4599/tenant/"                                       M:null
+  result.ok.correlationIdPresent                                         R:true                                                                   M:false
+  result.ok.fromPlatformBroker                                           R:false                                                                  M:null
+  result.ok.scopes[0]                                                    R:"User.Read"                                                            M:"openid"
+  result.ok.scopes[1]                                                    R:"openid"                                                               M:"profile"
+  result.ok.scopes[2]                                                    R:"profile"                                                              M:"user.read"
+  result.ok.state                                                        R:"<dynamic>"                                                            M:null
+  result.ok.tokenType                                                    R:"Bearer"                                                               M:null
+== broker.dom-error-mapping [diff]
+  ACCOUNT_UNAVAILABLE.err.errorCode                                      R:"native_account_unavailable"                                           M:null
+  ACCOUNT_UNAVAILABLE.err.message                                        R:"See https://aka.ms/msal.js.errors#account_unavailable for details"    M:"globalThis.__msal.acquireTokenByCode is not a function"
+  ACCOUNT_UNAVAILABLE.err.name                                           R:"InteractionRequiredAuthError"                                         M:"TypeError"
+  NO_NETWORK.err.errorCode                                               R:"no_network_connectivity"                                              M:null
+  NO_NETWORK.err.message                                                 R:"See https://aka.ms/msal.js.errors#no_network_connectivity for details M:"globalThis.__msal.acquireTokenByCode is not a function"
+  NO_NETWORK.err.name                                                    R:"BrowserAuthError"                                                     M:"TypeError"
+  USER_CANCEL.err.errorCode                                              R:"user_cancelled"                                                       M:null
+  USER_CANCEL.err.message                                                R:"See https://aka.ms/msal.js.errors#user_cancelled for details"         M:"globalThis.__msal.acquireTokenByCode is not a function"
+  USER_CANCEL.err.name                                                   R:"BrowserAuthError"                                                     M:"TypeError"
+== broker.dom-disabled-fallback [diff]
+  brokerCallsAfterFirst                                                  R:2                                                                      M:0
+  brokerCallsAfterSecond                                                 R:2                                                                      M:0
+  result.err.errorCode                                                   R:"disabled"                                                             M:null
+  result.err.message                                                     R:"broker disabled by policy"                                            M:"globalThis.__msal.acquireTokenByCode is not a function"
+  result.err.name                                                        R:"NativeAuthError"                                                      M:"TypeError"
+  second.err.errorCode                                                   R:"unable_to_acquire_token_from_native_platform"                         M:null
+  second.err.message                                                     R:"See https://aka.ms/msal.js.errors#unable_to_acquire_token_from_native M:"globalThis.__msal.acquireTokenByCode is not a function"
+  second.err.name                                                        R:"BrowserAuthError"                                                     M:"TypeError"
+== broker.extension-handshake-capture [diff]
+  handshakes[0]                                                          R:{"channel":"<guid>","extensionId":"ppnbnpeolgkicgegkbkbjmhlideopiji"," M:"<missing>"
+  handshakes[1]                                                          R:{"channel":"<guid>","extensionId":null,"hasResponseId":true,"method":" M:"<missing>"
+== broker.extension-fake-e2e [diff]
+  extLog[0]                                                              R:{"extensionId":"ppnbnpeolgkicgegkbkbjmhlideopiji","method":"Handshake" M:"<missing>"
+  extLog[1]                                                              R:{"accountId":"native-acc-1","extraParameters":{"telemetry":"MATS","x-c M:"<missing>"
+  result.ok                                                              R:{"accessToken":"ext-broker-access-token","account":{"homeAccountId":"o M:"<missing>"
+  result.err                                                             R:"<missing>"                                                            M:{"errorCode":null,"message":"globalThis.__msal.acquireTokenByCode is n
+== broker.is-platform-broker-available [diff]
+  withBroker.ok                                                          R:false                                                                  M:"not-exported"
+  without.ok                                                             R:false                                                                  M:"not-exported"
+== naa.init-handshake [diff]
+  created.ok                                                             R:"created"                                                              M:"<missing>"
+  created.err                                                            R:"<missing>"                                                            M:{"errorCode":null,"message":"createNestablePublicClientApplication is 
+  handshake[0]                                                           R:{"clientLibrary":"msal.js.browser","clientLibraryVersion":"5.16.0","ha M:"<missing>"
+  redirectApi.err.errorCode                                              R:"unsupported_method"                                                   M:null
+  redirectApi.err.message                                                R:"See https://aka.ms/msal.js.errors#unsupported_method for details"     M:"Cannot read properties of undefined (reading 'acquireTokenRedirect')"
+  redirectApi.err.name                                                   R:"NestedAppAuthError"                                                   M:"TypeError"
+== naa.get-token-popup [diff]
+  bridgeRequests[0]                                                      R:{"clientLibrary":"msal.js.browser","clientLibraryVersion":"5.16.0","ha M:"<missing>"
+  result.ok                                                              R:{"accessToken":"naa-access-token","account":{"homeAccountId":"oid-123. M:"<missing>"
+  result.err                                                             R:"<missing>"                                                            M:{"errorCode":null,"message":"Cannot read properties of undefined (read
+== naa.silent-cache-then-bridge [diff]
+  callsAfterFirst                                                        R:1                                                                      M:0
+  callsAfterSecond                                                       R:1                                                                      M:0
+  first.ok                                                               R:{"accessToken":"naa-access-token","account":{"homeAccountId":"oid-123. M:"<missing>"
+  first.err                                                              R:"<missing>"                                                            M:{"errorCode":null,"message":"Cannot read properties of undefined (read
+  second.ok                                                              R:{"accessToken":"naa-access-token","account":{"homeAccountId":"oid-123. M:"<missing>"
+  second.err                                                             R:"<missing>"                                                            M:{"errorCode":null,"message":"Cannot read properties of undefined (read
+== naa.error-mapping [diff]
+  NO_NETWORK.err.errorCode                                               R:"no_network_connectivity"                                              M:null
+  NO_NETWORK.err.message                                                 R:"See https://aka.ms/msal.js.errors#no_network_connectivity for details M:"Cannot read properties of undefined (reading 'acquireTokenPopup')"
+  NO_NETWORK.err.name                                                    R:"ClientAuthError"                                                      M:"TypeError"
+  PERSISTENT_ERROR.err.errorCode                                         R:"fake_code"                                                            M:null
+  PERSISTENT_ERROR.err.message                                           R:"fake PERSISTENT_ERROR"                                                M:"Cannot read properties of undefined (reading 'acquireTokenPopup')"
+  PERSISTENT_ERROR.err.name                                              R:"ServerError"                                                          M:"TypeError"
+  USER_CANCEL.err.errorCode                                              R:"user_canceled"                                                        M:null
+  USER_CANCEL.err.message                                                R:"See https://aka.ms/msal.js.errors#user_canceled for details"          M:"Cannot read properties of undefined (reading 'acquireTokenPopup')"
+  USER_CANCEL.err.name                                                   R:"ClientAuthError"                                                      M:"TypeError"
+  USER_INTERACTION_REQUIRED.err.errorCode                                R:"fake_code"                                                            M:null
+  USER_INTERACTION_REQUIRED.err.message                                  R:"fake USER_INTERACTION_REQUIRED"                                       M:"Cannot read properties of undefined (reading 'acquireTokenPopup')"
+  USER_INTERACTION_REQUIRED.err.name                                     R:"InteractionRequiredAuthError"                                         M:"TypeError"
+== naa.unsupported-apis [diff]
+  acquireTokenByCode.err.errorCode                                       R:"unsupported_method"                                                   M:null
+  acquireTokenByCode.err.message                                         R:"See https://aka.ms/msal.js.errors#unsupported_method for details"     M:"Cannot read properties of undefined (reading 'acquireTokenByCode')"
+  acquireTokenByCode.err.name                                            R:"NestedAppAuthError"                                                   M:"TypeError"
+  addPerformanceCallback.err.errorCode                                   R:"unsupported_method"                                                   M:null
+  addPerformanceCallback.err.message                                     R:"See https://aka.ms/msal.js.errors#unsupported_method for details"     M:"Cannot read properties of undefined (reading 'addPerformanceCallback'
+  addPerformanceCallback.err.name                                        R:"NestedAppAuthError"                                                   M:"TypeError"
+  handleRedirectPromise.ok                                               R:"null"                                                                 M:"<missing>"
+  handleRedirectPromise.err                                              R:"<missing>"                                                            M:{"errorCode":null,"message":"Cannot read properties of undefined (read
+  loginRedirect.err.errorCode                                            R:"unsupported_method"                                                   M:null
+  loginRedirect.err.message                                              R:"See https://aka.ms/msal.js.errors#unsupported_method for details"     M:"Cannot read properties of undefined (reading 'loginRedirect')"
+  loginRedirect.err.name                                                 R:"NestedAppAuthError"                                                   M:"TypeError"
+  logoutPopup.err.errorCode                                              R:"unsupported_method"                                                   M:null
+  logoutPopup.err.message                                                R:"See https://aka.ms/msal.js.errors#unsupported_method for details"     M:"Cannot read properties of undefined (reading 'logoutPopup')"
+  logoutPopup.err.name                                                   R:"NestedAppAuthError"                                                   M:"TypeError"
+  logoutRedirect.err.errorCode                                           R:"unsupported_method"                                                   M:null
+  logoutRedirect.err.message                                             R:"See https://aka.ms/msal.js.errors#unsupported_method for details"     M:"Cannot read properties of undefined (reading 'logoutRedirect')"
+  logoutRedirect.err.name                                                R:"NestedAppAuthError"                                                   M:"TypeError"
+== naa.no-bridge-fallback [diff]
+  created.ok                                                             R:"created"                                                              M:"<missing>"
+  created.err                                                            R:"<missing>"                                                            M:{"errorCode":null,"message":"createNestablePublicClientApplication is 
+  perfApi.ok                                                             R:"works"                                                                M:"<missing>"
+  perfApi.err                                                            R:"<missing>"                                                            M:{"errorCode":null,"message":"Cannot read properties of undefined (read
+  webLogin.err                                                           R:null                                                                   M:{"errorCode":null,"message":"Cannot read properties of undefined (read
+  webLogin.ok                                                            R:true                                                                   M:false

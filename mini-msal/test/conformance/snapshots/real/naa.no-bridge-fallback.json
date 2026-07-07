@@ -1,0 +1,12 @@
+{
+  "created": {
+    "ok": "created"
+  },
+  "perfApi": {
+    "ok": "works"
+  },
+  "webLogin": {
+    "err": null,
+    "ok": true
+  }
+}

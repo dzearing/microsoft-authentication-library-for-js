@@ -1,0 +1,75 @@
+{
+  "ok": {
+    "browserAuthErrorCodesCount": 52,
+    "browserCacheLocation": {
+      "LocalStorage": "localStorage",
+      "MemoryStorage": "memoryStorage",
+      "SessionStorage": "sessionStorage"
+    },
+    "cacheLookupPolicy": {
+      "AccessToken": 1,
+      "AccessTokenAndRefreshToken": 2,
+      "Default": 0,
+      "RefreshToken": 3,
+      "RefreshTokenAndNetwork": 4,
+      "Skip": 5
+    },
+    "errorClassesExported": {
+      "AuthError": true,
+      "BrowserAuthError": true,
+      "ClientAuthError": true,
+      "InteractionRequiredAuthError": true,
+      "ServerError": true
+    },
+    "eventType": {
+      "ACQUIRE_TOKEN_FAILURE": "msal:acquireTokenFailure",
+      "ACQUIRE_TOKEN_NETWORK_START": "msal:acquireTokenFromNetworkStart",
+      "ACQUIRE_TOKEN_START": "msal:acquireTokenStart",
+      "ACQUIRE_TOKEN_SUCCESS": "msal:acquireTokenSuccess",
+      "ACTIVE_ACCOUNT_CHANGED": "msal:activeAccountChanged",
+      "BROKERED_REQUEST_FAILURE": "msal:brokeredRequestFailure",
+      "BROKERED_REQUEST_START": "msal:brokeredRequestStart",
+      "BROKERED_REQUEST_SUCCESS": "msal:brokeredRequestSuccess",
+      "BROKER_CONNECTION_ESTABLISHED": "msal:brokerConnectionEstablished",
+      "HANDLE_REDIRECT_END": "msal:handleRedirectEnd",
+      "HANDLE_REDIRECT_START": "msal:handleRedirectStart",
+      "INITIALIZE_END": "msal:initializeEnd",
+      "INITIALIZE_START": "msal:initializeStart",
+      "LOGIN_SUCCESS": "msal:loginSuccess",
+      "LOGOUT_END": "msal:logoutEnd",
+      "LOGOUT_FAILURE": "msal:logoutFailure",
+      "LOGOUT_START": "msal:logoutStart",
+      "LOGOUT_SUCCESS": "msal:logoutSuccess",
+      "POPUP_OPENED": "msal:popupOpened",
+      "RESTORE_FROM_BFCACHE": "msal:restoreFromBFCache"
+    },
+    "hasCreateNestablePCA": true,
+    "hasCreateStandardPCA": true,
+    "hasIsPlatformBrokerAvailable": true,
+    "interactionType": {
+      "None": "none",
+      "Popup": "popup",
+      "Redirect": "redirect",
+      "Silent": "silent"
+    },
+    "oidcDefaultScopes": [
+      "openid",
+      "profile",
+      "offline_access"
+    ],
+    "promptValue": {
+      "CONSENT": "consent",
+      "CREATE": "create",
+      "LOGIN": "login",
+      "NONE": "none",
+      "NO_SESSION": "no_session",
+      "SELECT_ACCOUNT": "select_account"
+    },
+    "protocolMode": {
+      "AAD": "AAD",
+      "EAR": "EAR",
+      "OIDC": "OIDC"
+    },
+    "version": "5.16.0"
+  }
+}

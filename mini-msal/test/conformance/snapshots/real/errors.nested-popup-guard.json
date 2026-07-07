@@ -1,0 +1,34 @@
+{
+  "popupCall": {
+    "ok": {
+      "accessToken": "mock-access-token-0",
+      "account": {
+        "homeAccountId": "oid-123.tenant-123",
+        "tenantId": "tenant-123",
+        "username": "ada@contoso.com"
+      },
+      "authority": "https://localhost:4599/tenant/",
+      "correlationIdPresent": true,
+      "expiresInFuture": true,
+      "expiresOnType": "Date",
+      "fromCache": false,
+      "fromPlatformBroker": false,
+      "idToken": "<jwt>",
+      "scopes": [
+        "User.Read",
+        "openid",
+        "profile"
+      ],
+      "state": "<dynamic>",
+      "tokenType": "Bearer"
+    }
+  },
+  "silentCall": {
+    "err": {
+      "errorCode": "no_account_error",
+      "message": "See https://aka.ms/msal.js.errors#no_account_error for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  }
+}

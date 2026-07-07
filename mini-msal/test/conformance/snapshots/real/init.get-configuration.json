@@ -1,0 +1,32 @@
+{
+  "config": {
+    "ok": {
+      "auth": {
+        "authority": "https://localhost:4599/tenant",
+        "clientId": "<guid>",
+        "cloudDiscoveryMetadata": "",
+        "navigateToLoginRequestUrl": null
+      },
+      "cache": {
+        "cacheLocation": "sessionStorage",
+        "storeAuthStateInCookie": null
+      },
+      "system": {
+        "allowPlatformBroker": false,
+        "iframeHashTimeout": null,
+        "loadFrameTimeout": null,
+        "nativeBrokerHandshakeTimeout": 2000,
+        "redirectNavigationTimeout": 30000,
+        "tokenRenewalOffsetSeconds": 300,
+        "windowHashTimeout": null
+      },
+      "topLevelKeys": [
+        "auth",
+        "cache",
+        "experimental",
+        "system",
+        "telemetry"
+      ]
+    }
+  }
+}

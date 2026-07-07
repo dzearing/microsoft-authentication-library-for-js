@@ -1,0 +1,14 @@
+{
+  "consent": {
+    "promptSent": "consent",
+    "user": "ada@contoso.com"
+  },
+  "login": {
+    "promptSent": "login",
+    "user": "ada@contoso.com"
+  },
+  "select_account": {
+    "promptSent": "select_account",
+    "user": "grace@contoso.com"
+  }
+}

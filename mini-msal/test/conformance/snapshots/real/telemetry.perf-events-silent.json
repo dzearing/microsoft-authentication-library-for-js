@@ -1,0 +1,20 @@
+{
+  "cacheHitPerf": [
+    {
+      "correlationId": "<dynamic>",
+      "errorCode": null,
+      "hasDuration": true,
+      "name": "acquireTokenSilent",
+      "success": true
+    }
+  ],
+  "refreshPerf": [
+    {
+      "correlationId": "<dynamic>",
+      "errorCode": null,
+      "hasDuration": true,
+      "name": "acquireTokenSilent",
+      "success": true
+    }
+  ]
+}

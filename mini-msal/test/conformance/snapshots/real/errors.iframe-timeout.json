@@ -1,0 +1,10 @@
+{
+  "result": {
+    "err": {
+      "errorCode": "timed_out",
+      "message": "See https://aka.ms/msal.js.errors#timed_out for details",
+      "name": "BrowserAuthError",
+      "subError": "redirect_bridge_timeout"
+    }
+  }
+}

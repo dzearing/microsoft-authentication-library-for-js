@@ -1,0 +1,53 @@
+{
+  "events": [
+    {
+      "error": null,
+      "eventType": "msal:initializeStart",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 0
+    },
+    {
+      "error": null,
+      "eventType": "msal:initializeEnd",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 1
+    },
+    {
+      "error": null,
+      "eventType": "msal:acquireTokenStart",
+      "interactionType": "popup",
+      "payloadAccount": null,
+      "payloadKeys": [
+        "correlationId",
+        "redirectUri",
+        "scopes"
+      ],
+      "seq": 2
+    },
+    {
+      "error": {
+        "errorCode": "popup_window_error",
+        "message": "See https://aka.ms/msal.js.errors#popup_window_error for details",
+        "name": "BrowserAuthError",
+        "subError": null
+      },
+      "eventType": "msal:acquireTokenFailure",
+      "interactionType": "popup",
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 3
+    }
+  ],
+  "result": {
+    "err": {
+      "errorCode": "popup_window_error",
+      "message": "See https://aka.ms/msal.js.errors#popup_window_error for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  }
+}

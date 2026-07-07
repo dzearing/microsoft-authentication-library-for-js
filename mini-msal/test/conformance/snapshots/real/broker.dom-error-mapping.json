@@ -1,0 +1,26 @@
+{
+  "ACCOUNT_UNAVAILABLE": {
+    "err": {
+      "errorCode": "native_account_unavailable",
+      "message": "See https://aka.ms/msal.js.errors#account_unavailable for details",
+      "name": "InteractionRequiredAuthError",
+      "subError": null
+    }
+  },
+  "NO_NETWORK": {
+    "err": {
+      "errorCode": "no_network_connectivity",
+      "message": "See https://aka.ms/msal.js.errors#no_network_connectivity for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  },
+  "USER_CANCEL": {
+    "err": {
+      "errorCode": "user_cancelled",
+      "message": "See https://aka.ms/msal.js.errors#user_cancelled for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  }
+}

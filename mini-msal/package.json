@@ -1,0 +1,31 @@
+{
+    "name": "mini-msal",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "workspaces": [
+        "packages/*"
+    ],
+    "scripts": {
+        "build": "node test/infra/sync-variants.mjs && rspack build -c test/infra/rspack.config.mjs && node test/infra/postbuild.mjs",
+        "measure": "node test/bundle-size/measure.mjs",
+        "analyze": "node test/bundle-size/analyze.mjs",
+        "e2e": "node test/e2e/e2e.mjs",
+        "conformance": "npm run conformance:real && npm run conformance:mini && node test/conformance/report.mjs",
+        "conformance:real": "node test/conformance/run.mjs --target=real",
+        "conformance:mini": "node test/conformance/run.mjs --target=mini",
+        "conformance:check": "node test/conformance/run.mjs --target=real --check"
+    },
+    "dependencies": {
+        "@azure/msal-browser": "^5.16.0",
+        "@azure/msal-react": "^5.5.1",
+        "playwright-core": "^1.61.1",
+        "react": "^19.2.1",
+        "react-dom": "^19.2.1"
+    },
+    "devDependencies": {
+        "@rspack/cli": "^1.7.0",
+        "@rspack/core": "^1.7.0",
+        "source-map": "^0.7.4"
+    }
+}

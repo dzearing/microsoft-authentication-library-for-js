@@ -1,0 +1,17 @@
+{
+    "name": "@mini-msal/react",
+    "version": "0.0.0",
+    "private": true,
+    "description": "React bindings for @mini-msal/browser, mirroring the @azure/msal-react surface (prototype)",
+    "type": "module",
+    "sideEffects": false,
+    "exports": {
+        ".": "./src/index.tsx"
+    },
+    "dependencies": {
+        "@mini-msal/browser": "*"
+    },
+    "peerDependencies": {
+        "react": ">=18"
+    }
+}

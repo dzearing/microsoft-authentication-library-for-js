@@ -1,0 +1,6 @@
+{
+  "authorizeParamMatches": true,
+  "perfEventWithCid": true,
+  "resultMatches": true,
+  "tokenBodyClientRequestId": null
+}

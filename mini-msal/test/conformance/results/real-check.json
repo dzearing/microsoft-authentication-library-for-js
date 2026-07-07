@@ -1,0 +1,3906 @@
+[
+  {
+    "id": "core.login-redirect-roundtrip",
+    "area": "core",
+    "status": "pass",
+    "observed": {
+      "accounts": {
+        "ok": [
+          "ada@contoso.com"
+        ]
+      },
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:handleRedirectStart",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "redirect",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "cloudGraphHostName",
+            "code",
+            "correlationId",
+            "expiresOn",
+            "extExpiresOn",
+            "familyId",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:loginSuccess",
+          "interactionType": "redirect",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
+            "environment",
+            "homeAccountId",
+            "idToken",
+            "idTokenClaims",
+            "kmsi",
+            "localAccountId",
+            "loginHint",
+            "name",
+            "nativeAccountId",
+            "tenantId",
+            "tenantProfiles",
+            "upn",
+            "username"
+          ],
+          "seq": 4
+        },
+        {
+          "error": null,
+          "eventType": "msal:handleRedirectEnd",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 5
+        }
+      ],
+      "hashAfterProcessing": "",
+      "idp": [
+        {
+          "endpoint": "discovery",
+          "headers": {
+            "origin": "http://localhost:4173"
+          }
+        },
+        {
+          "endpoint": "authorize",
+          "headers": {},
+          "query": {
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "clidata": "1",
+            "client-request-id": "<dynamic>",
+            "client_id": "<guid>",
+            "client_info": "<dynamic>",
+            "code_challenge": "<dynamic>",
+            "code_challenge_method": "S256",
+            "nonce": "<dynamic>",
+            "redirect_uri": "http://localhost:4173/conformance-app/",
+            "response_mode": "fragment",
+            "response_type": "code",
+            "scope": "User.Read openid profile offline_access",
+            "state": "<dynamic>",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0"
+          }
+        },
+        {
+          "endpoint": "discovery",
+          "headers": {
+            "origin": "http://localhost:4173"
+          }
+        },
+        {
+          "body": {
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "client_id": "<guid>",
+            "client_info": "<dynamic>",
+            "code": "mock-code-0",
+            "code_verifier": "<dynamic>",
+            "grant_type": "authorization_code",
+            "redirect_uri": "http://localhost:4173/conformance-app/",
+            "scope": "User.Read openid profile offline_access",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0",
+            "x-client-current-telemetry": "",
+            "x-client-last-telemetry": "",
+            "x-ms-lib-capability": "retry-after, h429"
+          },
+          "endpoint": "token",
+          "headers": {
+            "content-type": "application/x-www-form-urlencoded;charset=utf-8",
+            "origin": "http://localhost:4173"
+          },
+          "query": {
+            "client-request-id": "<dynamic>"
+          }
+        }
+      ],
+      "pkceValid": true,
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      },
+      "secondHandleRedirectCall": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "core.handle-redirect-clean-load",
+    "area": "core",
+    "status": "pass",
+    "observed": {
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        }
+      ],
+      "result": {
+        "ok": null
+      }
+    }
+  },
+  {
+    "id": "core.login-popup-roundtrip",
+    "area": "core",
+    "status": "pass",
+    "observed": {
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:popupOpened",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "popupWindow"
+          ],
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "cloudGraphHostName",
+            "code",
+            "correlationId",
+            "expiresOn",
+            "extExpiresOn",
+            "familyId",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 4
+        },
+        {
+          "error": null,
+          "eventType": "msal:loginSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
+            "environment",
+            "homeAccountId",
+            "idToken",
+            "idTokenClaims",
+            "kmsi",
+            "localAccountId",
+            "loginHint",
+            "name",
+            "nativeAccountId",
+            "tenantId",
+            "tenantProfiles",
+            "upn",
+            "username"
+          ],
+          "seq": 5
+        }
+      ],
+      "idp": [
+        {
+          "endpoint": "discovery",
+          "headers": {
+            "origin": "http://localhost:4173"
+          }
+        },
+        {
+          "endpoint": "authorize",
+          "headers": {},
+          "query": {
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "clidata": "1",
+            "client-request-id": "<dynamic>",
+            "client_id": "<guid>",
+            "client_info": "<dynamic>",
+            "code_challenge": "<dynamic>",
+            "code_challenge_method": "S256",
+            "nonce": "<dynamic>",
+            "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
+            "response_mode": "fragment",
+            "response_type": "code",
+            "scope": "User.Read openid profile offline_access",
+            "state": "<dynamic>",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0"
+          }
+        },
+        {
+          "body": {
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "client_id": "<guid>",
+            "client_info": "<dynamic>",
+            "code": "mock-code-0",
+            "code_verifier": "<dynamic>",
+            "grant_type": "authorization_code",
+            "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
+            "scope": "User.Read openid profile offline_access",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0",
+            "x-client-current-telemetry": "",
+            "x-client-last-telemetry": "",
+            "x-ms-lib-capability": "retry-after, h429"
+          },
+          "endpoint": "token",
+          "headers": {
+            "content-type": "application/x-www-form-urlencoded;charset=utf-8",
+            "origin": "http://localhost:4173"
+          },
+          "query": {
+            "client-request-id": "<dynamic>"
+          }
+        }
+      ],
+      "pkceValid": true,
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "core.acquire-token-popup",
+    "area": "core",
+    "status": "pass",
+    "observed": {
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:popupOpened",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "popupWindow"
+          ],
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "cloudGraphHostName",
+            "code",
+            "correlationId",
+            "expiresOn",
+            "extExpiresOn",
+            "familyId",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 4
+        },
+        {
+          "error": null,
+          "eventType": "msal:loginSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
+            "environment",
+            "homeAccountId",
+            "idToken",
+            "idTokenClaims",
+            "kmsi",
+            "localAccountId",
+            "loginHint",
+            "name",
+            "nativeAccountId",
+            "tenantId",
+            "tenantProfiles",
+            "upn",
+            "username"
+          ],
+          "seq": 5
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 6
+        },
+        {
+          "error": null,
+          "eventType": "msal:popupOpened",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "popupWindow"
+          ],
+          "seq": 7
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "cloudGraphHostName",
+            "code",
+            "correlationId",
+            "expiresOn",
+            "extExpiresOn",
+            "familyId",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 8
+        }
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "core.sso-silent-cold",
+    "area": "core",
+    "status": "pass",
+    "observed": {
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "silent",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "loginHint",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 2
+        },
+        {
+          "error": {
+            "errorCode": "login_required",
+            "message": "no session",
+            "name": "InteractionRequiredAuthError",
+            "subError": null
+          },
+          "eventType": "msal:acquireTokenFailure",
+          "interactionType": "silent",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 3
+        }
+      ],
+      "idp": [
+        {
+          "endpoint": "discovery",
+          "headers": {
+            "origin": "http://localhost:4173"
+          }
+        },
+        {
+          "endpoint": "authorize",
+          "headers": {},
+          "query": {
+            "X-AnchorMailbox": "UPN:ada@contoso.com",
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "clidata": "1",
+            "client-request-id": "<dynamic>",
+            "client_id": "<guid>",
+            "client_info": "<dynamic>",
+            "code_challenge": "<dynamic>",
+            "code_challenge_method": "S256",
+            "login_hint": "ada@contoso.com",
+            "nonce": "<dynamic>",
+            "prompt": "none",
+            "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
+            "response_mode": "fragment",
+            "response_type": "code",
+            "scope": "User.Read openid profile offline_access",
+            "state": "<dynamic>",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0"
+          }
+        }
+      ],
+      "result": {
+        "err": {
+          "errorCode": "login_required",
+          "message": "no session",
+          "name": "InteractionRequiredAuthError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "core.sso-silent-warm",
+    "area": "core",
+    "status": "pass",
+    "observed": {
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "silent",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "loginHint",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "silent",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "cloudGraphHostName",
+            "code",
+            "correlationId",
+            "expiresOn",
+            "extExpiresOn",
+            "familyId",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:loginSuccess",
+          "interactionType": "silent",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
+            "environment",
+            "homeAccountId",
+            "idToken",
+            "idTokenClaims",
+            "kmsi",
+            "localAccountId",
+            "loginHint",
+            "name",
+            "nativeAccountId",
+            "tenantId",
+            "tenantProfiles",
+            "upn",
+            "username"
+          ],
+          "seq": 4
+        }
+      ],
+      "idp": [
+        {
+          "endpoint": "discovery",
+          "headers": {
+            "origin": "http://localhost:4173"
+          }
+        },
+        {
+          "endpoint": "authorize",
+          "headers": {},
+          "query": {
+            "X-AnchorMailbox": "UPN:ada@contoso.com",
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "clidata": "1",
+            "client-request-id": "<dynamic>",
+            "client_id": "<guid>",
+            "client_info": "<dynamic>",
+            "code_challenge": "<dynamic>",
+            "code_challenge_method": "S256",
+            "login_hint": "ada@contoso.com",
+            "nonce": "<dynamic>",
+            "prompt": "none",
+            "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
+            "response_mode": "fragment",
+            "response_type": "code",
+            "scope": "User.Read openid profile offline_access",
+            "state": "<dynamic>",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0"
+          }
+        },
+        {
+          "body": {
+            "X-AnchorMailbox": "UPN:ada@contoso.com",
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "client_id": "<guid>",
+            "client_info": "<dynamic>",
+            "code": "mock-code-0",
+            "code_verifier": "<dynamic>",
+            "grant_type": "authorization_code",
+            "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
+            "scope": "User.Read openid profile offline_access",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0",
+            "x-client-current-telemetry": "",
+            "x-client-last-telemetry": "",
+            "x-ms-lib-capability": "retry-after, h429"
+          },
+          "endpoint": "token",
+          "headers": {
+            "content-type": "application/x-www-form-urlencoded;charset=utf-8",
+            "origin": "http://localhost:4173"
+          },
+          "query": {
+            "client-request-id": "<dynamic>"
+          }
+        }
+      ],
+      "pkceValid": true,
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "core.acquire-token-redirect",
+    "area": "core",
+    "status": "pass",
+    "observed": {
+      "hashAfterProcessing": "",
+      "idp": [
+        {
+          "endpoint": "authorize",
+          "headers": {},
+          "query": {
+            "X-AnchorMailbox": "Oid:oid-123@tenant-123",
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "clidata": "1",
+            "client-request-id": "<dynamic>",
+            "client_id": "<guid>",
+            "client_info": "<dynamic>",
+            "code_challenge": "<dynamic>",
+            "code_challenge_method": "S256",
+            "login_hint": "ada@contoso.com",
+            "nonce": "<dynamic>",
+            "redirect_uri": "http://localhost:4173/conformance-app/",
+            "response_mode": "fragment",
+            "response_type": "code",
+            "scope": "Mail.Read openid profile offline_access",
+            "state": "<dynamic>",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0"
+          }
+        },
+        {
+          "endpoint": "discovery",
+          "headers": {
+            "origin": "http://localhost:4173"
+          }
+        },
+        {
+          "body": {
+            "X-AnchorMailbox": "Oid:oid-123@tenant-123",
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "client_id": "<guid>",
+            "client_info": "<dynamic>",
+            "code": "mock-code-0",
+            "code_verifier": "<dynamic>",
+            "grant_type": "authorization_code",
+            "redirect_uri": "http://localhost:4173/conformance-app/",
+            "scope": "Mail.Read openid profile offline_access",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0",
+            "x-client-current-telemetry": "",
+            "x-client-last-telemetry": "",
+            "x-ms-lib-capability": "retry-after, h429"
+          },
+          "endpoint": "token",
+          "headers": {
+            "content-type": "application/x-www-form-urlencoded;charset=utf-8",
+            "origin": "http://localhost:4173"
+          },
+          "query": {
+            "client-request-id": "<dynamic>"
+          }
+        }
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "core.redirect-state-tampered",
+    "area": "core",
+    "status": "pass",
+    "observed": {
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:handleRedirectStart",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:handleRedirectEnd",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 3
+        }
+      ],
+      "hashAfter": "#code=mock-code-0&state=<forged>",
+      "result": {
+        "ok": null
+      }
+    }
+  },
+  {
+    "id": "core.storage-shape-after-login",
+    "area": "core",
+    "status": "pass",
+    "observed": {
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {
+          "msal.3.account.keys": [
+            "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
+          ],
+          "msal.3.token.keys.<guid>": {
+            "accessToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|"
+            ],
+            "idToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||"
+            ],
+            "refreshToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||"
+            ]
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|": {
+            "cachedAt": "<dynamic>",
+            "clientId": "<guid>",
+            "credentialType": "AccessToken",
+            "environment": "localhost:4599",
+            "expiresOn": "<dynamic>",
+            "extendedExpiresOn": "<dynamic>",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "realm": "tenant-123",
+            "secret": "mock-access-token-0",
+            "target": "openid profile User.Read",
+            "tokenType": "Bearer"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||": {
+            "clientId": "<guid>",
+            "credentialType": "IdToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "realm": "tenant-123",
+            "secret": "<jwt>"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||": {
+            "clientId": "<guid>",
+            "credentialType": "RefreshToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "secret": "mock-rt-0"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|tenant-123": {
+            "authorityType": "MSSTS",
+            "cachedByApiId": 862,
+            "clientInfo": "eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "realm": "tenant-123",
+            "tenantProfiles": [
+              {
+                "isHomeTenant": true,
+                "localAccountId": "oid-123",
+                "name": "Ada Lovelace",
+                "tenantId": "tenant-123",
+                "username": "ada@contoso.com"
+              }
+            ],
+            "username": "ada@contoso.com"
+          },
+          "msal.version": "5.16.0"
+        }
+      }
+    }
+  },
+  {
+    "id": "silent.cache-hit-fresh",
+    "area": "silent",
+    "status": "pass",
+    "observed": {
+      "expiresRoughlyOneHour": {
+        "ok": true
+      },
+      "networkCalls": [
+        "discovery"
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": true,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "silent.expiry-window-refresh",
+    "area": "silent",
+    "status": "pass",
+    "observed": {
+      "networkCalls": [
+        "discovery",
+        "token:refresh_token"
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "silent.refresh-token-grant",
+    "area": "silent",
+    "status": "pass",
+    "observed": {
+      "networkCalls": [
+        "discovery",
+        "token:refresh_token"
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      },
+      "tokenRequest": [
+        {
+          "body": {
+            "X-AnchorMailbox": "Oid:oid-123@tenant-123",
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "client_id": "<guid>",
+            "client_info": "<dynamic>",
+            "grant_type": "refresh_token",
+            "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
+            "refresh_token": "mock-rt-0",
+            "scope": "User.Read openid profile offline_access",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0",
+            "x-client-current-telemetry": "",
+            "x-client-last-telemetry": "",
+            "x-ms-lib-capability": "retry-after, h429"
+          },
+          "endpoint": "token",
+          "headers": {
+            "content-type": "application/x-www-form-urlencoded;charset=utf-8",
+            "origin": "http://localhost:4173"
+          },
+          "query": {
+            "client-request-id": "<dynamic>"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "silent.iframe-fallback-no-rt",
+    "area": "silent",
+    "status": "pass",
+    "observed": {
+      "authorizeParams": [
+        {
+          "endpoint": "authorize",
+          "headers": {},
+          "query": {
+            "X-AnchorMailbox": "Oid:oid-123@tenant-123",
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "clidata": "1",
+            "client-request-id": "<dynamic>",
+            "client_id": "<guid>",
+            "client_info": "<dynamic>",
+            "code_challenge": "<dynamic>",
+            "code_challenge_method": "S256",
+            "login_hint": "ada@contoso.com",
+            "nonce": "<dynamic>",
+            "prompt": "none",
+            "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
+            "response_mode": "fragment",
+            "response_type": "code",
+            "scope": "User.Read openid profile offline_access",
+            "state": "<dynamic>",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0"
+          }
+        }
+      ],
+      "networkCalls": [
+        "discovery",
+        "authorize:prompt=none",
+        "token:authorization_code"
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "silent.policy-access-token-valid",
+    "area": "silent",
+    "status": "pass",
+    "observed": {
+      "networkCalls": [
+        "discovery"
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": true,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "silent.policy-access-token-expired",
+    "area": "silent",
+    "status": "pass",
+    "observed": {
+      "networkCalls": [
+        "discovery"
+      ],
+      "result": {
+        "err": {
+          "errorCode": "token_refresh_required",
+          "message": "See https://aka.ms/msal.js.errors#token_refresh_required for details",
+          "name": "ClientAuthError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "silent.policy-at-and-rt",
+    "area": "silent",
+    "status": "pass",
+    "observed": {
+      "networkCalls": [
+        "discovery",
+        "token:refresh_token"
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "silent.policy-refresh-token",
+    "area": "silent",
+    "status": "pass",
+    "observed": {
+      "networkCalls": [
+        "discovery",
+        "token:refresh_token"
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "silent.policy-rt-and-network",
+    "area": "silent",
+    "status": "pass",
+    "observed": {
+      "networkCalls": [
+        "discovery",
+        "token:refresh_token",
+        "authorize:prompt=none",
+        "token:authorization_code"
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "silent.policy-skip",
+    "area": "silent",
+    "status": "pass",
+    "observed": {
+      "networkCalls": [
+        "discovery",
+        "authorize:prompt=none",
+        "token:authorization_code"
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "silent.concurrent-dedupe",
+    "area": "silent",
+    "status": "pass",
+    "observed": {
+      "networkCalls": [
+        "discovery",
+        "token:refresh_token"
+      ],
+      "results": {
+        "ok": {
+          "aFromCache": false,
+          "bFromCache": false,
+          "sameToken": true
+        }
+      },
+      "tokenEndpointHits": 1
+    }
+  },
+  {
+    "id": "silent.force-refresh",
+    "area": "silent",
+    "status": "pass",
+    "observed": {
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:popupOpened",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "popupWindow"
+          ],
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "cloudGraphHostName",
+            "code",
+            "correlationId",
+            "expiresOn",
+            "extExpiresOn",
+            "familyId",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 4
+        },
+        {
+          "error": null,
+          "eventType": "msal:loginSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
+            "environment",
+            "homeAccountId",
+            "idToken",
+            "idTokenClaims",
+            "kmsi",
+            "localAccountId",
+            "loginHint",
+            "name",
+            "nativeAccountId",
+            "tenantId",
+            "tenantProfiles",
+            "upn",
+            "username"
+          ],
+          "seq": 5
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 6
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 7
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "silent",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "account",
+            "correlationId",
+            "forceRefresh",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 8
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenFromNetworkStart",
+          "interactionType": "silent",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "account",
+            "authenticationScheme",
+            "authority",
+            "correlationId",
+            "forceRefresh",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 9
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "silent",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "cloudGraphHostName",
+            "code",
+            "correlationId",
+            "expiresOn",
+            "extExpiresOn",
+            "familyId",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 10
+        }
+      ],
+      "networkCalls": [
+        "discovery",
+        "token:refresh_token"
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "accounts.multi-account",
+    "area": "accounts",
+    "status": "pass",
+    "observed": {
+      "accounts": {
+        "ok": [
+          {
+            "environment": "localhost:4599",
+            "hasIdTokenClaims": true,
+            "homeAccountId": "oid-123.tenant-123",
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          {
+            "environment": "localhost:4599",
+            "hasIdTokenClaims": true,
+            "homeAccountId": "oid-456.tenant-123",
+            "localAccountId": "oid-456",
+            "name": "Grace Hopper",
+            "tenantId": "tenant-123",
+            "username": "grace@contoso.com"
+          }
+        ]
+      },
+      "activeAfterSecondLogin": {
+        "ok": null
+      },
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:popupOpened",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "popupWindow"
+          ],
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "cloudGraphHostName",
+            "code",
+            "correlationId",
+            "expiresOn",
+            "extExpiresOn",
+            "familyId",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 4
+        },
+        {
+          "error": null,
+          "eventType": "msal:loginSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
+            "environment",
+            "homeAccountId",
+            "idToken",
+            "idTokenClaims",
+            "kmsi",
+            "localAccountId",
+            "loginHint",
+            "name",
+            "nativeAccountId",
+            "tenantId",
+            "tenantProfiles",
+            "upn",
+            "username"
+          ],
+          "seq": 5
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 6
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 7
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "prompt",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 8
+        },
+        {
+          "error": null,
+          "eventType": "msal:popupOpened",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "popupWindow"
+          ],
+          "seq": 9
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "grace@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "cloudGraphHostName",
+            "code",
+            "correlationId",
+            "expiresOn",
+            "extExpiresOn",
+            "familyId",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 10
+        },
+        {
+          "error": null,
+          "eventType": "msal:loginSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "grace@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
+            "environment",
+            "homeAccountId",
+            "idToken",
+            "idTokenClaims",
+            "kmsi",
+            "localAccountId",
+            "loginHint",
+            "name",
+            "nativeAccountId",
+            "tenantId",
+            "tenantProfiles",
+            "upn",
+            "username"
+          ],
+          "seq": 11
+        }
+      ],
+      "logins": {
+        "first": {
+          "ok": {
+            "accessToken": "mock-access-token-0",
+            "account": {
+              "homeAccountId": "oid-123.tenant-123",
+              "tenantId": "tenant-123",
+              "username": "ada@contoso.com"
+            },
+            "authority": "https://localhost:4599/tenant/",
+            "correlationIdPresent": true,
+            "expiresInFuture": true,
+            "expiresOnType": "Date",
+            "fromCache": false,
+            "fromPlatformBroker": false,
+            "idToken": "<jwt>",
+            "scopes": [
+              "User.Read",
+              "openid",
+              "profile"
+            ],
+            "state": "<dynamic>",
+            "tokenType": "Bearer"
+          }
+        },
+        "second": {
+          "ok": {
+            "accessToken": "mock-access-token-1",
+            "account": {
+              "homeAccountId": "oid-456.tenant-123",
+              "tenantId": "tenant-123",
+              "username": "grace@contoso.com"
+            },
+            "authority": "https://localhost:4599/tenant/",
+            "correlationIdPresent": true,
+            "expiresInFuture": true,
+            "expiresOnType": "Date",
+            "fromCache": false,
+            "fromPlatformBroker": false,
+            "idToken": "<jwt>",
+            "scopes": [
+              "User.Read",
+              "openid",
+              "profile"
+            ],
+            "state": "<dynamic>",
+            "tokenType": "Bearer"
+          }
+        }
+      }
+    }
+  },
+  {
+    "id": "accounts.get-account-filters",
+    "area": "accounts",
+    "status": "pass",
+    "observed": {
+      "filters": {
+        "ok": {
+          "allWithFilter": [
+            "grace@contoso.com"
+          ],
+          "byHomeAccountId": "ada@contoso.com",
+          "byLocalAccountId": "ada@contoso.com",
+          "byUnknown": null,
+          "byUsername": "ada@contoso.com",
+          "byUsernameUpper": "ada@contoso.com",
+          "emptyFilter": null,
+          "legacyByHomeId": null,
+          "legacyByLocalId": null,
+          "legacyByUsername": null
+        }
+      }
+    }
+  },
+  {
+    "id": "accounts.active-account-persistence",
+    "area": "accounts",
+    "status": "pass",
+    "observed": {
+      "activeFilterEntry": {
+        "key": "msal.<guid>.active-account-filters",
+        "value": {
+          "homeAccountId": "oid-123.tenant-123",
+          "localAccountId": "oid-123",
+          "tenantId": "tenant-123"
+        }
+      },
+      "afterReload": {
+        "ok": {
+          "accounts": [
+            "ada@contoso.com",
+            "grace@contoso.com"
+          ],
+          "active": "ada@contoso.com"
+        }
+      },
+      "clearActive": {
+        "ok": null
+      },
+      "eventsAfterReload": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        }
+      ]
+    }
+  },
+  {
+    "id": "accounts.logout-popup-per-account",
+    "area": "accounts",
+    "status": "pass",
+    "observed": {
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:logoutStart",
+          "interactionType": "popup",
+          "payloadAccount": "grace@contoso.com",
+          "payloadKeys": [
+            "account",
+            "correlationId",
+            "postLogoutRedirectUri"
+          ],
+          "seq": 12
+        },
+        {
+          "error": null,
+          "eventType": "msal:logoutSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "grace@contoso.com",
+          "payloadKeys": [
+            "account",
+            "correlationId",
+            "postLogoutRedirectUri",
+            "state"
+          ],
+          "seq": 13
+        },
+        {
+          "error": null,
+          "eventType": "msal:logoutEnd",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 15
+        }
+      ],
+      "logout": {
+        "ok": {
+          "active": null,
+          "remaining": [
+            "ada@contoso.com"
+          ]
+        }
+      },
+      "logoutRequest": [
+        {
+          "endpoint": "logout",
+          "headers": {},
+          "query": {
+            "client-request-id": "<dynamic>",
+            "post_logout_redirect_uri": "http://localhost:4173/conformance-app/popup.html",
+            "state": "<dynamic>"
+          }
+        }
+      ],
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {
+          "msal.3.account.keys": [
+            "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
+          ],
+          "msal.3.token.keys.<guid>": {
+            "accessToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|"
+            ],
+            "idToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||"
+            ],
+            "refreshToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||"
+            ]
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|": {
+            "cachedAt": "<dynamic>",
+            "clientId": "<guid>",
+            "credentialType": "AccessToken",
+            "environment": "localhost:4599",
+            "expiresOn": "<dynamic>",
+            "extendedExpiresOn": "<dynamic>",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "realm": "tenant-123",
+            "secret": "mock-access-token-0",
+            "target": "openid profile User.Read",
+            "tokenType": "Bearer"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||": {
+            "clientId": "<guid>",
+            "credentialType": "IdToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "realm": "tenant-123",
+            "secret": "<jwt>"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||": {
+            "clientId": "<guid>",
+            "credentialType": "RefreshToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "secret": "mock-rt-0"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|tenant-123": {
+            "authorityType": "MSSTS",
+            "cachedByApiId": 862,
+            "clientInfo": "eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "realm": "tenant-123",
+            "tenantProfiles": [
+              {
+                "isHomeTenant": true,
+                "localAccountId": "oid-123",
+                "name": "Ada Lovelace",
+                "tenantId": "tenant-123",
+                "username": "ada@contoso.com"
+              }
+            ],
+            "username": "ada@contoso.com"
+          },
+          "msal.version": "5.16.0"
+        }
+      }
+    }
+  },
+  {
+    "id": "accounts.logout-redirect",
+    "area": "accounts",
+    "status": "pass",
+    "observed": {
+      "after": {
+        "ok": {
+          "accounts": 0,
+          "active": null
+        }
+      },
+      "logoutRequest": [
+        {
+          "endpoint": "logout",
+          "headers": {},
+          "query": {
+            "client-request-id": "<dynamic>",
+            "post_logout_redirect_uri": "http://localhost:4173/conformance-app/",
+            "state": "<dynamic>"
+          }
+        }
+      ],
+      "navs": [
+        {
+          "hashKeys": [],
+          "page": "http://localhost:4173/conformance-app/",
+          "queryKeys": []
+        },
+        {
+          "hashKeys": [],
+          "page": "http://localhost:4173/conformance-app/",
+          "queryKeys": [
+            "state"
+          ]
+        }
+      ],
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {
+          "msal.interaction.status": {
+            "clientId": "<guid>",
+            "type": "signout"
+          },
+          "msal.version": "5.16.0"
+        }
+      }
+    }
+  },
+  {
+    "id": "accounts.local-storage",
+    "area": "accounts",
+    "status": "pass",
+    "observed": {
+      "login": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      },
+      "silentAfter": {
+        "ok": {
+          "fromCache": true,
+          "token": "mock-access-token-0"
+        }
+      },
+      "storage": {
+        "localStorage": {
+          "msal.3.account.keys": [
+            "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
+          ],
+          "msal.3.token.keys.<guid>": {
+            "accessToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|"
+            ],
+            "idToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||"
+            ],
+            "refreshToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||"
+            ]
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|": {
+            "data": "<dynamic>",
+            "id": "<guid>",
+            "lastUpdatedAt": "<epoch-ms>",
+            "nonce": "<dynamic>"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||": {
+            "data": "<dynamic>",
+            "id": "<guid>",
+            "lastUpdatedAt": "<epoch-ms>",
+            "nonce": "<dynamic>"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||": {
+            "data": "<dynamic>",
+            "id": "<guid>",
+            "lastUpdatedAt": "<epoch-ms>",
+            "nonce": "<dynamic>"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|tenant-123": {
+            "data": "<dynamic>",
+            "id": "<guid>",
+            "lastUpdatedAt": "<epoch-ms>",
+            "nonce": "<dynamic>"
+          },
+          "msal.version": "5.16.0"
+        },
+        "sessionStorage": {}
+      }
+    }
+  },
+  {
+    "id": "accounts.cross-tab-events",
+    "area": "accounts",
+    "status": "pass",
+    "observed": {
+      "tab2After": {
+        "accounts": [],
+        "events": [
+          {
+            "error": null,
+            "eventType": "msal:initializeStart",
+            "interactionType": null,
+            "payloadAccount": null,
+            "payloadKeys": null,
+            "seq": 0
+          },
+          {
+            "error": null,
+            "eventType": "msal:initializeEnd",
+            "interactionType": null,
+            "payloadAccount": null,
+            "payloadKeys": null,
+            "seq": 1
+          },
+          {
+            "error": null,
+            "eventType": "msal:logoutSuccess",
+            "interactionType": "popup",
+            "payloadAccount": "ada@contoso.com",
+            "payloadKeys": [
+              "account",
+              "correlationId",
+              "postLogoutRedirectUri",
+              "state"
+            ],
+            "seq": 2
+          }
+        ]
+      },
+      "tab2Initial": [
+        "ada@contoso.com"
+      ]
+    }
+  },
+  {
+    "id": "errors.cancelled-login-redirect",
+    "area": "errors",
+    "status": "pass",
+    "observed": {
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:handleRedirectStart",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 2
+        },
+        {
+          "error": {
+            "errorCode": "access_denied",
+            "message": "AADSTS65004: User declined to consent.",
+            "name": "ServerError",
+            "subError": null
+          },
+          "eventType": "msal:acquireTokenFailure",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:handleRedirectEnd",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 4
+        }
+      ],
+      "hashAfter": "",
+      "result": {
+        "err": {
+          "errorCode": "access_denied",
+          "message": "AADSTS65004: User declined to consent.",
+          "name": "ServerError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "errors.popup-blocked",
+    "area": "errors",
+    "status": "pass",
+    "observed": {
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 2
+        },
+        {
+          "error": {
+            "errorCode": "popup_window_error",
+            "message": "See https://aka.ms/msal.js.errors#popup_window_error for details",
+            "name": "BrowserAuthError",
+            "subError": null
+          },
+          "eventType": "msal:acquireTokenFailure",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 3
+        }
+      ],
+      "result": {
+        "err": {
+          "errorCode": "popup_window_error",
+          "message": "See https://aka.ms/msal.js.errors#popup_window_error for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "errors.popup-closed-by-user",
+    "area": "errors",
+    "status": "pass",
+    "observed": {
+      "popupWasOpenWhenClosed": true,
+      "result": {
+        "err": {
+          "errorCode": "timed_out",
+          "message": "See https://aka.ms/msal.js.errors#timed_out for details",
+          "name": "BrowserAuthError",
+          "subError": "redirect_bridge_timeout"
+        }
+      }
+    }
+  },
+  {
+    "id": "errors.iframe-timeout",
+    "area": "errors",
+    "status": "pass",
+    "observed": {
+      "result": {
+        "err": {
+          "errorCode": "timed_out",
+          "message": "See https://aka.ms/msal.js.errors#timed_out for details",
+          "name": "BrowserAuthError",
+          "subError": "redirect_bridge_timeout"
+        }
+      }
+    }
+  },
+  {
+    "id": "errors.interaction-required-variants",
+    "area": "errors",
+    "status": "pass",
+    "observed": {
+      "consent_required": {
+        "err": {
+          "errorCode": "consent_required",
+          "message": "AADSTS50076: consent_required description",
+          "name": "InteractionRequiredAuthError",
+          "subError": null
+        }
+      },
+      "interaction_required": {
+        "err": {
+          "errorCode": "interaction_required",
+          "message": "AADSTS50076: interaction_required description",
+          "name": "InteractionRequiredAuthError",
+          "subError": null
+        }
+      },
+      "login_required": {
+        "err": {
+          "errorCode": "login_required",
+          "message": "AADSTS50076: login_required description",
+          "name": "InteractionRequiredAuthError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "errors.uninitialized-client",
+    "area": "errors",
+    "status": "pass",
+    "observed": {
+      "acquireTokenSilent": {
+        "err": {
+          "errorCode": "uninitialized_public_client_application",
+          "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      },
+      "getAllAccounts": {
+        "ok": "resolved:0"
+      },
+      "handleRedirectPromise": {
+        "err": {
+          "errorCode": "uninitialized_public_client_application",
+          "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      },
+      "loginPopup": {
+        "err": {
+          "errorCode": "uninitialized_public_client_application",
+          "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      },
+      "logoutRedirect": {
+        "err": {
+          "errorCode": "uninitialized_public_client_application",
+          "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "errors.redirect-in-iframe",
+    "area": "errors",
+    "status": "pass",
+    "observed": {
+      "result": {
+        "err": {
+          "errorCode": "redirect_in_iframe",
+          "message": "See https://aka.ms/msal.js.errors#redirect_in_iframe for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "errors.nested-popup-guard",
+    "area": "errors",
+    "status": "pass",
+    "observed": {
+      "popupCall": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      },
+      "silentCall": {
+        "err": {
+          "errorCode": "no_account_error",
+          "message": "See https://aka.ms/msal.js.errors#no_account_error for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "errors.interaction-in-progress",
+    "area": "errors",
+    "status": "pass",
+    "observed": {
+      "firstEventuallyResolved": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "username": "ada@contoso.com"
+        }
+      },
+      "second": {
+        "err": {
+          "errorCode": "interaction_in_progress",
+          "message": "See https://aka.ms/msal.js.errors#interaction_in_progress for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "errors.silent-unknown-account",
+    "area": "errors",
+    "status": "pass",
+    "observed": {
+      "noAccountAtAll": {
+        "err": {
+          "errorCode": "no_account_error",
+          "message": "See https://aka.ms/msal.js.errors#no_account_error for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      },
+      "unknownAccount": {
+        "err": {
+          "errorCode": "authority_mismatch",
+          "message": "See https://aka.ms/msal.js.errors#authority_mismatch for details",
+          "name": "ClientConfigurationError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "params.prompt-passthrough",
+    "area": "params",
+    "status": "pass",
+    "observed": {
+      "consent": {
+        "promptSent": "consent",
+        "user": "ada@contoso.com"
+      },
+      "login": {
+        "promptSent": "login",
+        "user": "ada@contoso.com"
+      },
+      "select_account": {
+        "promptSent": "select_account",
+        "user": "grace@contoso.com"
+      }
+    }
+  },
+  {
+    "id": "params.login-hint-domain-hint",
+    "area": "params",
+    "status": "pass",
+    "observed": {
+      "anchorMailbox": "UPN:grace@contoso.com",
+      "domain_hint": "contoso.com",
+      "login_hint": "grace@contoso.com"
+    }
+  },
+  {
+    "id": "params.sid-passthrough",
+    "area": "params",
+    "status": "pass",
+    "observed": {
+      "login_hint": null,
+      "prompt": "none",
+      "sid": "session-id-abc123"
+    }
+  },
+  {
+    "id": "params.extra-query-parameters",
+    "area": "params",
+    "status": "pass",
+    "observed": {
+      "authorizeExtras": {
+        "dc": "ESTS-PUB",
+        "slice": "testslice"
+      },
+      "tokenBodyHasExtras": {
+        "slice": null,
+        "tokenslice": null
+      },
+      "tokenQuery": {
+        "client-request-id": "<dynamic>",
+        "dc": "ESTS-PUB",
+        "slice": "testslice"
+      }
+    }
+  },
+  {
+    "id": "params.claims-and-cae",
+    "area": "params",
+    "status": "pass",
+    "observed": {
+      "authorizeClaims": {
+        "access_token": {
+          "nbf": {
+            "essential": true,
+            "value": "<epoch-s>"
+          },
+          "xms_cc": {
+            "values": [
+              "cp1"
+            ]
+          }
+        },
+        "id_token": {
+          "login_hint": {
+            "essential": false
+          },
+          "signin_state": {
+            "essential": false
+          }
+        }
+      },
+      "tokenClaims": {
+        "access_token": {
+          "nbf": {
+            "essential": true,
+            "value": "<epoch-s>"
+          },
+          "xms_cc": {
+            "values": [
+              "cp1"
+            ]
+          }
+        },
+        "id_token": {
+          "login_hint": {
+            "essential": false
+          },
+          "signin_state": {
+            "essential": false
+          }
+        }
+      }
+    }
+  },
+  {
+    "id": "params.custom-state",
+    "area": "params",
+    "status": "pass",
+    "observed": {
+      "customStateEcho": "app-state-123",
+      "wireStateContainsCustom": true,
+      "wireStateEqualsCustom": false
+    }
+  },
+  {
+    "id": "params.per-request-redirect-uri",
+    "area": "params",
+    "status": "pass",
+    "observed": {
+      "authorizeRedirectUri": "http://localhost:4173/conformance-app/popup2.html",
+      "tokenRedirectUri": "http://localhost:4173/conformance-app/popup2.html"
+    }
+  },
+  {
+    "id": "params.authority-override-per-request",
+    "area": "params",
+    "status": "pass",
+    "observed": {
+      "discoveryPaths": [],
+      "login": {
+        "ok": true
+      },
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/other-tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "params.scopes-normalization",
+    "area": "params",
+    "status": "pass",
+    "observed": {
+      "dupes": {
+        "result": {
+          "ok": {
+            "accessToken": "mock-access-token-0",
+            "account": {
+              "homeAccountId": "oid-123.tenant-123",
+              "tenantId": "tenant-123",
+              "username": "ada@contoso.com"
+            },
+            "authority": "https://localhost:4599/tenant/",
+            "correlationIdPresent": true,
+            "expiresInFuture": true,
+            "expiresOnType": "Date",
+            "fromCache": false,
+            "fromPlatformBroker": false,
+            "idToken": "<jwt>",
+            "scopes": [
+              "User.Read",
+              "openid",
+              "profile"
+            ],
+            "state": "<dynamic>",
+            "tokenType": "Bearer"
+          }
+        },
+        "scopeParam": "User.Read USER.READ openid profile offline_access"
+      },
+      "empty": {
+        "result": {
+          "ok": {
+            "accessToken": "mock-access-token-0",
+            "account": {
+              "homeAccountId": "oid-123.tenant-123",
+              "tenantId": "tenant-123",
+              "username": "ada@contoso.com"
+            },
+            "authority": "https://localhost:4599/tenant/",
+            "correlationIdPresent": true,
+            "expiresInFuture": true,
+            "expiresOnType": "Date",
+            "fromCache": false,
+            "fromPlatformBroker": false,
+            "idToken": "<jwt>",
+            "scopes": [
+              "User.Read",
+              "openid",
+              "profile"
+            ],
+            "state": "<dynamic>",
+            "tokenType": "Bearer"
+          }
+        },
+        "scopeParam": "openid profile offline_access"
+      }
+    }
+  },
+  {
+    "id": "resilience.throttle-429-retry-after",
+    "area": "resilience",
+    "status": "pass",
+    "observed": {
+      "first": {
+        "err": {
+          "errorCode": "temporarily_throttled",
+          "message": "Error(s): Not Available - Timestamp: Not Available - Description: AADSTS90101: too many requests - Correlation ID: Not A",
+          "name": "ServerError",
+          "subError": null
+        }
+      },
+      "immediateRetry": {
+        "err": {
+          "errorCode": "",
+          "message": "AADSTS90101: too many requests",
+          "name": "ServerError",
+          "subError": null
+        }
+      },
+      "throttleEntriesInStorage": 1,
+      "tokenEndpointHits": 1
+    }
+  },
+  {
+    "id": "resilience.5xx-server-error",
+    "area": "resilience",
+    "status": "pass",
+    "observed": {
+      "result": {
+        "err": {
+          "errorCode": "service_unavailable",
+          "message": "Error(s): Not Available - Timestamp: Not Available - Description: injected 503 - Correlation ID: Not Available - Trace I",
+          "name": "ServerError",
+          "subError": null
+        }
+      },
+      "tokenEndpointHits": 1
+    }
+  },
+  {
+    "id": "resilience.network-drop",
+    "area": "resilience",
+    "status": "pass",
+    "observed": {
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      },
+      "tokenEndpointHits": 2
+    }
+  },
+  {
+    "id": "resilience.proactive-refresh",
+    "area": "resilience",
+    "status": "pass",
+    "observed": {
+      "backgroundTokenRequests": 0,
+      "login": {
+        "ok": true
+      },
+      "refreshOnStored": "present",
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": true,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "init.double-initialize",
+    "area": "init",
+    "status": "pass",
+    "observed": {
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        }
+      ],
+      "second": {
+        "ok": "resolved"
+      }
+    }
+  },
+  {
+    "id": "init.get-configuration",
+    "area": "init",
+    "status": "pass",
+    "observed": {
+      "config": {
+        "ok": {
+          "auth": {
+            "authority": "https://localhost:4599/tenant",
+            "clientId": "<guid>",
+            "cloudDiscoveryMetadata": "",
+            "navigateToLoginRequestUrl": null
+          },
+          "cache": {
+            "cacheLocation": "sessionStorage",
+            "storeAuthStateInCookie": null
+          },
+          "system": {
+            "allowPlatformBroker": false,
+            "iframeHashTimeout": null,
+            "loadFrameTimeout": null,
+            "nativeBrokerHandshakeTimeout": 2000,
+            "redirectNavigationTimeout": 30000,
+            "tokenRenewalOffsetSeconds": 300,
+            "windowHashTimeout": null
+          },
+          "topLevelKeys": [
+            "auth",
+            "cache",
+            "experimental",
+            "system",
+            "telemetry"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": "init.logger-callback",
+    "area": "init",
+    "status": "pass",
+    "observed": {
+      "levelsSeen": [
+        2,
+        3
+      ],
+      "logCountOver10": true,
+      "logged": true
+    }
+  },
+  {
+    "id": "init.exported-surface",
+    "area": "init",
+    "status": "pass",
+    "observed": {
+      "ok": {
+        "browserAuthErrorCodesCount": 52,
+        "browserCacheLocation": {
+          "LocalStorage": "localStorage",
+          "MemoryStorage": "memoryStorage",
+          "SessionStorage": "sessionStorage"
+        },
+        "cacheLookupPolicy": {
+          "AccessToken": 1,
+          "AccessTokenAndRefreshToken": 2,
+          "Default": 0,
+          "RefreshToken": 3,
+          "RefreshTokenAndNetwork": 4,
+          "Skip": 5
+        },
+        "errorClassesExported": {
+          "AuthError": true,
+          "BrowserAuthError": true,
+          "ClientAuthError": true,
+          "InteractionRequiredAuthError": true,
+          "ServerError": true
+        },
+        "eventType": {
+          "ACQUIRE_TOKEN_FAILURE": "msal:acquireTokenFailure",
+          "ACQUIRE_TOKEN_NETWORK_START": "msal:acquireTokenFromNetworkStart",
+          "ACQUIRE_TOKEN_START": "msal:acquireTokenStart",
+          "ACQUIRE_TOKEN_SUCCESS": "msal:acquireTokenSuccess",
+          "ACTIVE_ACCOUNT_CHANGED": "msal:activeAccountChanged",
+          "BROKERED_REQUEST_FAILURE": "msal:brokeredRequestFailure",
+          "BROKERED_REQUEST_START": "msal:brokeredRequestStart",
+          "BROKERED_REQUEST_SUCCESS": "msal:brokeredRequestSuccess",
+          "BROKER_CONNECTION_ESTABLISHED": "msal:brokerConnectionEstablished",
+          "HANDLE_REDIRECT_END": "msal:handleRedirectEnd",
+          "HANDLE_REDIRECT_START": "msal:handleRedirectStart",
+          "INITIALIZE_END": "msal:initializeEnd",
+          "INITIALIZE_START": "msal:initializeStart",
+          "LOGIN_SUCCESS": "msal:loginSuccess",
+          "LOGOUT_END": "msal:logoutEnd",
+          "LOGOUT_FAILURE": "msal:logoutFailure",
+          "LOGOUT_START": "msal:logoutStart",
+          "LOGOUT_SUCCESS": "msal:logoutSuccess",
+          "POPUP_OPENED": "msal:popupOpened",
+          "RESTORE_FROM_BFCACHE": "msal:restoreFromBFCache"
+        },
+        "hasCreateNestablePCA": true,
+        "hasCreateStandardPCA": true,
+        "hasIsPlatformBrokerAvailable": true,
+        "interactionType": {
+          "None": "none",
+          "Popup": "popup",
+          "Redirect": "redirect",
+          "Silent": "silent"
+        },
+        "oidcDefaultScopes": [
+          "openid",
+          "profile",
+          "offline_access"
+        ],
+        "promptValue": {
+          "CONSENT": "consent",
+          "CREATE": "create",
+          "LOGIN": "login",
+          "NONE": "none",
+          "NO_SESSION": "no_session",
+          "SELECT_ACCOUNT": "select_account"
+        },
+        "protocolMode": {
+          "AAD": "AAD",
+          "EAR": "EAR",
+          "OIDC": "OIDC"
+        },
+        "version": "5.16.0"
+      }
+    }
+  },
+  {
+    "id": "init.storage-before-login",
+    "area": "init",
+    "status": "pass",
+    "observed": {
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {
+          "msal.version": "5.16.0"
+        }
+      }
+    }
+  },
+  {
+    "id": "init.popup-without-bridge",
+    "area": "init",
+    "status": "pass",
+    "observed": {
+      "result": {
+        "err": {
+          "errorCode": "timed_out",
+          "message": "See https://aka.ms/msal.js.errors#timed_out for details",
+          "name": "BrowserAuthError",
+          "subError": "redirect_bridge_timeout"
+        }
+      }
+    }
+  },
+  {
+    "id": "telemetry.perf-events-popup-login",
+    "area": "telemetry",
+    "status": "pass",
+    "observed": {
+      "perf": [
+        {
+          "correlationId": "<dynamic>",
+          "errorCode": null,
+          "hasDuration": true,
+          "name": "initializeClientApplication",
+          "success": true
+        },
+        {
+          "correlationId": "<dynamic>",
+          "errorCode": null,
+          "hasDuration": true,
+          "name": "acquireTokenPopup",
+          "success": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "telemetry.perf-events-silent",
+    "area": "telemetry",
+    "status": "pass",
+    "observed": {
+      "cacheHitPerf": [
+        {
+          "correlationId": "<dynamic>",
+          "errorCode": null,
+          "hasDuration": true,
+          "name": "acquireTokenSilent",
+          "success": true
+        }
+      ],
+      "refreshPerf": [
+        {
+          "correlationId": "<dynamic>",
+          "errorCode": null,
+          "hasDuration": true,
+          "name": "acquireTokenSilent",
+          "success": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "telemetry.token-request-headers",
+    "area": "telemetry",
+    "status": "pass",
+    "observed": {
+      "anyTelemetryHttpHeaders": [],
+      "currentTelemetry": "",
+      "lastTelemetry": "",
+      "libCapability": "retry-after, h429",
+      "sku": "msal.js.browser",
+      "ver": "5.16.0"
+    }
+  },
+  {
+    "id": "telemetry.correlation-id-propagation",
+    "area": "telemetry",
+    "status": "pass",
+    "observed": {
+      "authorizeParamMatches": true,
+      "perfEventWithCid": true,
+      "resultMatches": true,
+      "tokenBodyClientRequestId": null
+    }
+  },
+  {
+    "id": "telemetry.last-telemetry-after-failure",
+    "area": "telemetry",
+    "status": "pass",
+    "observed": {
+      "failedCall": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      },
+      "lastTelemetryMentionsError": false,
+      "lastTelemetryParam": "",
+      "tokenCalls": 2
+    }
+  },
+  {
+    "id": "broker.dom-probe-and-interactive",
+    "area": "broker",
+    "status": "pass",
+    "observed": {
+      "accountShape": {
+        "ok": {
+          "nativeAccountId": "native-acc-1",
+          "username": "ada@contoso.com"
+        }
+      },
+      "brokerLog": [
+        {
+          "brokerId": "MicrosoftEntra",
+          "call": "getSupportedContracts"
+        },
+        {
+          "accountId": "native-acc-1",
+          "brokerId": "MicrosoftEntra",
+          "call": "executeGetToken",
+          "clientId": "<guid>",
+          "extraParameterKeys": [
+            "claims",
+            "nativeAccountId",
+            "telemetry",
+            "windowTitleSubstring",
+            "x-client-xtra-sku"
+          ],
+          "hasCorrelationId": true,
+          "isSecurityTokenService": false,
+          "redirectUri": "http://localhost:4173/conformance-app/",
+          "requestKeys": [
+            "accountId",
+            "authority",
+            "brokerId",
+            "clientId",
+            "correlationId",
+            "embeddedClientId",
+            "extraParameters",
+            "isSecurityTokenService",
+            "redirectUri",
+            "scope",
+            "state",
+            "storeInCache"
+          ],
+          "scope": "User.Read openid profile offline_access"
+        },
+        {
+          "accountId": "native-acc-1",
+          "brokerId": "MicrosoftEntra",
+          "call": "executeGetToken",
+          "clientId": "<guid>",
+          "extraParameterKeys": [
+            "account",
+            "authenticationScheme",
+            "claims",
+            "prompt",
+            "telemetry",
+            "tokenType",
+            "windowTitleSubstring",
+            "x-client-xtra-sku"
+          ],
+          "hasCorrelationId": true,
+          "isSecurityTokenService": false,
+          "redirectUri": "http://localhost:4173/conformance-app/",
+          "requestKeys": [
+            "accountId",
+            "authority",
+            "brokerId",
+            "clientId",
+            "correlationId",
+            "embeddedClientId",
+            "extraParameters",
+            "isSecurityTokenService",
+            "redirectUri",
+            "scope",
+            "state",
+            "storeInCache"
+          ],
+          "scope": "Mail.Read openid profile offline_access"
+        }
+      ],
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "silent",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "nativeAccountId",
+            "scopes"
+          ],
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "silent",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "account",
+            "correlationId",
+            "scopes"
+          ],
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "silent",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "correlationId",
+            "expiresOn",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 4
+        }
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "broker-access-token",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": true,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "offline_access",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      },
+      "silentResult": {
+        "ok": {
+          "accessToken": "broker-access-token",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": true,
+          "idToken": "<jwt>",
+          "scopes": [
+            "Mail.Read",
+            "offline_access",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "broker.dom-first-login",
+    "area": "broker",
+    "status": "pass",
+    "observed": {
+      "brokerLog": [
+        {
+          "brokerId": "MicrosoftEntra",
+          "call": "getSupportedContracts"
+        }
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "broker.dom-error-mapping",
+    "area": "broker",
+    "status": "pass",
+    "observed": {
+      "ACCOUNT_UNAVAILABLE": {
+        "err": {
+          "errorCode": "native_account_unavailable",
+          "message": "See https://aka.ms/msal.js.errors#account_unavailable for details",
+          "name": "InteractionRequiredAuthError",
+          "subError": null
+        }
+      },
+      "NO_NETWORK": {
+        "err": {
+          "errorCode": "no_network_connectivity",
+          "message": "See https://aka.ms/msal.js.errors#no_network_connectivity for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      },
+      "USER_CANCEL": {
+        "err": {
+          "errorCode": "user_cancelled",
+          "message": "See https://aka.ms/msal.js.errors#user_cancelled for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "broker.dom-disabled-fallback",
+    "area": "broker",
+    "status": "pass",
+    "observed": {
+      "brokerCallsAfterFirst": 2,
+      "brokerCallsAfterSecond": 2,
+      "result": {
+        "err": {
+          "errorCode": "disabled",
+          "message": "broker disabled by policy",
+          "name": "NativeAuthError",
+          "subError": null
+        }
+      },
+      "second": {
+        "err": {
+          "errorCode": "unable_to_acquire_token_from_native_platform",
+          "message": "See https://aka.ms/msal.js.errors#unable_to_acquire_token_from_native_platform for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "broker.extension-handshake-capture",
+    "area": "broker",
+    "status": "pass",
+    "observed": {
+      "handshakes": [
+        {
+          "channel": "<guid>",
+          "extensionId": "ppnbnpeolgkicgegkbkbjmhlideopiji",
+          "hasResponseId": true,
+          "method": "Handshake",
+          "portsTransferred": 1
+        },
+        {
+          "channel": "<guid>",
+          "extensionId": null,
+          "hasResponseId": true,
+          "method": "Handshake",
+          "portsTransferred": 1
+        }
+      ],
+      "initResult": {
+        "ok": {
+          "initMs": "<5s"
+        }
+      },
+      "webFallbackLogin": {
+        "err": null,
+        "ok": true
+      }
+    }
+  },
+  {
+    "id": "broker.extension-fake-e2e",
+    "area": "broker",
+    "status": "pass",
+    "observed": {
+      "extLog": [
+        {
+          "extensionId": "ppnbnpeolgkicgegkbkbjmhlideopiji",
+          "method": "Handshake"
+        },
+        {
+          "accountId": "native-acc-1",
+          "extraParameters": {
+            "telemetry": "MATS",
+            "x-client-xtra-sku": "msal.js.browser|5.16.0,|,chrome|1.0.0,|"
+          },
+          "method": "GetToken",
+          "requestKeys": [
+            "accountId",
+            "authority",
+            "claims",
+            "clientId",
+            "correlationId",
+            "extendedExpiryToken",
+            "extraParameters",
+            "keyId",
+            "nativeAccountId",
+            "prompt",
+            "redirectUri",
+            "scope",
+            "tokenType",
+            "windowTitleSubstring"
+          ],
+          "scope": "User.Read openid profile offline_access",
+          "tokenType": null
+        }
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "ext-broker-access-token",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": true,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "offline_access",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "broker.is-platform-broker-available",
+    "area": "broker",
+    "status": "pass",
+    "observed": {
+      "withBroker": {
+        "ok": false
+      },
+      "without": {
+        "ok": false
+      }
+    }
+  },
+  {
+    "id": "naa.init-handshake",
+    "area": "naa",
+    "status": "pass",
+    "observed": {
+      "created": {
+        "ok": "created"
+      },
+      "handshake": [
+        {
+          "clientLibrary": "msal.js.browser",
+          "clientLibraryVersion": "5.16.0",
+          "hasRequestId": true,
+          "hasSendTime": true,
+          "messageType": "NestedAppAuthRequest",
+          "method": "GetInitContext",
+          "tokenParams": null
+        }
+      ],
+      "redirectApi": {
+        "err": {
+          "errorCode": "unsupported_method",
+          "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+          "name": "NestedAppAuthError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "naa.get-token-popup",
+    "area": "naa",
+    "status": "pass",
+    "observed": {
+      "bridgeRequests": [
+        {
+          "clientLibrary": "msal.js.browser",
+          "clientLibraryVersion": "5.16.0",
+          "hasRequestId": true,
+          "hasSendTime": true,
+          "messageType": "NestedAppAuthRequest",
+          "method": "GetTokenPopup",
+          "tokenParams": {
+            "authenticationScheme": "Bearer",
+            "clientId": "<guid>",
+            "forceRefresh": null,
+            "hasCorrelationId": true,
+            "keys": [
+              "authenticationScheme",
+              "claims",
+              "clientId",
+              "correlationId",
+              "extraParameters",
+              "scope"
+            ],
+            "scope": "User.Read"
+          }
+        }
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "naa-access-token",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": null,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "naa.silent-cache-then-bridge",
+    "area": "naa",
+    "status": "pass",
+    "observed": {
+      "callsAfterFirst": 1,
+      "callsAfterSecond": 1,
+      "first": {
+        "ok": {
+          "accessToken": "naa-access-token",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": null,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      },
+      "second": {
+        "ok": {
+          "accessToken": "naa-access-token",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "localhost:4599",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": true,
+          "fromPlatformBroker": null,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "naa.error-mapping",
+    "area": "naa",
+    "status": "pass",
+    "observed": {
+      "NO_NETWORK": {
+        "err": {
+          "errorCode": "no_network_connectivity",
+          "message": "See https://aka.ms/msal.js.errors#no_network_connectivity for details",
+          "name": "ClientAuthError",
+          "subError": null
+        }
+      },
+      "PERSISTENT_ERROR": {
+        "err": {
+          "errorCode": "fake_code",
+          "message": "fake PERSISTENT_ERROR",
+          "name": "ServerError",
+          "subError": null
+        }
+      },
+      "USER_CANCEL": {
+        "err": {
+          "errorCode": "user_canceled",
+          "message": "See https://aka.ms/msal.js.errors#user_canceled for details",
+          "name": "ClientAuthError",
+          "subError": null
+        }
+      },
+      "USER_INTERACTION_REQUIRED": {
+        "err": {
+          "errorCode": "fake_code",
+          "message": "fake USER_INTERACTION_REQUIRED",
+          "name": "InteractionRequiredAuthError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "naa.unsupported-apis",
+    "area": "naa",
+    "status": "pass",
+    "observed": {
+      "acquireTokenByCode": {
+        "err": {
+          "errorCode": "unsupported_method",
+          "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+          "name": "NestedAppAuthError",
+          "subError": null
+        }
+      },
+      "addPerformanceCallback": {
+        "err": {
+          "errorCode": "unsupported_method",
+          "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+          "name": "NestedAppAuthError",
+          "subError": null
+        }
+      },
+      "handleRedirectPromise": {
+        "ok": "null"
+      },
+      "loginRedirect": {
+        "err": {
+          "errorCode": "unsupported_method",
+          "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+          "name": "NestedAppAuthError",
+          "subError": null
+        }
+      },
+      "logoutPopup": {
+        "err": {
+          "errorCode": "unsupported_method",
+          "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+          "name": "NestedAppAuthError",
+          "subError": null
+        }
+      },
+      "logoutRedirect": {
+        "err": {
+          "errorCode": "unsupported_method",
+          "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+          "name": "NestedAppAuthError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "naa.no-bridge-fallback",
+    "area": "naa",
+    "status": "pass",
+    "observed": {
+      "created": {
+        "ok": "created"
+      },
+      "perfApi": {
+        "ok": "works"
+      },
+      "webLogin": {
+        "err": null,
+        "ok": true
+      }
+    }
+  }
+]

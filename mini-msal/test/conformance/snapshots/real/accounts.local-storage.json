@@ -1,0 +1,76 @@
+{
+  "login": {
+    "ok": {
+      "accessToken": "mock-access-token-0",
+      "account": {
+        "homeAccountId": "oid-123.tenant-123",
+        "tenantId": "tenant-123",
+        "username": "ada@contoso.com"
+      },
+      "authority": "https://localhost:4599/tenant/",
+      "correlationIdPresent": true,
+      "expiresInFuture": true,
+      "expiresOnType": "Date",
+      "fromCache": false,
+      "fromPlatformBroker": false,
+      "idToken": "<jwt>",
+      "scopes": [
+        "User.Read",
+        "openid",
+        "profile"
+      ],
+      "state": "<dynamic>",
+      "tokenType": "Bearer"
+    }
+  },
+  "silentAfter": {
+    "ok": {
+      "fromCache": true,
+      "token": "mock-access-token-0"
+    }
+  },
+  "storage": {
+    "localStorage": {
+      "msal.3.account.keys": [
+        "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
+      ],
+      "msal.3.token.keys.<guid>": {
+        "accessToken": [
+          "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|"
+        ],
+        "idToken": [
+          "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||"
+        ],
+        "refreshToken": [
+          "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||"
+        ]
+      },
+      "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|": {
+        "data": "<dynamic>",
+        "id": "<guid>",
+        "lastUpdatedAt": "<epoch-ms>",
+        "nonce": "<dynamic>"
+      },
+      "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||": {
+        "data": "<dynamic>",
+        "id": "<guid>",
+        "lastUpdatedAt": "<epoch-ms>",
+        "nonce": "<dynamic>"
+      },
+      "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||": {
+        "data": "<dynamic>",
+        "id": "<guid>",
+        "lastUpdatedAt": "<epoch-ms>",
+        "nonce": "<dynamic>"
+      },
+      "msal.3|oid-123.tenant-123|localhost:4599|tenant-123": {
+        "data": "<dynamic>",
+        "id": "<guid>",
+        "lastUpdatedAt": "<epoch-ms>",
+        "nonce": "<dynamic>"
+      },
+      "msal.version": "5.16.0"
+    },
+    "sessionStorage": {}
+  }
+}

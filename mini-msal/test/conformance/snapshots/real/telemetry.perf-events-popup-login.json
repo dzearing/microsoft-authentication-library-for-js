@@ -1,0 +1,18 @@
+{
+  "perf": [
+    {
+      "correlationId": "<dynamic>",
+      "errorCode": null,
+      "hasDuration": true,
+      "name": "initializeClientApplication",
+      "success": true
+    },
+    {
+      "correlationId": "<dynamic>",
+      "errorCode": null,
+      "hasDuration": true,
+      "name": "acquireTokenPopup",
+      "success": true
+    }
+  ]
+}

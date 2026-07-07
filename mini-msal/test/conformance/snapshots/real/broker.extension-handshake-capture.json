@@ -1,0 +1,27 @@
+{
+  "handshakes": [
+    {
+      "channel": "<guid>",
+      "extensionId": "ppnbnpeolgkicgegkbkbjmhlideopiji",
+      "hasResponseId": true,
+      "method": "Handshake",
+      "portsTransferred": 1
+    },
+    {
+      "channel": "<guid>",
+      "extensionId": null,
+      "hasResponseId": true,
+      "method": "Handshake",
+      "portsTransferred": 1
+    }
+  ],
+  "initResult": {
+    "ok": {
+      "initMs": "<5s"
+    }
+  },
+  "webFallbackLogin": {
+    "err": null,
+    "ok": true
+  }
+}

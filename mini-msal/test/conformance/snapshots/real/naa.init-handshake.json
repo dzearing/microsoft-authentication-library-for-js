@@ -1,0 +1,24 @@
+{
+  "created": {
+    "ok": "created"
+  },
+  "handshake": [
+    {
+      "clientLibrary": "msal.js.browser",
+      "clientLibraryVersion": "5.16.0",
+      "hasRequestId": true,
+      "hasSendTime": true,
+      "messageType": "NestedAppAuthRequest",
+      "method": "GetInitContext",
+      "tokenParams": null
+    }
+  ],
+  "redirectApi": {
+    "err": {
+      "errorCode": "unsupported_method",
+      "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+      "name": "NestedAppAuthError",
+      "subError": null
+    }
+  }
+}

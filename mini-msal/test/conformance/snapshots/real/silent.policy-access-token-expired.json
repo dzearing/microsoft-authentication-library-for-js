@@ -1,0 +1,13 @@
+{
+  "networkCalls": [
+    "discovery"
+  ],
+  "result": {
+    "err": {
+      "errorCode": "token_refresh_required",
+      "message": "See https://aka.ms/msal.js.errors#token_refresh_required for details",
+      "name": "ClientAuthError",
+      "subError": null
+    }
+  }
+}

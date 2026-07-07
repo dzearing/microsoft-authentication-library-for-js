@@ -1,0 +1,18 @@
+{
+  "filters": {
+    "ok": {
+      "allWithFilter": [
+        "grace@contoso.com"
+      ],
+      "byHomeAccountId": "ada@contoso.com",
+      "byLocalAccountId": "ada@contoso.com",
+      "byUnknown": null,
+      "byUsername": "ada@contoso.com",
+      "byUsernameUpper": "ada@contoso.com",
+      "emptyFilter": null,
+      "legacyByHomeId": null,
+      "legacyByLocalId": null,
+      "legacyByUsername": null
+    }
+  }
+}

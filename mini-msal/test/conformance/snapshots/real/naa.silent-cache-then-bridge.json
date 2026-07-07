@@ -1,0 +1,48 @@
+{
+  "callsAfterFirst": 1,
+  "callsAfterSecond": 1,
+  "first": {
+    "ok": {
+      "accessToken": "naa-access-token",
+      "account": {
+        "homeAccountId": "oid-123.tenant-123",
+        "tenantId": "tenant-123",
+        "username": "ada@contoso.com"
+      },
+      "authority": "https://localhost:4599/tenant/",
+      "correlationIdPresent": true,
+      "expiresInFuture": true,
+      "expiresOnType": "Date",
+      "fromCache": false,
+      "fromPlatformBroker": null,
+      "idToken": "<jwt>",
+      "scopes": [
+        "User.Read"
+      ],
+      "state": null,
+      "tokenType": "Bearer"
+    }
+  },
+  "second": {
+    "ok": {
+      "accessToken": "naa-access-token",
+      "account": {
+        "homeAccountId": "oid-123.tenant-123",
+        "tenantId": "tenant-123",
+        "username": "ada@contoso.com"
+      },
+      "authority": "localhost:4599",
+      "correlationIdPresent": true,
+      "expiresInFuture": true,
+      "expiresOnType": "Date",
+      "fromCache": true,
+      "fromPlatformBroker": null,
+      "idToken": "<jwt>",
+      "scopes": [
+        "User.Read"
+      ],
+      "state": null,
+      "tokenType": "Bearer"
+    }
+  }
+}

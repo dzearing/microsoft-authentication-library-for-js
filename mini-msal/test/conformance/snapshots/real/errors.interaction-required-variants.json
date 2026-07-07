@@ -1,0 +1,26 @@
+{
+  "consent_required": {
+    "err": {
+      "errorCode": "consent_required",
+      "message": "AADSTS50076: consent_required description",
+      "name": "InteractionRequiredAuthError",
+      "subError": null
+    }
+  },
+  "interaction_required": {
+    "err": {
+      "errorCode": "interaction_required",
+      "message": "AADSTS50076: interaction_required description",
+      "name": "InteractionRequiredAuthError",
+      "subError": null
+    }
+  },
+  "login_required": {
+    "err": {
+      "errorCode": "login_required",
+      "message": "AADSTS50076: login_required description",
+      "name": "InteractionRequiredAuthError",
+      "subError": null
+    }
+  }
+}

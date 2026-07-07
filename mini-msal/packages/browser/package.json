@@ -1,0 +1,11 @@
+{
+    "name": "@mini-msal/browser",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Minimal drop-in-shaped reimplementation of the @azure/msal-browser surface (prototype)",
+    "type": "module",
+    "sideEffects": false,
+    "exports": {
+        ".": "./src/index.ts"
+    }
+}
