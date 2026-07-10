@@ -320,6 +320,7 @@ export function createClient(
     let nextListenerId = 0;
     let redirectResult: Promise<AuthenticationResult | null> | null = null;
     let initialized = false;
+    const inFlight = new Map<string, Promise<AuthenticationResult>>();
 
     const uninitialized = () =>
         new BrowserAuthError("uninitialized_public_client_application");
@@ -730,6 +731,86 @@ export function createClient(
         }
     };
 
+    // CacheLookupPolicy gates each rung of the silent ladder
+    // (AT -> RT -> iframe); forceRefresh bypasses the AT rung.
+    // Same semantics as real MSAL's acquireTokenSilentAsync.
+    const silentLadder = async (
+        req: TokenRequest,
+        account: AccountInfo
+    ): Promise<AuthenticationResult> => {
+        const pol = req.cacheLookupPolicy ?? CacheLookupPolicy.Default;
+        const useAT =
+            !req.forceRefresh &&
+            pol <= CacheLookupPolicy.AccessTokenAndRefreshToken;
+        const useRT =
+            pol !== CacheLookupPolicy.AccessToken &&
+            pol !== CacheLookupPolicy.Skip;
+        const useFrame =
+            pol === CacheLookupPolicy.Default ||
+            pol >= CacheLookupPolicy.RefreshTokenAndNetwork;
+        const keys = tokenKeys();
+        const wanted = req.scopes.map((sc) => sc.toLowerCase());
+        const at = useAT
+            ? findCred(keys.accessToken, (t) => {
+                  const target = (t.target ?? "").toLowerCase().split(" ");
+                  return (
+                      t.homeAccountId === account.homeAccountId &&
+                      wanted.every((sc) => target.includes(sc)) &&
+                      Number(t.expiresOn) - 300 > Date.now() / 1000
+                  );
+              })
+            : undefined;
+        if (at) {
+            const id = findCred(
+                keys.idToken,
+                (t) => t.homeAccountId === account.homeAccountId
+            );
+            const result = {
+                accessToken: at.secret,
+                idToken: id?.secret ?? "",
+                scopes: (at.target ?? "").split(" "),
+                expiresOn: new Date(Number(at.expiresOn) * 1000),
+                account,
+                fromCache: true,
+            };
+            emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
+            return result;
+        }
+        if (pol === CacheLookupPolicy.AccessToken) {
+            // AT-only policy: expired/missing AT is a hard error
+            throw new ClientAuthError("token_refresh_required");
+        }
+        if (useRT) {
+            const rt = findCred(
+                keys.refreshToken,
+                (t) => t.homeAccountId === account.homeAccountId
+            );
+            if (rt) {
+                try {
+                    const result = await redeemRefresh(req.scopes, rt.secret);
+                    emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
+                    return result;
+                } catch (e) {
+                    if (
+                        !useFrame ||
+                        !(e instanceof InteractionRequiredAuthError)
+                    ) {
+                        throw e;
+                    }
+                }
+            } else if (!useFrame) {
+                throw new InteractionRequiredAuthError("no_tokens_found");
+            }
+        }
+        // last resort: hidden iframe with prompt=none
+        const result = await ssoSilent({
+            ...req,
+            loginHint: account.username,
+        });
+        emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
+        return result;
+    };
+
     // ---- logout ----
     const logoutUrl = (): string => {
         const url = new URL(metadata!.end_session_endpoint);
@@ -854,85 +935,22 @@ export function createClient(
                 // real rejects unknown accounts as an authority mismatch
                 throw new ClientConfigurationError("authority_mismatch");
             }
-            // CacheLookupPolicy gates each rung of the silent ladder
-            // (AT -> RT -> iframe); forceRefresh bypasses the AT rung.
-            // Same semantics as real MSAL's acquireTokenSilentAsync.
-            const pol = req.cacheLookupPolicy ?? CacheLookupPolicy.Default;
-            const useAT =
-                !req.forceRefresh &&
-                pol <= CacheLookupPolicy.AccessTokenAndRefreshToken;
-            const useRT =
-                pol !== CacheLookupPolicy.AccessToken &&
-                pol !== CacheLookupPolicy.Skip;
-            const useFrame =
-                pol === CacheLookupPolicy.Default ||
-                pol >= CacheLookupPolicy.RefreshTokenAndNetwork;
-            const keys = tokenKeys();
-            const wanted = req.scopes.map((sc) => sc.toLowerCase());
-            const at = useAT
-                ? findCred(keys.accessToken, (t) => {
-                      const target = (t.target ?? "")
-                          .toLowerCase()
-                          .split(" ");
-                      return (
-                          t.homeAccountId === account.homeAccountId &&
-                          wanted.every((sc) => target.includes(sc)) &&
-                          Number(t.expiresOn) - 300 > Date.now() / 1000
-                      );
-                  })
-                : undefined;
-            if (at) {
-                const id = findCred(
-                    keys.idToken,
-                    (t) => t.homeAccountId === account.homeAccountId
+            // identical concurrent calls share one in-flight promise (real's
+            // acquireTokenSilentDeduped; thumbprint has no policy/forceRefresh)
+            const key = JSON.stringify([
+                req.scopes,
+                account.homeAccountId,
+                (req as { authority?: string }).authority,
+                (req as { claims?: string }).claims,
+            ]);
+            let shared = inFlight.get(key);
+            if (!shared) {
+                shared = silentLadder(req, account).finally(() =>
+                    inFlight.delete(key)
                 );
-                const result = {
-                    accessToken: at.secret,
-                    idToken: id?.secret ?? "",
-                    scopes: (at.target ?? "").split(" "),
-                    expiresOn: new Date(Number(at.expiresOn) * 1000),
-                    account,
-                    fromCache: true,
-                };
-                emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
-                return result;
+                inFlight.set(key, shared);
             }
-            if (pol === CacheLookupPolicy.AccessToken) {
-                // AT-only policy: expired/missing AT is a hard error
-                throw new ClientAuthError("token_refresh_required");
-            }
-            if (useRT) {
-                const rt = findCred(
-                    keys.refreshToken,
-                    (t) => t.homeAccountId === account.homeAccountId
-                );
-                if (rt) {
-                    try {
-                        const result = await redeemRefresh(
-                            req.scopes,
-                            rt.secret
-                        );
-                        emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
-                        return result;
-                    } catch (e) {
-                        if (
-                            !useFrame ||
-                            !(e instanceof InteractionRequiredAuthError)
-                        ) {
-                            throw e;
-                        }
-                    }
-                } else if (!useFrame) {
-                    throw new InteractionRequiredAuthError("no_tokens_found");
-                }
-            }
-            // last resort: hidden iframe with prompt=none
-            const result = await ssoSilent({
-                ...req,
-                loginHint: account.username,
-            });
-            emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
-            return result;
+            return shared;
         },
 
         async logoutRedirect(req?: {

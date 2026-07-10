@@ -14,7 +14,7 @@ exists but differs observably · **missing-feature** = absent by design ·
 | Area | Scenarios | Pass | Behavioral diff | Missing feature | Bug |
 |---|---|---|---|---|---|
 | 1. Core flows | 9 | 0 | 9 | 0 | 0 |
-| 2. Silent acquisition | 12 | 1 | 10 | 0 | 1 |
+| 2. Silent acquisition | 12 | 2 | 10 | 0 | 0 |
 | 3. Accounts & cache | 7 | 1 | 4 | 2 | 0 |
 | 4. Errors & guards | 10 | 6 | 3 | 0 | 1 |
 | 5. Platform broker / WAM | 7 | 0 | 0 | 7 | 0 |
@@ -23,7 +23,7 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 8. Request passthrough | 9 | 2 | 1 | 6 | 0 |
 | 9. Resilience | 4 | 1 | 1 | 2 | 0 |
 | 10. Init & misc | 6 | 0 | 3 | 3 | 0 |
-| **Total** | **75** | **11** | **31** | **31** | **2** |
+| **Total** | **75** | **12** | **31** | **31** | **1** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -155,7 +155,7 @@ here instead of being repeated per scenario:
 - **real**: Skip → straight to prompt=none iframe (skips AT cache AND RT).
 - **mini**: Policy enforced (A5): straight to the iframe like real; result-shape gaps only (B1).
 
-#### `silent.concurrent-dedupe` — 🐞 **bug** · est. 0.3 KB to close
+#### `silent.concurrent-dedupe` — ✅ pass · est. 0.3 KB to close
 
 - **real**: Two parallel identical acquireTokenSilent calls → ONE token-endpoint request (in-flight dedupe), both callers get the same token.
 - **mini**: Two parallel calls → TWO refresh requests (no dedupe). Same tokens returned, but doubled IdP load and RT-rotation hazard against real AAD.

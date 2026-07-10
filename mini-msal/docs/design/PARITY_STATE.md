@@ -233,9 +233,12 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   (skip valid AT), no iframe; RefreshTokenAndNetwork(4): RT→iframe;
   Skip(5): straight to iframe (no RT); forceRefresh bypasses AT (RT→iframe).
   Scenarios: silent.policy-*, silent.force-refresh.
-- [ ] **A6** `pending` — In-flight dedupe: concurrent identical
-  acquireTokenSilent (key: scopes|homeAccountId|authority|policy) share one
-  promise → one network call. Scenario: silent.concurrent-dedupe.
+- [x] **A6** `done 2026-07-10 — pass 12/75, mini-stack 19.7 KB min / 7.3 gz` —
+  In-flight dedupe: concurrent identical acquireTokenSilent share one promise
+  → one network call. Key matches real's thumbprint
+  (scopes|homeAccountId|authority|claims — real includes NO policy or
+  forceRefresh; StandardController.acquireTokenSilentDeduped), map entry
+  deleted on settle. Scenario: silent.concurrent-dedupe.
 - [ ] **A7** `pending` — Interaction lock + unique popup names: second
   interactive call while one is pending → BrowserAuthError
   `interaction_in_progress`; popup window names unique per request
@@ -386,3 +389,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | A3 | done 2026-07-10 | 10/75 | 19.4 KB min / 7.2 gz | +1 pass (accounts.get-account-filters): getAllAccounts(filter?) honors filter; getAccount({}) / all-empty filter → null (matches real CacheManager.getAccountInfoFilteredBy); shared matchesFilter predicate; e2e 25/25; mini-core 11.5 min / 4.5 gz |
 | A4 | done 2026-07-10 | 10/75 | 19.4 KB min / 7.2 gz | +0 pass by design: all 8 scope diffs on params.scopes-normalization gone (18→10 diffs), remainder is B1 result-shape. normScopes = real addScopes ([...req, ...defaults] → Set → join, exact-case dedupe) on authorize+token; result scopes keep granted casing (dropped toLowerCase). No regressions (same 10 pass, 591 total diffs); e2e 25/25; mini-core 11.5 min / 4.5 gz |
 | A5 | done 2026-07-10 | 11/75 | 19.5 KB min / 7.3 gz | +1 pass (silent.policy-access-token-expired). Policy ladder gates AT/RT/iframe rungs; forceRefresh skips AT; AT-only miss → token_refresh_required ClientAuthError. Discovery cache moved to per-instance memory (msal.meta.* key dropped — B4 item front-ran): networkCalls now match on ALL silent.* scenarios; remaining policy-scenario diffs are pure B1 result-shape (authority/correlationId/tokenType/fromPlatformBroker), force-refresh remainder is B2 events. Total diffs 591→568; e2e 25/25; mini-core 11.7 min / 4.6 gz |
+| A6 | done 2026-07-10 | 12/75 | 19.7 KB min / 7.3 gz | +1 pass (silent.concurrent-dedupe): inFlight Map keyed like real's thumbprint (scopes/homeAccountId/authority/claims, no policy/forceRefresh), entry deleted on settle; silent ladder hoisted to silentLadder() closure. Total diffs 568→566; e2e 25/25; mini-core 11.8 min / 4.7 gz |

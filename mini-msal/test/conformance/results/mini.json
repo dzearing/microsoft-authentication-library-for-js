@@ -2168,23 +2168,10 @@
   {
     "id": "silent.concurrent-dedupe",
     "area": "silent",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "networkCalls[2]",
-        "real": "\"<missing>\"",
-        "mini": "\"token:refresh_token\""
-      },
-      {
-        "path": "tokenEndpointHits",
-        "real": "1",
-        "mini": "2"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "networkCalls": [
         "discovery",
-        "token:refresh_token",
         "token:refresh_token"
       ],
       "results": {
@@ -2194,7 +2181,7 @@
           "sameToken": true
         }
       },
-      "tokenEndpointHits": 2
+      "tokenEndpointHits": 1
     }
   },
   {
