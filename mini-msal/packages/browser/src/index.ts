@@ -318,6 +318,10 @@ export function createClient(
     const listeners = new Map<string, EventCallback>();
     let nextListenerId = 0;
     let redirectResult: Promise<AuthenticationResult | null> | null = null;
+    let initialized = false;
+
+    const uninitialized = () =>
+        new BrowserAuthError("uninitialized_public_client_application");
 
     // ---- events ----
     const emit = (eventType: string, payload?: unknown, error?: unknown) => {
@@ -415,6 +419,9 @@ export function createClient(
      * no longer blocks calls inside msal-named popup windows.)
      */
     const preflight = () => {
+        if (!initialized) {
+            throw uninitialized();
+        }
         if (
             window !== window.parent &&
             /[#&](code|error)=/.test(location.hash)
@@ -764,6 +771,7 @@ export function createClient(
 
     const client: AuthClient = {
         async initialize() {
+            initialized = true;
             const key = `msal.meta.${authority}`;
             const cached = sessionStorage.getItem(key);
             if (cached) {
@@ -776,6 +784,12 @@ export function createClient(
                 )
             ).json();
             sessionStorage.setItem(key, JSON.stringify(metadata));
+        },
+
+        handleRedirectPromise(): Promise<AuthenticationResult | null> {
+            return initialized
+                ? (redirectResult ??= processRedirect())
+                : Promise.reject(uninitialized());
         },
 
         addEventCallback(cb: EventCallback): string | null {
@@ -821,10 +835,6 @@ export function createClient(
                 JSON.stringify({ verifier, state, scopes: req.scopes })
             );
             location.assign(url);
-        },
-
-        handleRedirectPromise(): Promise<AuthenticationResult | null> {
-            return (redirectResult ??= processRedirect());
         },
 
         ssoSilent,

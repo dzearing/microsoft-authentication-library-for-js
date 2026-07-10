@@ -16,14 +16,14 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 1. Core flows | 9 | 0 | 9 | 0 | 0 |
 | 2. Silent acquisition | 12 | 0 | 7 | 1 | 4 |
 | 3. Accounts & cache | 7 | 0 | 4 | 2 | 1 |
-| 4. Errors & guards | 10 | 5 | 3 | 0 | 2 |
+| 4. Errors & guards | 10 | 6 | 3 | 0 | 1 |
 | 5. Platform broker / WAM | 7 | 0 | 0 | 7 | 0 |
 | 6. Nested app auth (NAA) | 6 | 0 | 0 | 6 | 0 |
 | 7. Telemetry | 5 | 0 | 0 | 5 | 0 |
 | 8. Request passthrough | 9 | 2 | 0 | 6 | 1 |
 | 9. Resilience | 4 | 1 | 1 | 2 | 0 |
 | 10. Init & misc | 6 | 0 | 3 | 3 | 0 |
-| **Total** | **75** | **8** | **27** | **32** | **8** |
+| **Total** | **75** | **9** | **27** | **32** | **7** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -229,7 +229,7 @@ here instead of being repeated per scenario:
 - **real**: interaction_required/consent_required/login_required → InteractionRequiredAuthError (named).
 - **mini**: Identical codes and IRAE classification; only .name missing ('Error').
 
-#### `errors.uninitialized-client` — 🐞 **bug** · est. 0.15 KB to close
+#### `errors.uninitialized-client` — ✅ pass · est. 0.15 KB to close
 
 - **real**: Uniform BrowserAuthError uninitialized_public_client_application from loginPopup/acquireTokenSilent/handleRedirectPromise/logoutRedirect before initialize().
 - **mini**: No guard: loginPopup/logoutRedirect CRASH with TypeError (metadata undefined); handleRedirectPromise resolves; silent throws no_account_error.

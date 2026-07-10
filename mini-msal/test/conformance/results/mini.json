@@ -4153,64 +4153,12 @@
   {
     "id": "errors.uninitialized-client",
     "area": "errors",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "acquireTokenSilent.err.errorCode",
-        "real": "\"uninitialized_public_client_application\"",
-        "mini": "\"no_account_error\""
-      },
-      {
-        "path": "acquireTokenSilent.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details\"",
-        "mini": "\"See https://aka.ms/msal.js.errors#no_account_error for details\""
-      },
-      {
-        "path": "handleRedirectPromise.err",
-        "real": "{\"errorCode\":\"uninitialized_public_client_application\",\"message\":\"See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details\",\"name\":\"BrowserAuthError\",\"subError\":null}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "handleRedirectPromise.ok",
-        "real": "\"<missing>\"",
-        "mini": "\"resolved\""
-      },
-      {
-        "path": "loginPopup.err.errorCode",
-        "real": "\"uninitialized_public_client_application\"",
-        "mini": "null"
-      },
-      {
-        "path": "loginPopup.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details\"",
-        "mini": "\"Cannot read properties of undefined (reading 'authorization_endpoint')\""
-      },
-      {
-        "path": "loginPopup.err.name",
-        "real": "\"BrowserAuthError\"",
-        "mini": "\"TypeError\""
-      },
-      {
-        "path": "logoutRedirect.err.errorCode",
-        "real": "\"uninitialized_public_client_application\"",
-        "mini": "null"
-      },
-      {
-        "path": "logoutRedirect.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details\"",
-        "mini": "\"Cannot read properties of undefined (reading 'end_session_endpoint')\""
-      },
-      {
-        "path": "logoutRedirect.err.name",
-        "real": "\"BrowserAuthError\"",
-        "mini": "\"TypeError\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "acquireTokenSilent": {
         "err": {
-          "errorCode": "no_account_error",
-          "message": "See https://aka.ms/msal.js.errors#no_account_error for details",
+          "errorCode": "uninitialized_public_client_application",
+          "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
           "name": "BrowserAuthError",
           "subError": null
         }
@@ -4219,21 +4167,26 @@
         "ok": "resolved:0"
       },
       "handleRedirectPromise": {
-        "ok": "resolved"
+        "err": {
+          "errorCode": "uninitialized_public_client_application",
+          "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
       },
       "loginPopup": {
         "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'authorization_endpoint')",
-          "name": "TypeError",
+          "errorCode": "uninitialized_public_client_application",
+          "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       },
       "logoutRedirect": {
         "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'end_session_endpoint')",
-          "name": "TypeError",
+          "errorCode": "uninitialized_public_client_application",
+          "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       }

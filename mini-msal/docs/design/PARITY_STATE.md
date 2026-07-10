@@ -193,7 +193,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   ClientConfigurationError, 5xx/oauth-error → ServerError, aka.ms-style
   messages where snapshots expect them). Scenarios: core.sso-silent-cold,
   errors.* (most), resilience.5xx-server-error.
-- [ ] **A2** `pending` — Uninitialized guard: all public async APIs before
+- [x] **A2** `done 2026-07-10 — pass 9/75, mini-stack 19.3 KB min / 7.2 gz` — Uninitialized guard: all public async APIs before
   `initialize()` throw BrowserAuthError
   `uninitialized_public_client_application`; handleRedirectPromise rejects
   too; getAllAccounts still works. Scenario: errors.uninitialized-client.
@@ -361,3 +361,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | baseline | — | 2/75 | 20.1 KB min / 6.9 gz | e2e 25/25, check 75/75 |
 | A0 | done 2026-07-10 | 2/75 | 18.7 KB min / 6.9 gz | pure refactor, statuses+diff counts identical to baseline; e2e 25/25; NEW mini-core variant 10.9 KB min / 4.2 gz |
 | A1 | done 2026-07-10 | 8/75 | 19.2 KB min / 7.1 gz | +6 pass (popup-closed-by-user, iframe-timeout, interaction-required-variants, redirect-in-iframe, silent-unknown-account, 5xx-server-error); e2e 25/25; mini-core 11.4 min / 4.4 gz |
+| A2 | done 2026-07-10 | 9/75 | 19.3 KB min / 7.2 gz | +1 pass (errors.uninitialized-client): `initialized` flag, guard first in preflight(), handleRedirectPromise rejects pre-init (own check — full preflight would break iframe null path); e2e 25/25; mini-core 11.5 min / 4.5 gz |
