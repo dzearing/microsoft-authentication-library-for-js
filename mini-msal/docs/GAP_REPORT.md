@@ -16,14 +16,14 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 1. Core flows | 9 | 0 | 9 | 0 | 0 |
 | 2. Silent acquisition | 12 | 0 | 7 | 1 | 4 |
 | 3. Accounts & cache | 7 | 0 | 4 | 2 | 1 |
-| 4. Errors & guards | 10 | 0 | 8 | 0 | 2 |
+| 4. Errors & guards | 10 | 5 | 3 | 0 | 2 |
 | 5. Platform broker / WAM | 7 | 0 | 0 | 7 | 0 |
 | 6. Nested app auth (NAA) | 6 | 0 | 0 | 6 | 0 |
 | 7. Telemetry | 5 | 0 | 0 | 5 | 0 |
 | 8. Request passthrough | 9 | 2 | 0 | 6 | 1 |
-| 9. Resilience | 4 | 0 | 2 | 2 | 0 |
+| 9. Resilience | 4 | 1 | 1 | 2 | 0 |
 | 10. Init & misc | 6 | 0 | 3 | 3 | 0 |
-| **Total** | **75** | **2** | **33** | **32** | **8** |
+| **Total** | **75** | **8** | **27** | **32** | **8** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -214,17 +214,17 @@ here instead of being repeated per scenario:
 - **real**: BrowserAuthError popup_window_error + acquireTokenStart/Failure events.
 - **mini**: Same popup_window_error code; name/message/events differ.
 
-#### `errors.popup-closed-by-user` — ↔️ behavioral-diff
+#### `errors.popup-closed-by-user` — ✅ pass
 
 - **real**: v5.16 has NO popup-close detection: closing the popup leaves the promise pending until popupBridgeTimeout, then BrowserAuthError timed_out (subError redirect_bridge_timeout).
 - **mini**: Detects the closed window within 50ms → user_cancelled immediately. Mini is faster/friendlier but observably different (different code, no 60s hang).
 
-#### `errors.iframe-timeout` — ↔️ behavioral-diff · est. 0.1 KB to close
+#### `errors.iframe-timeout` — ✅ pass · est. 0.1 KB to close
 
 - **real**: iframeBridgeTimeout configurable (set to 1.5s) → timed_out/redirect_bridge_timeout.
 - **mini**: Timeout hardcoded at 10s (config ignored) — with an 8s-delayed IdP mini got the late login_required response instead of timing out.
 
-#### `errors.interaction-required-variants` — ↔️ behavioral-diff · est. 0.05 KB to close
+#### `errors.interaction-required-variants` — ✅ pass · est. 0.05 KB to close
 
 - **real**: interaction_required/consent_required/login_required → InteractionRequiredAuthError (named).
 - **mini**: Identical codes and IRAE classification; only .name missing ('Error').
@@ -232,9 +232,9 @@ here instead of being repeated per scenario:
 #### `errors.uninitialized-client` — 🐞 **bug** · est. 0.15 KB to close
 
 - **real**: Uniform BrowserAuthError uninitialized_public_client_application from loginPopup/acquireTokenSilent/handleRedirectPromise/logoutRedirect before initialize().
-- **mini**: No guard: loginPopup/logoutRedirect CRASH with TypeError (metadata undefined); handleRedirectPromise resolves; silent throws no_account.
+- **mini**: No guard: loginPopup/logoutRedirect CRASH with TypeError (metadata undefined); handleRedirectPromise resolves; silent throws no_account_error.
 
-#### `errors.redirect-in-iframe` — ↔️ behavioral-diff
+#### `errors.redirect-in-iframe` — ✅ pass
 
 - **real**: BrowserAuthError redirect_in_iframe.
 - **mini**: Same code; name/message differ.
@@ -242,14 +242,14 @@ here instead of being repeated per scenario:
 #### `errors.nested-popup-guard` — ↔️ behavioral-diff · est. 0.1 KB to close
 
 - **real**: SURPRISE: real v5.16 ALLOWS loginPopup from an msal.*-named window (completes fine); silent fails only with no_account_error. The window-name block documented for v3/v4 is gone in the bridge era.
-- **mini**: Blocks BOTH with block_nested_popups — implements a guard real no longer has. Over-blocking relative to 5.16.
+- **mini**: Guard removed (matches real): popup completes but result shape differs (B1) and silent then SUCCEEDS because mini auto-set the active account (A8).
 
 #### `errors.interaction-in-progress` — 🐞 **bug** · est. 0.3 KB to close
 
 - **real**: Second interactive call while a popup is pending → BrowserAuthError interaction_in_progress; the FIRST call completes normally.
-- **mini**: No interaction lock + fixed 'msal.popup' window name: the second popup NAVIGATES the first one — first call fails state_mismatch, second fails user_cancelled. Both callers lose.
+- **mini**: No interaction lock + fixed 'msal.popup' window name: the second popup NAVIGATES the first one — first call fails state_mismatch, SECOND call wins the token. Callers race.
 
-#### `errors.silent-unknown-account` — ↔️ behavioral-diff · est. 0.1 KB to close
+#### `errors.silent-unknown-account` — ✅ pass · est. 0.1 KB to close
 
 - **real**: Unknown account object → ClientConfigurationError authority_mismatch; no account at all → BrowserAuthError no_account_error.
 - **mini**: Both cases → no_account (IRAE-classified). Coarser taxonomy.
@@ -404,7 +404,7 @@ here instead of being repeated per scenario:
 - **real**: 429+Retry-After → ServerError; writes a throttling cache entry; an immediate retry is served the SAME error from the throttle cache with NO network request.
 - **mini**: Error surfaced (generic), no throttle cache — immediate retry hits the IdP again (and succeeded once the injection expired).
 
-#### `resilience.5xx-server-error` — ↔️ behavioral-diff · est. 0.05 KB to close
+#### `resilience.5xx-server-error` — ✅ pass · est. 0.05 KB to close
 
 - **real**: 503 → ServerError with telemetry-formatted message; no automatic retry (1 hit).
 - **mini**: Same single-attempt behavior; error is a bare 'Error' with the raw description.

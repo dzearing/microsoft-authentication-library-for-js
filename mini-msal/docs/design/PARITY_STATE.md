@@ -115,6 +115,24 @@ Defaults already decided (do not re-litigate without user input):
   becomes a matrix (core-only / core+popup / compat) measured continuously.
 
 Entries (append as you go):
+- **A1 (2026-07-10)**: error taxonomy now mirrors real: `AuthError` base w/
+  `.name`, aka.ms default message (`${code}: ${message}` on Error.message),
+  `subError`; new ServerError/ClientAuthError/ClientConfigurationError/
+  NestedAppAuthError; BrowserAuthError always carries the aka.ms message.
+  `classify()` = real's interaction-required detection (code/desc/suberror);
+  token-endpoint non-IRAE errors get real's `Error(s): … - Timestamp: …`
+  ServerError format. Match-real REGRESSIONS made here: (1) removed the
+  msal.*-window-name nested-popup guard (gone in real 5.16); (2) removed
+  popup-close detection — closed popup now just times out
+  (`timed_out`/`redirect_bridge_timeout` BrowserAuthError, was
+  `user_cancelled`); (3) poll timeouts now honor `system.popupBridgeTimeout`
+  (60s default) / `system.iframeBridgeTimeout` (10s default). `no_account` →
+  `no_account_error` BrowserAuthError; unknown account → `authority_mismatch`
+  ClientConfigurationError; state_mismatch is a ClientAuthError. NOTE for the
+  loop: TWO concurrent Claude sessions were found running this SOP
+  simultaneously (their `lsof … kill` steps killed each other's servers,
+  causing phantom ECONNREFUSED crashes and results/mini.json clobbering) —
+  ensure only ONE loop session is alive before trusting run output.
 - **A0 (2026-07-10)**: core is `createClient(config, features)` in
   `packages/browser/src/index.ts`; internal seam = `ClientContext`
   (emit/preflight/authorizeUrl/pollForCode/redeem/clearAccount/logoutUrl +
@@ -167,7 +185,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 
 ### Phase A — bugs (mini misbehaves on claimed features)
 
-- [ ] **A1** `pending` — Error classes: set `.name` on AuthError/
+- [x] **A1** `done 2026-07-10 — pass 8/75, mini-stack 19.2 KB min / 7.1 gz` — Error classes: set `.name` on AuthError/
   InteractionRequiredAuthError/BrowserAuthError; add ClientAuthError,
   ClientConfigurationError, ServerError, NestedAppAuthError classes with
   correct names; align error codes surfaced in scenarios (`no_account` →
@@ -325,7 +343,13 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   fallback. Scenarios: naa.*.
 - [ ] **C10** `pending` — Final sweep: full `npm run conformance` (expect
   75/75 mini pass), determinism `conformance:check` 75/75, e2e 25/25,
-  `npm run measure` final sizes; regenerate GAP_REPORT (should show all
+  `npm run measure` final sizes. **Final bundle-size retest (user-requested
+  2026-07-10)**: publish a fresh measured matrix with at minimum (a)
+  minimum-size basic-auth build — sign-in/sign-out (redirect) + silent +
+  multi-account via `createClient` core only (`mini-core` variant; verify it
+  still exercises sign-out and multi-account after all parity work), (b) full
+  `@mini-msal/compat` build (all features composed), (c) compat + react
+  stack, each min/gzip/brotli, side-by-side with real msal-stack numbers; regenerate GAP_REPORT (should show all
   pass); update docs/README.md status section + size claims, root README,
   bundle-size-experiment results table if size changed materially; final
   commit; write user-facing summary (do NOT reset-context after this one).
@@ -336,3 +360,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 |---|---|---|---|---|
 | baseline | — | 2/75 | 20.1 KB min / 6.9 gz | e2e 25/25, check 75/75 |
 | A0 | done 2026-07-10 | 2/75 | 18.7 KB min / 6.9 gz | pure refactor, statuses+diff counts identical to baseline; e2e 25/25; NEW mini-core variant 10.9 KB min / 4.2 gz |
+| A1 | done 2026-07-10 | 8/75 | 19.2 KB min / 7.1 gz | +6 pass (popup-closed-by-user, iframe-timeout, interaction-required-variants, redirect-in-iframe, silent-unknown-account, 5xx-server-error); e2e 25/25; mini-core 11.4 min / 4.4 gz |

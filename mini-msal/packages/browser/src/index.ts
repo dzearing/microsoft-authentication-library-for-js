@@ -55,24 +55,61 @@ export interface Config {
         redirectUri?: string;
         postLogoutRedirectUri?: string;
     };
+    system?: {
+        popupBridgeTimeout?: number;
+        iframeBridgeTimeout?: number;
+    };
 }
 
+/** default error prose, same as real MSAL's */
+const AKA = (code: string) =>
+    `See https://aka.ms/msal.js.errors#${code} for details`;
+
 export class AuthError extends Error {
-    constructor(public errorCode: string, public errorMessage: string) {
+    name = "AuthError";
+    constructor(
+        public errorCode: string,
+        public errorMessage: string = AKA(errorCode),
+        public subError: string = ""
+    ) {
         super(`${errorCode}: ${errorMessage}`);
     }
 }
 
-export class InteractionRequiredAuthError extends AuthError {}
-export class BrowserAuthError extends AuthError {}
+export class InteractionRequiredAuthError extends AuthError {
+    name = "InteractionRequiredAuthError";
+}
+export class ServerError extends AuthError {
+    name = "ServerError";
+}
+export class ClientAuthError extends AuthError {
+    name = "ClientAuthError";
+}
+export class ClientConfigurationError extends AuthError {
+    name = "ClientConfigurationError";
+}
+export class NestedAppAuthError extends AuthError {
+    name = "NestedAppAuthError";
+}
+/** browser-layer errors always carry the aka.ms message, like real MSAL */
+export class BrowserAuthError extends AuthError {
+    name = "BrowserAuthError";
+    constructor(errorCode: string, subError?: string) {
+        super(errorCode, undefined, subError);
+    }
+}
 
-const INTERACTION_CODES =
-    /^(interaction_required|consent_required|login_required|no_tokens_found|no_account|monitor_window_timeout)$/;
+// same interaction-required detection as real MSAL (code / description /
+// suberror, contains-match on the description)
+const IR_CODES =
+    /interaction_required|consent_required|login_required|bad_token|ui_not_allowed|interrupted_user/;
+const IR_SUBS =
+    /^(message_only|additional_action|basic_action|user_password_expired|consent_required|bad_token|ui_not_allowed|interrupted_user)$/;
 
-function classify(code: string, desc: string): AuthError {
-    return INTERACTION_CODES.test(code)
-        ? new InteractionRequiredAuthError(code, desc)
-        : new AuthError(code, desc);
+function classify(code: string, desc = "", sub = ""): AuthError {
+    return IR_CODES.test(code) || IR_CODES.test(desc) || IR_SUBS.test(sub)
+        ? new InteractionRequiredAuthError(code, desc || undefined, sub)
+        : new ServerError(code, desc || undefined, sub);
 }
 
 export const EventType = {
@@ -153,8 +190,14 @@ async function post(url: string, body: Record<string, string>) {
         body: new URLSearchParams(body).toString(),
     });
     const json = await res.json();
-    if (json.error) {
-        throw classify(json.error, json.error_description);
+    if (json.error || json.error_description || json.suberror) {
+        const err = classify(json.error ?? "", json.error_description, json.suberror);
+        if (err instanceof ServerError) {
+            // real MSAL formats token-endpoint server errors this way
+            const N = "Not Available";
+            err.errorMessage = err.message = `Error(s): ${json.error_codes || N} - Timestamp: ${json.timestamp || N} - Description: ${json.error_description || N} - Correlation ID: ${json.correlation_id || N} - Trace ID: ${json.trace_id || N}`;
+        }
+        throw err;
     }
     return json;
 }
@@ -366,26 +409,17 @@ export function createClient(
     };
 
     /**
-     * Same environment guards as real MSAL: when this app is re-booted inside
-     * one of our own hidden iframes (auth response in the hash) or popups
-     * (window named "msal.*"), auth APIs refuse to run — the opener's poller
-     * owns the response.
+     * Same environment guard as real MSAL 5.16: when this app is re-booted
+     * inside one of our own hidden iframes (auth response in the hash), auth
+     * APIs refuse to run — the opener's poller owns the response. (Real 5.16
+     * no longer blocks calls inside msal-named popup windows.)
      */
     const preflight = () => {
         if (
             window !== window.parent &&
             /[#&](code|error)=/.test(location.hash)
         ) {
-            throw new BrowserAuthError(
-                "block_iframe_reload",
-                "Auth response in iframe"
-            );
-        }
-        if (window.name.startsWith("msal.")) {
-            throw new BrowserAuthError(
-                "block_nested_popups",
-                "Auth APIs blocked inside MSAL-opened popups"
-            );
+            throw new BrowserAuthError("block_iframe_reload");
         }
     };
 
@@ -432,21 +466,14 @@ export function createClient(
         new Promise((resolve, reject) => {
             const started = Date.now();
             const timer = setInterval(() => {
-                if (win.closed) {
-                    clearInterval(timer);
-                    return reject(
-                        new BrowserAuthError(
-                            "user_cancelled",
-                            "Window was closed"
-                        )
-                    );
-                }
+                // no popup-close detection, like real 5.16: a closed window
+                // simply never delivers a response and the bridge times out
                 if (Date.now() - started > timeoutMs) {
                     clearInterval(timer);
                     return reject(
-                        new InteractionRequiredAuthError(
-                            "monitor_window_timeout",
-                            "Token acquisition timed out"
+                        new BrowserAuthError(
+                            "timed_out",
+                            "redirect_bridge_timeout"
                         )
                     );
                 }
@@ -462,18 +489,13 @@ export function createClient(
                 if (err) {
                     clearInterval(timer);
                     reject(
-                        classify(err, params.get("error_description") ?? err)
+                        classify(err, params.get("error_description") ?? "")
                     );
                 } else if (code) {
                     clearInterval(timer);
                     params.get("state") === state
                         ? resolve(code)
-                        : reject(
-                              new AuthError(
-                                  "state_mismatch",
-                                  "State does not match"
-                              )
-                          );
+                        : reject(new ClientAuthError("state_mismatch"));
                 }
             }, 50);
         });
@@ -645,12 +667,12 @@ export function createClient(
             sessionStorage.removeItem("msal.request");
             const { verifier, state, scopes } = JSON.parse(stored);
             if (params.get("state") !== state) {
-                throw new AuthError("state_mismatch", "State does not match");
+                throw new ClientAuthError("state_mismatch");
             }
             history.replaceState(null, "", location.pathname + location.search);
             if (err) {
                 // login was cancelled/denied at the IdP
-                throw classify(err, params.get("error_description") ?? err);
+                throw classify(err, params.get("error_description") ?? "");
             }
             const result = await redeem({ code: code!, verifier, scopes });
             emit(EventType.LOGIN_SUCCESS, result);
@@ -680,7 +702,7 @@ export function createClient(
             const code = await pollForCode(
                 frame.contentWindow! as Window,
                 state,
-                10_000
+                config.system?.iframeBridgeTimeout ?? 10_000
             );
             return await redeem({
                 code,
@@ -791,10 +813,7 @@ export function createClient(
             preflight();
             if (window !== window.parent) {
                 // same guard as real MSAL: no full-page redirects from iframes
-                throw new BrowserAuthError(
-                    "redirect_in_iframe",
-                    "Redirect interaction is not allowed in an iframe"
-                );
+                throw new BrowserAuthError("redirect_in_iframe");
             }
             const { url, verifier, state } = await authorizeUrl(req);
             sessionStorage.setItem(
@@ -815,14 +834,12 @@ export function createClient(
         ): Promise<AuthenticationResult> {
             preflight();
             const account = req.account ?? getActiveAccount();
-            if (
-                !account ||
-                !getAccount({ homeAccountId: account.homeAccountId })
-            ) {
-                throw new InteractionRequiredAuthError(
-                    "no_account",
-                    "Sign in first"
-                );
+            if (!account) {
+                throw new BrowserAuthError("no_account_error");
+            }
+            if (!getAccount({ homeAccountId: account.homeAccountId })) {
+                // real rejects unknown accounts as an authority mismatch
+                throw new ClientConfigurationError("authority_mismatch");
             }
             const keys = tokenKeys();
             const wanted = req.scopes.map((sc) => sc.toLowerCase());

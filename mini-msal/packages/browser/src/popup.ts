@@ -25,7 +25,7 @@ const FEATURES = "width=483,height=600,popup=yes";
 function openPopup(url: string): Window {
     const win = open(url, "msal.popup", FEATURES);
     if (!win) {
-        throw new BrowserAuthError("popup_window_error", "Popup was blocked");
+        throw new BrowserAuthError("popup_window_error");
     }
     return win;
 }
@@ -42,7 +42,11 @@ export function popup(ctx: ClientContext): void {
         );
         const win = openPopup(url);
         try {
-            const code = await ctx.pollForCode(win, state, 60_000);
+            const code = await ctx.pollForCode(
+                win,
+                state,
+                ctx.config.system?.popupBridgeTimeout ?? 60_000
+            );
             return await ctx.redeem({
                 code,
                 verifier,

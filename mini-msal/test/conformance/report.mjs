@@ -228,7 +228,7 @@ const C = {
     "errors.uninitialized-client": {
         class: "bug",
         real: "Uniform BrowserAuthError uninitialized_public_client_application from loginPopup/acquireTokenSilent/handleRedirectPromise/logoutRedirect before initialize().",
-        mini: "No guard: loginPopup/logoutRedirect CRASH with TypeError (metadata undefined); handleRedirectPromise resolves; silent throws no_account.",
+        mini: "No guard: loginPopup/logoutRedirect CRASH with TypeError (metadata undefined); handleRedirectPromise resolves; silent throws no_account_error.",
         cost: 0.15,
     },
     "errors.redirect-in-iframe": {
@@ -240,13 +240,13 @@ const C = {
     "errors.nested-popup-guard": {
         class: "behavioral-diff",
         real: "SURPRISE: real v5.16 ALLOWS loginPopup from an msal.*-named window (completes fine); silent fails only with no_account_error. The window-name block documented for v3/v4 is gone in the bridge era.",
-        mini: "Blocks BOTH with block_nested_popups — implements a guard real no longer has. Over-blocking relative to 5.16.",
+        mini: "Guard removed (matches real): popup completes but result shape differs (B1) and silent then SUCCEEDS because mini auto-set the active account (A8).",
         cost: 0.1,
     },
     "errors.interaction-in-progress": {
         class: "bug",
         real: "Second interactive call while a popup is pending → BrowserAuthError interaction_in_progress; the FIRST call completes normally.",
-        mini: "No interaction lock + fixed 'msal.popup' window name: the second popup NAVIGATES the first one — first call fails state_mismatch, second fails user_cancelled. Both callers lose.",
+        mini: "No interaction lock + fixed 'msal.popup' window name: the second popup NAVIGATES the first one — first call fails state_mismatch, SECOND call wins the token. Callers race.",
         cost: 0.3,
     },
     "errors.silent-unknown-account": {

@@ -889,11 +889,6 @@
         "path": "idp[1].query.x-client-VER",
         "real": "\"5.16.0\"",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.err.name",
-        "real": "\"InteractionRequiredAuthError\"",
-        "mini": "\"Error\""
       }
     ],
     "observed": {
@@ -926,7 +921,7 @@
         "err": {
           "errorCode": "login_required",
           "message": "no session",
-          "name": "Error",
+          "name": "InteractionRequiredAuthError",
           "subError": null
         }
       }
@@ -1380,7 +1375,7 @@
       {
         "path": "events[0].error",
         "real": "null",
-        "mini": "{\"errorCode\":\"state_mismatch\",\"message\":\"State does not match\",\"name\":\"Error\",\"subError\":null}"
+        "mini": "{\"errorCode\":\"state_mismatch\",\"message\":\"See https://aka.ms/msal.js.errors#state_mismatch for details\",\"name\":\"ClientAuthError\",\"subError\":null}"
       },
       {
         "path": "events[0].eventType",
@@ -1410,7 +1405,7 @@
       {
         "path": "result.err",
         "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":\"state_mismatch\",\"message\":\"State does not match\",\"name\":\"Error\",\"subError\":null}"
+        "mini": "{\"errorCode\":\"state_mismatch\",\"message\":\"See https://aka.ms/msal.js.errors#state_mismatch for details\",\"name\":\"ClientAuthError\",\"subError\":null}"
       }
     ],
     "observed": {
@@ -1418,8 +1413,8 @@
         {
           "error": {
             "errorCode": "state_mismatch",
-            "message": "State does not match",
-            "name": "Error",
+            "message": "See https://aka.ms/msal.js.errors#state_mismatch for details",
+            "name": "ClientAuthError",
             "subError": null
           },
           "eventType": "msal:loginFailure",
@@ -1441,8 +1436,8 @@
       "result": {
         "err": {
           "errorCode": "state_mismatch",
-          "message": "State does not match",
-          "name": "Error",
+          "message": "See https://aka.ms/msal.js.errors#state_mismatch for details",
+          "name": "ClientAuthError",
           "subError": null
         }
       }
@@ -3973,7 +3968,7 @@
       {
         "path": "events[0].error",
         "real": "null",
-        "mini": "{\"errorCode\":\"access_denied\",\"message\":\"AADSTS65004: User declined to consent.\",\"name\":\"Error\",\"subError\":null}"
+        "mini": "{\"errorCode\":\"access_denied\",\"message\":\"AADSTS65004: User declined to consent.\",\"name\":\"ServerError\",\"subError\":null}"
       },
       {
         "path": "events[0].eventType",
@@ -3999,11 +3994,6 @@
         "path": "events[4]",
         "real": "{\"error\":null,\"eventType\":\"msal:handleRedirectEnd\",\"interactionType\":\"redirect\",\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":4}",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.err.name",
-        "real": "\"ServerError\"",
-        "mini": "\"Error\""
       }
     ],
     "observed": {
@@ -4012,7 +4002,7 @@
           "error": {
             "errorCode": "access_denied",
             "message": "AADSTS65004: User declined to consent.",
-            "name": "Error",
+            "name": "ServerError",
             "subError": null
           },
           "eventType": "msal:loginFailure",
@@ -4035,7 +4025,7 @@
         "err": {
           "errorCode": "access_denied",
           "message": "AADSTS65004: User declined to consent.",
-          "name": "Error",
+          "name": "ServerError",
           "subError": null
         }
       }
@@ -4049,7 +4039,7 @@
       {
         "path": "events[0].error",
         "real": "null",
-        "mini": "{\"errorCode\":\"popup_window_error\",\"message\":\"Popup was blocked\",\"name\":\"Error\",\"subError\":null}"
+        "mini": "{\"errorCode\":\"popup_window_error\",\"message\":\"See https://aka.ms/msal.js.errors#popup_window_error for details\",\"name\":\"BrowserAuthError\",\"subError\":null}"
       },
       {
         "path": "events[0].eventType",
@@ -4070,16 +4060,6 @@
         "path": "events[3]",
         "real": "{\"error\":{\"errorCode\":\"popup_window_error\",\"message\":\"See https://aka.ms/msal.js.errors#popup_window_error for details\",\"name\":\"BrowserAuthError\",\"subError\":null},\"eventType\":\"msal:acquireTokenFailure\",\"interactionType\":\"popup\",\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":3}",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#popup_window_error for details\"",
-        "mini": "\"Popup was blocked\""
-      },
-      {
-        "path": "result.err.name",
-        "real": "\"BrowserAuthError\"",
-        "mini": "\"Error\""
       }
     ],
     "observed": {
@@ -4087,8 +4067,8 @@
         {
           "error": {
             "errorCode": "popup_window_error",
-            "message": "Popup was blocked",
-            "name": "Error",
+            "message": "See https://aka.ms/msal.js.errors#popup_window_error for details",
+            "name": "BrowserAuthError",
             "subError": null
           },
           "eventType": "msal:loginFailure",
@@ -4101,8 +4081,8 @@
       "result": {
         "err": {
           "errorCode": "popup_window_error",
-          "message": "Popup was blocked",
-          "name": "Error",
+          "message": "See https://aka.ms/msal.js.errors#popup_window_error for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       }
@@ -4111,37 +4091,15 @@
   {
     "id": "errors.popup-closed-by-user",
     "area": "errors",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "result.err.errorCode",
-        "real": "\"timed_out\"",
-        "mini": "\"user_cancelled\""
-      },
-      {
-        "path": "result.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#timed_out for details\"",
-        "mini": "\"Window was closed\""
-      },
-      {
-        "path": "result.err.name",
-        "real": "\"BrowserAuthError\"",
-        "mini": "\"Error\""
-      },
-      {
-        "path": "result.err.subError",
-        "real": "\"redirect_bridge_timeout\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "popupWasOpenWhenClosed": true,
       "result": {
         "err": {
-          "errorCode": "user_cancelled",
-          "message": "Window was closed",
-          "name": "Error",
-          "subError": null
+          "errorCode": "timed_out",
+          "message": "See https://aka.ms/msal.js.errors#timed_out for details",
+          "name": "BrowserAuthError",
+          "subError": "redirect_bridge_timeout"
         }
       }
     }
@@ -4149,42 +4107,14 @@
   {
     "id": "errors.iframe-timeout",
     "area": "errors",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "result.err",
-        "real": "{\"errorCode\":\"timed_out\",\"message\":\"See https://aka.ms/msal.js.errors#timed_out for details\",\"name\":\"BrowserAuthError\",\"subError\":\"redirect_bridge_timeout\"}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.ok",
-        "real": "\"<missing>\"",
-        "mini": "{\"accessToken\":\"mock-access-token-0\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":null,\"correlationIdPresent\":false,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":null,\"idToken\":\"<jwt>\",\"scopes…"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "result": {
-        "ok": {
-          "accessToken": "mock-access-token-0",
-          "account": {
-            "homeAccountId": "oid-123.tenant-123",
-            "tenantId": "tenant-123",
-            "username": "ada@contoso.com"
-          },
-          "authority": null,
-          "correlationIdPresent": false,
-          "expiresInFuture": true,
-          "expiresOnType": "Date",
-          "fromCache": false,
-          "fromPlatformBroker": null,
-          "idToken": "<jwt>",
-          "scopes": [
-            "openid",
-            "profile",
-            "user.read"
-          ],
-          "state": null,
-          "tokenType": null
+        "err": {
+          "errorCode": "timed_out",
+          "message": "See https://aka.ms/msal.js.errors#timed_out for details",
+          "name": "BrowserAuthError",
+          "subError": "redirect_bridge_timeout"
         }
       }
     }
@@ -4192,30 +4122,13 @@
   {
     "id": "errors.interaction-required-variants",
     "area": "errors",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "consent_required.err.name",
-        "real": "\"InteractionRequiredAuthError\"",
-        "mini": "\"Error\""
-      },
-      {
-        "path": "interaction_required.err.name",
-        "real": "\"InteractionRequiredAuthError\"",
-        "mini": "\"Error\""
-      },
-      {
-        "path": "login_required.err.name",
-        "real": "\"InteractionRequiredAuthError\"",
-        "mini": "\"Error\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "consent_required": {
         "err": {
           "errorCode": "consent_required",
           "message": "AADSTS50076: consent_required description",
-          "name": "Error",
+          "name": "InteractionRequiredAuthError",
           "subError": null
         }
       },
@@ -4223,7 +4136,7 @@
         "err": {
           "errorCode": "interaction_required",
           "message": "AADSTS50076: interaction_required description",
-          "name": "Error",
+          "name": "InteractionRequiredAuthError",
           "subError": null
         }
       },
@@ -4231,7 +4144,7 @@
         "err": {
           "errorCode": "login_required",
           "message": "AADSTS50076: login_required description",
-          "name": "Error",
+          "name": "InteractionRequiredAuthError",
           "subError": null
         }
       }
@@ -4245,17 +4158,12 @@
       {
         "path": "acquireTokenSilent.err.errorCode",
         "real": "\"uninitialized_public_client_application\"",
-        "mini": "\"no_account\""
+        "mini": "\"no_account_error\""
       },
       {
         "path": "acquireTokenSilent.err.message",
         "real": "\"See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details\"",
-        "mini": "\"Sign in first\""
-      },
-      {
-        "path": "acquireTokenSilent.err.name",
-        "real": "\"BrowserAuthError\"",
-        "mini": "\"Error\""
+        "mini": "\"See https://aka.ms/msal.js.errors#no_account_error for details\""
       },
       {
         "path": "handleRedirectPromise.err",
@@ -4301,9 +4209,9 @@
     "observed": {
       "acquireTokenSilent": {
         "err": {
-          "errorCode": "no_account",
-          "message": "Sign in first",
-          "name": "Error",
+          "errorCode": "no_account_error",
+          "message": "See https://aka.ms/msal.js.errors#no_account_error for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       },
@@ -4334,25 +4242,13 @@
   {
     "id": "errors.redirect-in-iframe",
     "area": "errors",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "result.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#redirect_in_iframe for details\"",
-        "mini": "\"Redirect interaction is not allowed in an iframe\""
-      },
-      {
-        "path": "result.err.name",
-        "real": "\"BrowserAuthError\"",
-        "mini": "\"Error\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "result": {
         "err": {
           "errorCode": "redirect_in_iframe",
-          "message": "Redirect interaction is not allowed in an iframe",
-          "name": "Error",
+          "message": "See https://aka.ms/msal.js.errors#redirect_in_iframe for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       }
@@ -4364,46 +4260,103 @@
     "status": "diff",
     "diffs": [
       {
-        "path": "popupCall.ok",
-        "real": "{\"accessToken\":\"mock-access-token-0\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":\"https://localhost:4599/tenant/\",\"correlationIdPresent\":true,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":fal…",
+        "path": "popupCall.ok.authority",
+        "real": "\"https://localhost:4599/tenant/\"",
+        "mini": "null"
+      },
+      {
+        "path": "popupCall.ok.correlationIdPresent",
+        "real": "true",
+        "mini": "false"
+      },
+      {
+        "path": "popupCall.ok.fromPlatformBroker",
+        "real": "false",
+        "mini": "null"
+      },
+      {
+        "path": "popupCall.ok.scopes[0]",
+        "real": "\"User.Read\"",
+        "mini": "\"openid\""
+      },
+      {
+        "path": "popupCall.ok.scopes[1]",
+        "real": "\"openid\"",
+        "mini": "\"profile\""
+      },
+      {
+        "path": "popupCall.ok.scopes[2]",
+        "real": "\"profile\"",
+        "mini": "\"user.read\""
+      },
+      {
+        "path": "popupCall.ok.state",
+        "real": "\"<dynamic>\"",
+        "mini": "null"
+      },
+      {
+        "path": "popupCall.ok.tokenType",
+        "real": "\"Bearer\"",
+        "mini": "null"
+      },
+      {
+        "path": "silentCall.err",
+        "real": "{\"errorCode\":\"no_account_error\",\"message\":\"See https://aka.ms/msal.js.errors#no_account_error for details\",\"name\":\"BrowserAuthError\",\"subError\":null}",
         "mini": "\"<missing>\""
       },
       {
-        "path": "popupCall.err",
+        "path": "silentCall.ok",
         "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":\"block_nested_popups\",\"message\":\"Auth APIs blocked inside MSAL-opened popups\",\"name\":\"Error\",\"subError\":null}"
-      },
-      {
-        "path": "silentCall.err.errorCode",
-        "real": "\"no_account_error\"",
-        "mini": "\"block_nested_popups\""
-      },
-      {
-        "path": "silentCall.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#no_account_error for details\"",
-        "mini": "\"Auth APIs blocked inside MSAL-opened popups\""
-      },
-      {
-        "path": "silentCall.err.name",
-        "real": "\"BrowserAuthError\"",
-        "mini": "\"Error\""
+        "mini": "{\"accessToken\":\"mock-access-token-0\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":null,\"correlationIdPresent\":false,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":true,\"fromPlatformBroker\":null,\"idToken\":\"<jwt>\",\"scopes\"…"
       }
     ],
     "observed": {
       "popupCall": {
-        "err": {
-          "errorCode": "block_nested_popups",
-          "message": "Auth APIs blocked inside MSAL-opened popups",
-          "name": "Error",
-          "subError": null
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": null,
+          "correlationIdPresent": false,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": null,
+          "idToken": "<jwt>",
+          "scopes": [
+            "openid",
+            "profile",
+            "user.read"
+          ],
+          "state": null,
+          "tokenType": null
         }
       },
       "silentCall": {
-        "err": {
-          "errorCode": "block_nested_popups",
-          "message": "Auth APIs blocked inside MSAL-opened popups",
-          "name": "Error",
-          "subError": null
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": null,
+          "correlationIdPresent": false,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": true,
+          "fromPlatformBroker": null,
+          "idToken": "<jwt>",
+          "scopes": [
+            "openid",
+            "profile",
+            "user.read"
+          ],
+          "state": null,
+          "tokenType": null
         }
       }
     }
@@ -4421,39 +4374,50 @@
       {
         "path": "firstEventuallyResolved.err",
         "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":\"state_mismatch\",\"message\":\"State does not match\",\"name\":\"Error\",\"subError\":null}"
+        "mini": "{\"errorCode\":\"state_mismatch\",\"message\":\"See https://aka.ms/msal.js.errors#state_mismatch for details\",\"name\":\"ClientAuthError\",\"subError\":null}"
       },
       {
-        "path": "second.err.errorCode",
-        "real": "\"interaction_in_progress\"",
-        "mini": "\"user_cancelled\""
+        "path": "second.err",
+        "real": "{\"errorCode\":\"interaction_in_progress\",\"message\":\"See https://aka.ms/msal.js.errors#interaction_in_progress for details\",\"name\":\"BrowserAuthError\",\"subError\":null}",
+        "mini": "\"<missing>\""
       },
       {
-        "path": "second.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#interaction_in_progress for details\"",
-        "mini": "\"Window was closed\""
-      },
-      {
-        "path": "second.err.name",
-        "real": "\"BrowserAuthError\"",
-        "mini": "\"Error\""
+        "path": "second.ok",
+        "real": "\"<missing>\"",
+        "mini": "{\"accessToken\":\"mock-access-token-0\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":null,\"correlationIdPresent\":false,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":null,\"idToken\":\"<jwt>\",\"scopes…"
       }
     ],
     "observed": {
       "firstEventuallyResolved": {
         "err": {
           "errorCode": "state_mismatch",
-          "message": "State does not match",
-          "name": "Error",
+          "message": "See https://aka.ms/msal.js.errors#state_mismatch for details",
+          "name": "ClientAuthError",
           "subError": null
         }
       },
       "second": {
-        "err": {
-          "errorCode": "user_cancelled",
-          "message": "Window was closed",
-          "name": "Error",
-          "subError": null
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": null,
+          "correlationIdPresent": false,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": null,
+          "idToken": "<jwt>",
+          "scopes": [
+            "openid",
+            "profile",
+            "user.read"
+          ],
+          "state": null,
+          "tokenType": null
         }
       }
     }
@@ -4461,53 +4425,21 @@
   {
     "id": "errors.silent-unknown-account",
     "area": "errors",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "noAccountAtAll.err.errorCode",
-        "real": "\"no_account_error\"",
-        "mini": "\"no_account\""
-      },
-      {
-        "path": "noAccountAtAll.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#no_account_error for details\"",
-        "mini": "\"Sign in first\""
-      },
-      {
-        "path": "noAccountAtAll.err.name",
-        "real": "\"BrowserAuthError\"",
-        "mini": "\"Error\""
-      },
-      {
-        "path": "unknownAccount.err.errorCode",
-        "real": "\"authority_mismatch\"",
-        "mini": "\"no_account\""
-      },
-      {
-        "path": "unknownAccount.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#authority_mismatch for details\"",
-        "mini": "\"Sign in first\""
-      },
-      {
-        "path": "unknownAccount.err.name",
-        "real": "\"ClientConfigurationError\"",
-        "mini": "\"Error\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "noAccountAtAll": {
         "err": {
-          "errorCode": "no_account",
-          "message": "Sign in first",
-          "name": "Error",
+          "errorCode": "no_account_error",
+          "message": "See https://aka.ms/msal.js.errors#no_account_error for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       },
       "unknownAccount": {
         "err": {
-          "errorCode": "no_account",
-          "message": "Sign in first",
-          "name": "Error",
+          "errorCode": "authority_mismatch",
+          "message": "See https://aka.ms/msal.js.errors#authority_mismatch for details",
+          "name": "ClientConfigurationError",
           "subError": null
         }
       }
@@ -4892,16 +4824,6 @@
     "status": "diff",
     "diffs": [
       {
-        "path": "first.err.message",
-        "real": "\"Error(s): Not Available - Timestamp: Not Available - Description: AADSTS90101: too many requests - Correlation ID: Not A\"",
-        "mini": "\"AADSTS90101: too many requests\""
-      },
-      {
-        "path": "first.err.name",
-        "real": "\"ServerError\"",
-        "mini": "\"Error\""
-      },
-      {
         "path": "immediateRetry.err",
         "real": "{\"errorCode\":\"\",\"message\":\"AADSTS90101: too many requests\",\"name\":\"ServerError\",\"subError\":null}",
         "mini": "\"<missing>\""
@@ -4926,8 +4848,8 @@
       "first": {
         "err": {
           "errorCode": "temporarily_throttled",
-          "message": "AADSTS90101: too many requests",
-          "name": "Error",
+          "message": "Error(s): Not Available - Timestamp: Not Available - Description: AADSTS90101: too many requests - Correlation ID: Not A",
+          "name": "ServerError",
           "subError": null
         }
       },
@@ -4962,25 +4884,13 @@
   {
     "id": "resilience.5xx-server-error",
     "area": "resilience",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "result.err.message",
-        "real": "\"Error(s): Not Available - Timestamp: Not Available - Description: injected 503 - Correlation ID: Not Available - Trace I\"",
-        "mini": "\"injected 503\""
-      },
-      {
-        "path": "result.err.name",
-        "real": "\"ServerError\"",
-        "mini": "\"Error\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "result": {
         "err": {
           "errorCode": "service_unavailable",
-          "message": "injected 503",
-          "name": "Error",
+          "message": "Error(s): Not Available - Timestamp: Not Available - Description: injected 503 - Correlation ID: Not Available - Trace I",
+          "name": "ServerError",
           "subError": null
         }
       },
@@ -5222,16 +5132,6 @@
         "mini": "null"
       },
       {
-        "path": "ok.errorClassesExported.ClientAuthError",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "ok.errorClassesExported.ServerError",
-        "real": "true",
-        "mini": "false"
-      },
-      {
         "path": "ok.eventType.ACQUIRE_TOKEN_FAILURE",
         "real": "\"msal:acquireTokenFailure\"",
         "mini": "\"<missing>\""
@@ -5377,9 +5277,9 @@
         "errorClassesExported": {
           "AuthError": true,
           "BrowserAuthError": true,
-          "ClientAuthError": false,
+          "ClientAuthError": true,
           "InteractionRequiredAuthError": true,
-          "ServerError": false
+          "ServerError": true
         },
         "eventType": {
           "ACCOUNT_ADDED": "msal:accountAdded",
@@ -5602,7 +5502,7 @@
       {
         "path": "failedCall.err",
         "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":\"invalid_grant\",\"message\":\"injected 400\",\"name\":\"Error\",\"subError\":null}"
+        "mini": "{\"errorCode\":\"invalid_grant\",\"message\":\"Error(s): Not Available - Timestamp: Not Available - Description: injected 400 - Correlation ID: Not Available - Trace I\",\"name\":\"ServerError\",\"subError\":null}"
       },
       {
         "path": "lastTelemetryParam",
@@ -5619,8 +5519,8 @@
       "failedCall": {
         "err": {
           "errorCode": "invalid_grant",
-          "message": "injected 400",
-          "name": "Error",
+          "message": "Error(s): Not Available - Timestamp: Not Available - Description: injected 400 - Correlation ID: Not Available - Trace I",
+          "name": "ServerError",
           "subError": null
         }
       },
@@ -5687,7 +5587,7 @@
       {
         "path": "silentResult.err",
         "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":\"no_account\",\"message\":\"Sign in first\",\"name\":\"Error\",\"subError\":null}"
+        "mini": "{\"errorCode\":\"no_account_error\",\"message\":\"See https://aka.ms/msal.js.errors#no_account_error for details\",\"name\":\"BrowserAuthError\",\"subError\":null}"
       }
     ],
     "observed": {
@@ -5706,9 +5606,9 @@
       },
       "silentResult": {
         "err": {
-          "errorCode": "no_account",
-          "message": "Sign in first",
-          "name": "Error",
+          "errorCode": "no_account_error",
+          "message": "See https://aka.ms/msal.js.errors#no_account_error for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       }
