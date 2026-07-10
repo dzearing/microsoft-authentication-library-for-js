@@ -66,6 +66,7 @@ export function popup(ctx: ClientContext): void {
                     correlationId,
                     nonce,
                     ccs,
+                    apiId: 862, // ApiId.acquireTokenPopup
                 });
                 ctx.emit(EventType.ACQUIRE_TOKEN_SUCCESS, "popup", result);
                 if (had < c.getAllAccounts().length) {
@@ -97,11 +98,16 @@ export function popup(ctx: ClientContext): void {
     }): Promise<void> => {
         ctx.preflight();
         ctx.lock("signout");
-        const validRequest = {
+        const validRequest: {
+            correlationId: string;
+            postLogoutRedirectUri?: string;
+            account?: AccountInfo | null;
+            state?: string;
+        } = {
             correlationId: crypto.randomUUID(),
             postLogoutRedirectUri: ctx.config.auth.postLogoutRedirectUri,
             ...req,
-        } as Record<string, unknown>;
+        };
         ctx.emit(EventType.LOGOUT_START, "popup", validRequest);
         try {
             // real clears the cache and emits logoutSuccess BEFORE the popup
@@ -109,7 +115,7 @@ export function popup(ctx: ClientContext): void {
             ctx.clearAccount(req?.account);
             validRequest.state = crypto.randomUUID();
             ctx.emit(EventType.LOGOUT_SUCCESS, "popup", validRequest);
-            const win = openPopup(ctx.logoutUrl());
+            const win = openPopup(ctx.logoutUrl(validRequest, "popup"));
             ctx.emit(EventType.POPUP_OPENED, "popup", { popupWindow: win });
             // wait for the popup to land back on the post-logout page (server
             // session cleared), then close

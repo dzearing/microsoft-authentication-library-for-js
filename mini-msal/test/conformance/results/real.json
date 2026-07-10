@@ -1,7 +1,12 @@
 [
   {
-    "id": "errors.popup-closed-by-user",
-    "area": "errors",
+    "id": "core.login-redirect-roundtrip",
+    "area": "core",
+    "status": "captured"
+  },
+  {
+    "id": "core.login-popup-roundtrip",
+    "area": "core",
     "status": "captured"
   }
 ]

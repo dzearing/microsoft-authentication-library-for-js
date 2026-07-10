@@ -234,6 +234,26 @@ Entries (append as you go):
   — real appears to fall back to iframe when the RT grant fails with the
   injected invalid_grant, mini surfaces the error; investigate in C3.
 
+- **B4 (2026-07-10)**: storage metadata + logout params. `msal.version`
+  written at initialize (sessionStorage — C6 must route it to the configured
+  cacheLocation; accounts.local-storage gained 1 diff from this, 13→14, still
+  a C6 item). Every entity write stamps `lastUpdatedAt` (epoch-ms string);
+  account entity additionally gets `cachedByApiId` = real's ApiId of the
+  redeeming flow (popup 862, handleRedirectPromise 865, ssoSilent 863, silent
+  iframe rung 864, RT grant 61 — only 862 is snapshot-observable, rest set
+  for true parity). end_session now carries `client-request-id` (request
+  correlationId) + `state` (real's lib-state format: base64 `{id,meta:
+  {interactionType}}`); logoutRedirect/logoutPopup honor per-request
+  postLogoutRedirectUri + correlationId. INFRA FIX (determinism): mock IdP's
+  id_token nonce was a single global `lastNonce` — a stray late /authorize
+  (abandoned iframe from a previous scenario) landing mid-roundtrip crossed
+  wires and made mini's nonce validation throw `nonce_mismatch`
+  (params.scopes-normalization flaked in full runs, passed in isolation).
+  Now the nonce is keyed by PKCE code_challenge at /authorize and resolved
+  from SHA256(code_verifier) at /token — per-request exact, no ordering
+  sensitivity. Snapshots unaffected (nonce/JWT normalized); real re-checked
+  green on roundtrip/sso/scopes scenarios after the change.
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -349,7 +369,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   offline_access`, account-derived login_hint on acquireTokenRedirect,
   token redemption `redirect_uri` = request's redirectUri. Compare snapshot
   `idp[*].query/body` blocks exactly (volatile values normalize away).
-- [ ] **B4** `pending` — Storage + misc behavior parity: write `msal.version`,
+- [x] **B4** `done 2026-07-10 — pass 44/75, mini-stack 24.4 KB min / 8.7 gz` — Storage + misc behavior parity: write `msal.version`,
   per-entity `lastUpdatedAt` + `cachedByApiId`; ~~drop mini's `msal.meta.*`
   key~~ DONE in A5 (discovery now cached in per-instance memory only — the
   key is gone and every new instance re-fetches discovery like real); forged-state redirect →
@@ -465,3 +485,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | B1 | done 2026-07-10 | 23/75 | 20.4 KB min / 7.5 gz | +10 pass (silent.cache-hit-fresh, expiry-window-refresh, policy-access-token-valid/at-and-rt/refresh-token/rt-and-network/skip, params.per-request-redirect-uri, params.scopes-normalization, resilience.network-drop). Result gains authority (`<authority>/`), correlationId (request's or per-request uuid; threaded redirect via msal.request, popup/ssoSilent via AuthCodeResponse, RT via redeemRefresh arg), tokenType "Bearer", fromPlatformBroker false, state "" on interactive+ssoSilent ONLY (absent on acquireTokenSilent — snapshots show real silent results carry NO state; silentLadder deletes it from the iframe rung). AccountInfo gains environment (cache entity's). telemetry.correlation-id-propagation resultMatches now true (rest of that scenario is C3). Total diffs 554→448; e2e 25/25; mini-core 12.5 min / 4.9 gz |
 | B2 | done 2026-07-10 | 32/75 | 22.9 KB min / 8.2 gz | +9 pass (handle-redirect-clean-load, acquire-token-popup, redirect-state-tampered, force-refresh, multi-account, active-account-persistence, cancelled-login-redirect, popup-blocked, double-initialize). Full real event streams + full result/account key shapes (payloadKeys = Object.keys). Total diffs 448→265; remaining event diffs only in cross-tab (C6), perf (C4), broker (C7). e2e 25/25; mini-core 14.0 min / 5.2 gz |
 | B3 | done 2026-07-10 | 40/75 | 24.0 KB min / 8.6 gz | +8 pass (login-redirect-roundtrip, login-popup-roundtrip, sso-silent-cold/warm, acquire-token-redirect, refresh-token-grant, iframe-fallback-no-rt, telemetry.token-request-headers). Authorize+token requests now carry real's full param set (nonce+validation, client-request-id, client_info, default claims, clidata, X-AnchorMailbox ccs, x-client-SKU/VER, empty telemetry params, lib-capability, charset content-type, RT redirect_uri). GAP_REPORT: 0 bugs remaining. e2e 25/25; mini-core 15.0 min / 5.6 gz |
+| B4 | done 2026-07-10 | 44/75 | 24.4 KB min / 8.7 gz | +4 pass (core.storage-shape-after-login, init.storage-before-login, accounts.logout-redirect, accounts.logout-popup-per-account; redirect-state-tampered was already done by B2). msal.version on initialize; lastUpdatedAt on all entities + cachedByApiId (real ApiId per flow) on the account; end_session gains client-request-id + state (lib-state format), per-request postLogoutRedirectUri honored on both logout flows. Mock-IdP determinism fix: nonce now keyed per PKCE challenge (see Decision Log — was a global that a stray late authorize could clobber → phantom nonce_mismatch flake). Total diffs 145→143 (accounts.local-storage +1, a C6 item). e2e 25/25; mini-core 15.4 min / 5.8 gz |

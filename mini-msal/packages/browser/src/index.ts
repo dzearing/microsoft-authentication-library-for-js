@@ -294,6 +294,7 @@ interface TokenEntity {
     expiresOn?: string;
     extendedExpiresOn?: string;
     tokenType?: string;
+    lastUpdatedAt?: string;
 }
 
 interface AccountEntity {
@@ -306,6 +307,8 @@ interface AccountEntity {
     name?: string;
     clientInfo?: string;
     tenantProfiles?: unknown[];
+    lastUpdatedAt?: string;
+    cachedByApiId?: number;
 }
 
 interface TokenKeys {
@@ -324,6 +327,8 @@ export interface AuthCodeResponse {
     nonce?: string;
     /** CCS routing hint ("Oid:<oid>@<tid>" or "UPN:<hint>") */
     ccs?: string;
+    /** real MSAL ApiId of the calling flow, cached on the account entity */
+    apiId?: number;
 }
 
 /** The core client surface returned by createClient. */
@@ -380,7 +385,10 @@ export interface ClientContext {
     ): Promise<string>;
     redeem(res: AuthCodeResponse): Promise<AuthenticationResult>;
     clearAccount(account?: AccountInfo | null): void;
-    logoutUrl(): string;
+    logoutUrl(
+        req?: { postLogoutRedirectUri?: string; correlationId?: string },
+        interactionType?: string
+    ): string;
 }
 
 export type Feature = (ctx: ClientContext) => void;
@@ -675,6 +683,7 @@ export function createClient(
             state?: string;
             nonce?: string;
             ccs?: string;
+            apiId?: number;
         }
     ): Promise<AuthenticationResult> => {
         const correlationId = meta?.correlationId ?? crypto.randomUUID();
@@ -717,6 +726,8 @@ export function createClient(
         const username = claims.preferred_username ?? claims.email ?? "";
         const grantedStr: string = json.scope ?? scopes.join(" ");
         const now = Math.floor(Date.now() / 1000);
+        // real stamps every entity write with lastUpdatedAt (epoch ms string)
+        const ts = String(Date.now());
         const expiresOn = now + json.expires_in;
         const environment = env();
         const realm = claims.tid ?? "";
@@ -745,6 +756,8 @@ export function createClient(
                     isHomeTenant: true,
                 },
             ],
+            lastUpdatedAt: ts,
+            cachedByApiId: meta?.apiId,
         };
         writeJSON(accountKey, entity);
         writeJSON(idKey, {
@@ -754,6 +767,7 @@ export function createClient(
             clientId,
             secret: json.id_token,
             realm,
+            lastUpdatedAt: ts,
         } satisfies TokenEntity);
         writeJSON(atKey, {
             credentialType: "AccessToken",
@@ -767,6 +781,7 @@ export function createClient(
             expiresOn: String(expiresOn),
             extendedExpiresOn: String(expiresOn),
             tokenType: "Bearer",
+            lastUpdatedAt: ts,
         } satisfies TokenEntity);
         if (json.refresh_token) {
             writeJSON(rtKey, {
@@ -775,6 +790,7 @@ export function createClient(
                 environment,
                 clientId,
                 secret: json.refresh_token,
+                lastUpdatedAt: ts,
             } satisfies TokenEntity);
         }
 
@@ -835,6 +851,7 @@ export function createClient(
                 state: "",
                 nonce: res.nonce,
                 ccs: res.ccs,
+                apiId: res.apiId,
             }
         );
 
@@ -852,7 +869,8 @@ export function createClient(
                     redirect_uri: new URL(req.redirectUri, location.href).href,
                 }),
             },
-            { correlationId: req.correlationId, ccs: ccsFrom(req) }
+            // 61 = real's ApiId.acquireTokenSilent_silentFlow
+            { correlationId: req.correlationId, ccs: ccsFrom(req), apiId: 61 }
         );
 
     // ---- interactive: redirect ----
@@ -894,6 +912,7 @@ export function createClient(
                 correlationId,
                 nonce,
                 ccs,
+                apiId: 865, // ApiId.handleRedirectPromise
             });
             emit(EventType.ACQUIRE_TOKEN_SUCCESS, "redirect", result);
             if (had < accountKeys().length) {
@@ -911,7 +930,8 @@ export function createClient(
     // ---- silent ----
     /** hidden-iframe prompt=none flow, no events (shared by ssoSilent + ladder) */
     const silentFrame = async (
-        req: TokenRequest
+        req: TokenRequest,
+        apiId: number
     ): Promise<AuthenticationResult> => {
         const {
             url,
@@ -940,6 +960,7 @@ export function createClient(
                 correlationId,
                 nonce,
                 ccs,
+                apiId,
             });
         } finally {
             frame.remove();
@@ -956,7 +977,7 @@ export function createClient(
         const had = accountKeys().length;
         emit(EventType.ACQUIRE_TOKEN_START, "silent", validRequest);
         try {
-            const result = await silentFrame(validRequest);
+            const result = await silentFrame(validRequest, 863); // ApiId.ssoSilent
             emit(EventType.ACQUIRE_TOKEN_SUCCESS, "silent", result);
             if (had < accountKeys().length) {
                 emit(EventType.LOGIN_SUCCESS, "silent", result.account);
@@ -1062,11 +1083,10 @@ export function createClient(
             }
         }
         // last resort: hidden iframe with prompt=none
-        const result = await silentFrame({
-            ...req,
-            account,
-            loginHint: account.username,
-        });
+        const result = await silentFrame(
+            { ...req, account, loginHint: account.username },
+            864 // ApiId.acquireTokenSilent_authCode
+        );
         // real's acquireTokenSilent results carry state: undefined (the key
         // exists — event payloads expose it — but interactive/ssoSilent
         // results are the only ones with a value)
@@ -1075,14 +1095,32 @@ export function createClient(
     };
 
     // ---- logout ----
-    const logoutUrl = (): string => {
+    const logoutUrl = (
+        req?: { postLogoutRedirectUri?: string; correlationId?: string },
+        interactionType = "redirect"
+    ): string => {
         const url = new URL(metadata!.end_session_endpoint);
-        url.searchParams.set(
+        const p = url.searchParams;
+        p.set(
             "post_logout_redirect_uri",
             new URL(
-                config.auth.postLogoutRedirectUri ?? redirectUri,
+                req?.postLogoutRedirectUri ??
+                    config.auth.postLogoutRedirectUri ??
+                    redirectUri,
                 location.href
             ).href
+        );
+        p.set("client-request-id", req?.correlationId ?? crypto.randomUUID());
+        // real's redirect bridge requires a state param (lib-state format:
+        // base64 of {id, meta:{interactionType}}); the IdP echoes it back
+        p.set(
+            "state",
+            btoa(
+                JSON.stringify({
+                    id: crypto.randomUUID(),
+                    meta: { interactionType },
+                })
+            )
         );
         return url.href;
     };
@@ -1131,6 +1169,8 @@ export function createClient(
                     `${authority}/v2.0/.well-known/openid-configuration`
                 )
             ).json();
+            // real tracks lib up/downgrades via this key (trackVersionChanges)
+            sessionStorage.setItem("msal.version", WIRE_ID["x-client-VER"]);
             initialized = true;
             emit(EventType.INITIALIZE_END);
         },
@@ -1252,18 +1292,21 @@ export function createClient(
 
         async logoutRedirect(req?: {
             account?: AccountInfo | null;
+            postLogoutRedirectUri?: string;
+            correlationId?: string;
         }): Promise<void> {
             preflight();
             lock("signout");
-            // the page navigates away, so logoutStart is the only event a
-            // same-page listener can see (like real's RedirectClient.logout)
-            emit(EventType.LOGOUT_START, "redirect", {
+            const validRequest = {
                 correlationId: crypto.randomUUID(),
                 postLogoutRedirectUri: config.auth.postLogoutRedirectUri,
                 ...req,
-            });
+            };
+            // the page navigates away, so logoutStart is the only event a
+            // same-page listener can see (like real's RedirectClient.logout)
+            emit(EventType.LOGOUT_START, "redirect", validRequest);
             clearAccount(req?.account);
-            location.assign(logoutUrl());
+            location.assign(logoutUrl(validRequest));
         },
     };
 

@@ -19,6 +19,7 @@
  */
 import { createServer } from "node:https";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 
 // https because real MSAL rejects http:// authorities (authority_uri_insecure);
 // self-signed cert in .cert/ (generated via openssl, browser launched with
@@ -56,6 +57,11 @@ const users = [
 let sessionUser = 0; // which identity the IdP session currently holds
 let sessionActive = false; // "is the user signed in at the IdP"
 let lastNonce;
+// nonce bound to its authorize request via the PKCE challenge, so a late
+// stray /authorize (e.g. an abandoned iframe from a previous scenario) can't
+// cross wires with an in-flight roundtrip — the /token leg recomputes the
+// challenge from code_verifier and gets exactly its own nonce back
+const nonceByChallenge = new Map();
 
 // ---- conformance-test state (cleared by /reset) ----
 let requestLog = []; // every authorize/token/logout request, in order
@@ -74,12 +80,12 @@ function takeInjection(endpoint) {
     return inj;
 }
 
-function makeIdToken(idx) {
+function makeIdToken(idx, nonce = lastNonce) {
     const claims = {
         aud: "11111111-2222-3333-4444-555555555555",
         iss: `https://localhost:${PORT}/tenant/v2.0`,
         ...users[idx],
-        nonce: lastNonce,
+        nonce,
         exp: Math.floor(Date.now() / 1000) + 3600,
         iat: Math.floor(Date.now() / 1000),
     };
@@ -136,6 +142,9 @@ const server = createServer(tls, (req, res) => {
                 return res.end();
             }
             lastNonce = q.get("nonce") ?? lastNonce;
+            if (q.get("code_challenge")) {
+                nonceByChallenge.set(q.get("code_challenge"), q.get("nonce"));
+            }
             const redirect = new URL(q.get("redirect_uri"));
             if (q.get("prompt") === "select_account") {
                 // simulate the user picking the other account in the chooser
@@ -211,6 +220,12 @@ const server = createServer(tls, (req, res) => {
             const grantValue =
                 params.get("code") ?? params.get("refresh_token") ?? "";
             const idx = Number(grantValue.slice(-1)) || 0;
+            const verifier = params.get("code_verifier");
+            const nonce = verifier
+                ? nonceByChallenge.get(
+                      createHash("sha256").update(verifier).digest("base64url")
+                  ) ?? lastNonce
+                : lastNonce;
             console.log("  grant:", params.get("grant_type"), "user:", idx);
             res.setHeader("Content-Type", "application/json");
             res.end(
@@ -220,7 +235,7 @@ const server = createServer(tls, (req, res) => {
                     expires_in: 3600,
                     access_token: `mock-access-token-${idx}`,
                     refresh_token: `mock-rt-${idx}`,
-                    id_token: makeIdToken(idx),
+                    id_token: makeIdToken(idx, nonce),
                     client_info: b64url({
                         uid: users[idx].oid,
                         utid: users[idx].tid,
@@ -237,6 +252,7 @@ const server = createServer(tls, (req, res) => {
         requestLog = [];
         injections = [];
         tokenOverrides = {};
+        nonceByChallenge.clear();
         res.end("reset");
     } else if (url.pathname === "/requests") {
         res.setHeader("Content-Type", "application/json");

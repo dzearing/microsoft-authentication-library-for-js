@@ -13,17 +13,17 @@ exists but differs observably · **missing-feature** = absent by design ·
 
 | Area | Scenarios | Pass | Behavioral diff | Missing feature | Bug |
 |---|---|---|---|---|---|
-| 1. Core flows | 9 | 8 | 1 | 0 | 0 |
+| 1. Core flows | 9 | 9 | 0 | 0 | 0 |
 | 2. Silent acquisition | 12 | 12 | 0 | 0 | 0 |
-| 3. Accounts & cache | 7 | 3 | 2 | 2 | 0 |
+| 3. Accounts & cache | 7 | 5 | 0 | 2 | 0 |
 | 4. Errors & guards | 10 | 10 | 0 | 0 | 0 |
 | 5. Platform broker / WAM | 7 | 0 | 0 | 7 | 0 |
 | 6. Nested app auth (NAA) | 6 | 0 | 0 | 6 | 0 |
 | 7. Telemetry | 5 | 1 | 0 | 4 | 0 |
 | 8. Request passthrough | 9 | 3 | 0 | 6 | 0 |
 | 9. Resilience | 4 | 2 | 0 | 2 | 0 |
-| 10. Init & misc | 6 | 1 | 2 | 3 | 0 |
-| **Total** | **75** | **40** | **5** | **30** | **0** |
+| 10. Init & misc | 6 | 2 | 1 | 3 | 0 |
+| **Total** | **75** | **44** | **1** | **30** | **0** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -98,7 +98,7 @@ here instead of being repeated per scenario:
 - **real**: Forged state: handleRedirectPromise resolves NULL silently (response treated as not-ours; no failure event).
 - **mini**: Throws state_mismatch + emits loginFailure. Stricter than real; apps double-handling errors would behave differently.
 
-#### `core.storage-shape-after-login` — ↔️ behavioral-diff · est. 0.3 KB to close
+#### `core.storage-shape-after-login` — ✅ pass · est. 0.3 KB to close
 
 - **real**: Entities carry lastUpdatedAt + cachedByApiId metadata; writes msal.version; active account NOT auto-set.
 - **mini**: Core msal.3 schema matches (interop verified) but lacks metadata fields; adds its own msal.meta.* discovery cache; AUTO-SETS active account on first login (real never does).
@@ -182,12 +182,12 @@ here instead of being repeated per scenario:
 - **real**: Active account persists across reload + fresh client (identical in both); real also emits initialize events after reload.
 - **mini**: Persistence identical; only the initialize events are missing.
 
-#### `accounts.logout-popup-per-account` — ↔️ behavioral-diff · est. 0.3 KB to close
+#### `accounts.logout-popup-per-account` — ✅ pass · est. 0.3 KB to close
 
 - **real**: logoutStart/Success/End events (interactionType=popup); end_session gets client-request-id + state; per-request postLogoutRedirectUri honored.
 - **mini**: Only that account's entities removed (matches); events differ (accountRemoved/logoutSuccess, no start/end); per-request postLogoutRedirectUri IGNORED (uses config); no state on end_session.
 
-#### `accounts.logout-redirect` — ↔️ behavioral-diff · est. 0.2 KB to close
+#### `accounts.logout-redirect` — ✅ pass · est. 0.2 KB to close
 
 - **real**: Sets msal.interaction.status (signout) temp cache; end_session carries state + client-request-id; storage fully cleared after roundtrip.
 - **mini**: Storage cleared (matches); no temp interaction state, no state param on end_session.
@@ -441,7 +441,7 @@ here instead of being repeated per scenario:
 - **real**: Exports version, createStandard/NestablePublicClientApplication, isPlatformBrokerAvailable, ClientAuthError/ServerError classes, 52 BrowserAuthErrorCodes, full EventType (incl. broker events), PromptValue/ProtocolMode/BrowserCacheLocation enums, OIDC_DEFAULT_SCOPES.
 - **mini**: Small subset: PublicClientApplication, 8 EventTypes, 3 error classes, CacheLookupPolicy, InteractionType.
 
-#### `init.storage-before-login` — ↔️ behavioral-diff
+#### `init.storage-before-login` — ✅ pass
 
 - **real**: Bare initialize() writes only msal.version.
 - **mini**: Writes its msal.meta.<authority> discovery cache instead (this is also how mini avoids re-fetching discovery).

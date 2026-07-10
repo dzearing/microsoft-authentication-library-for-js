@@ -996,39 +996,7 @@
   {
     "id": "core.storage-shape-after-login",
     "area": "core",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|.lastUpdatedAt",
-        "real": "\"<epoch-ms>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||.lastUpdatedAt",
-        "real": "\"<epoch-ms>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||.lastUpdatedAt",
-        "real": "\"<epoch-ms>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|tenant-123.cachedByApiId",
-        "real": "862",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|tenant-123.lastUpdatedAt",
-        "real": "\"<epoch-ms>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.version",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "storage": {
         "localStorage": {},
@@ -1055,6 +1023,7 @@
             "expiresOn": "<dynamic>",
             "extendedExpiresOn": "<dynamic>",
             "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
             "realm": "tenant-123",
             "secret": "mock-access-token-0",
             "target": "openid profile User.Read",
@@ -1065,6 +1034,7 @@
             "credentialType": "IdToken",
             "environment": "localhost:4599",
             "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
             "realm": "tenant-123",
             "secret": "<jwt>"
           },
@@ -1073,13 +1043,16 @@
             "credentialType": "RefreshToken",
             "environment": "localhost:4599",
             "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
             "secret": "mock-rt-0"
           },
           "msal.3|oid-123.tenant-123|localhost:4599|tenant-123": {
             "authorityType": "MSSTS",
+            "cachedByApiId": 862,
             "clientInfo": "eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ",
             "environment": "localhost:4599",
             "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
             "localAccountId": "oid-123",
             "name": "Ada Lovelace",
             "realm": "tenant-123",
@@ -1093,7 +1066,8 @@
               }
             ],
             "username": "ada@contoso.com"
-          }
+          },
+          "msal.version": "5.16.0"
         }
       }
     }
@@ -2053,54 +2027,7 @@
   {
     "id": "accounts.logout-popup-per-account",
     "area": "accounts",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "logoutRequest[0].query.client-request-id",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "logoutRequest[0].query.post_logout_redirect_uri",
-        "real": "\"http://localhost:4173/conformance-app/popup.html\"",
-        "mini": "\"http://localhost:4173/conformance-app/\""
-      },
-      {
-        "path": "logoutRequest[0].query.state",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|.lastUpdatedAt",
-        "real": "\"<epoch-ms>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||.lastUpdatedAt",
-        "real": "\"<epoch-ms>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||.lastUpdatedAt",
-        "real": "\"<epoch-ms>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|tenant-123.cachedByApiId",
-        "real": "862",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|tenant-123.lastUpdatedAt",
-        "real": "\"<epoch-ms>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.version",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "events": [
         {
@@ -2150,7 +2077,9 @@
           "endpoint": "logout",
           "headers": {},
           "query": {
-            "post_logout_redirect_uri": "http://localhost:4173/conformance-app/"
+            "client-request-id": "<dynamic>",
+            "post_logout_redirect_uri": "http://localhost:4173/conformance-app/popup.html",
+            "state": "<dynamic>"
           }
         }
       ],
@@ -2179,6 +2108,7 @@
             "expiresOn": "<dynamic>",
             "extendedExpiresOn": "<dynamic>",
             "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
             "realm": "tenant-123",
             "secret": "mock-access-token-0",
             "target": "openid profile User.Read",
@@ -2189,6 +2119,7 @@
             "credentialType": "IdToken",
             "environment": "localhost:4599",
             "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
             "realm": "tenant-123",
             "secret": "<jwt>"
           },
@@ -2197,13 +2128,16 @@
             "credentialType": "RefreshToken",
             "environment": "localhost:4599",
             "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
             "secret": "mock-rt-0"
           },
           "msal.3|oid-123.tenant-123|localhost:4599|tenant-123": {
             "authorityType": "MSSTS",
+            "cachedByApiId": 862,
             "clientInfo": "eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ",
             "environment": "localhost:4599",
             "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
             "localAccountId": "oid-123",
             "name": "Ada Lovelace",
             "realm": "tenant-123",
@@ -2217,7 +2151,8 @@
               }
             ],
             "username": "ada@contoso.com"
-          }
+          },
+          "msal.version": "5.16.0"
         }
       }
     }
@@ -2225,29 +2160,7 @@
   {
     "id": "accounts.logout-redirect",
     "area": "accounts",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "logoutRequest[0].query.client-request-id",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "logoutRequest[0].query.state",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "navs[1].queryKeys[0]",
-        "real": "\"state\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.version",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "after": {
         "ok": {
@@ -2260,7 +2173,9 @@
           "endpoint": "logout",
           "headers": {},
           "query": {
-            "post_logout_redirect_uri": "http://localhost:4173/conformance-app/"
+            "client-request-id": "<dynamic>",
+            "post_logout_redirect_uri": "http://localhost:4173/conformance-app/",
+            "state": "<dynamic>"
           }
         }
       ],
@@ -2273,7 +2188,9 @@
         {
           "hashKeys": [],
           "page": "http://localhost:4173/conformance-app/",
-          "queryKeys": []
+          "queryKeys": [
+            "state"
+          ]
         }
       ],
       "storage": {
@@ -2282,7 +2199,8 @@
           "msal.interaction.status": {
             "clientId": "<guid>",
             "type": "signout"
-          }
+          },
+          "msal.version": "5.16.0"
         }
       }
     }
@@ -2340,22 +2258,27 @@
       {
         "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|",
         "real": "\"<missing>\"",
-        "mini": "{\"cachedAt\":\"<dynamic>\",\"clientId\":\"<guid>\",\"credentialType\":\"AccessToken\",\"environment\":\"localhost:4599\",\"expiresOn\":\"<dynamic>\",\"extendedExpiresOn\":\"<dynamic>\",\"homeAccountId\":\"oid-123.tenant-123\",\"realm\":\"tenant-123\",\"secret\":\"mock-access-token-0\",\"target\":\"openid profile User.Read\",\"tokenType\":\"…"
+        "mini": "{\"cachedAt\":\"<dynamic>\",\"clientId\":\"<guid>\",\"credentialType\":\"AccessToken\",\"environment\":\"localhost:4599\",\"expiresOn\":\"<dynamic>\",\"extendedExpiresOn\":\"<dynamic>\",\"homeAccountId\":\"oid-123.tenant-123\",\"lastUpdatedAt\":\"<epoch-ms>\",\"realm\":\"tenant-123\",\"secret\":\"mock-access-token-0\",\"target\":\"openid pro…"
       },
       {
         "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||",
         "real": "\"<missing>\"",
-        "mini": "{\"clientId\":\"<guid>\",\"credentialType\":\"IdToken\",\"environment\":\"localhost:4599\",\"homeAccountId\":\"oid-123.tenant-123\",\"realm\":\"tenant-123\",\"secret\":\"<jwt>\"}"
+        "mini": "{\"clientId\":\"<guid>\",\"credentialType\":\"IdToken\",\"environment\":\"localhost:4599\",\"homeAccountId\":\"oid-123.tenant-123\",\"lastUpdatedAt\":\"<epoch-ms>\",\"realm\":\"tenant-123\",\"secret\":\"<jwt>\"}"
       },
       {
         "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||",
         "real": "\"<missing>\"",
-        "mini": "{\"clientId\":\"<guid>\",\"credentialType\":\"RefreshToken\",\"environment\":\"localhost:4599\",\"homeAccountId\":\"oid-123.tenant-123\",\"secret\":\"mock-rt-0\"}"
+        "mini": "{\"clientId\":\"<guid>\",\"credentialType\":\"RefreshToken\",\"environment\":\"localhost:4599\",\"homeAccountId\":\"oid-123.tenant-123\",\"lastUpdatedAt\":\"<epoch-ms>\",\"secret\":\"mock-rt-0\"}"
       },
       {
         "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|tenant-123",
         "real": "\"<missing>\"",
-        "mini": "{\"authorityType\":\"MSSTS\",\"clientInfo\":\"eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ\",\"environment\":\"localhost:4599\",\"homeAccountId\":\"oid-123.tenant-123\",\"localAccountId\":\"oid-123\",\"name\":\"Ada Lovelace\",\"realm\":\"tenant-123\",\"tenantProfiles\":[{\"isHomeTenant\":true,\"localAccountId\":\"oid-123\",\"name…"
+        "mini": "{\"authorityType\":\"MSSTS\",\"cachedByApiId\":862,\"clientInfo\":\"eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ\",\"environment\":\"localhost:4599\",\"homeAccountId\":\"oid-123.tenant-123\",\"lastUpdatedAt\":\"<epoch-ms>\",\"localAccountId\":\"oid-123\",\"name\":\"Ada Lovelace\",\"realm\":\"tenant-123\",\"tenantProfiles\":[{\"is…"
+      },
+      {
+        "path": "storage.sessionStorage.msal.version",
+        "real": "\"<missing>\"",
+        "mini": "\"5.16.0\""
       }
     ],
     "observed": {
@@ -2414,6 +2337,7 @@
             "expiresOn": "<dynamic>",
             "extendedExpiresOn": "<dynamic>",
             "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
             "realm": "tenant-123",
             "secret": "mock-access-token-0",
             "target": "openid profile User.Read",
@@ -2424,6 +2348,7 @@
             "credentialType": "IdToken",
             "environment": "localhost:4599",
             "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
             "realm": "tenant-123",
             "secret": "<jwt>"
           },
@@ -2432,13 +2357,16 @@
             "credentialType": "RefreshToken",
             "environment": "localhost:4599",
             "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
             "secret": "mock-rt-0"
           },
           "msal.3|oid-123.tenant-123|localhost:4599|tenant-123": {
             "authorityType": "MSSTS",
+            "cachedByApiId": 862,
             "clientInfo": "eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ",
             "environment": "localhost:4599",
             "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
             "localAccountId": "oid-123",
             "name": "Ada Lovelace",
             "realm": "tenant-123",
@@ -2452,7 +2380,8 @@
               }
             ],
             "username": "ada@contoso.com"
-          }
+          },
+          "msal.version": "5.16.0"
         }
       }
     }
@@ -3429,18 +3358,13 @@
   {
     "id": "init.storage-before-login",
     "area": "init",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "storage.sessionStorage.msal.version",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "storage": {
         "localStorage": {},
-        "sessionStorage": {}
+        "sessionStorage": {
+          "msal.version": "5.16.0"
+        }
       }
     }
   },
