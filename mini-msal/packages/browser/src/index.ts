@@ -433,6 +433,13 @@ export function createClient(
         }
     };
 
+    // like real MSAL's addScopes: request order, exact-case dedupe, OIDC
+    // defaults appended once
+    const normScopes = (scopes: string[]): string =>
+        [...new Set([...scopes, "openid", "profile", "offline_access"])].join(
+            " "
+        );
+
     // ---- authorize-request plumbing ----
     const authorizeUrl = async (
         req: TokenRequest,
@@ -453,10 +460,7 @@ export function createClient(
         p.set("client_id", clientId);
         p.set("response_type", "code");
         p.set("redirect_uri", reqRedirectUri);
-        p.set(
-            "scope",
-            `openid profile offline_access ${req.scopes.join(" ")}`
-        );
+        p.set("scope", normScopes(req.scopes));
         p.set("state", state);
         p.set("code_challenge", challenge);
         p.set("code_challenge_method", "S256");
@@ -519,7 +523,7 @@ export function createClient(
             redirect_uri: redirectUri,
             ...grant,
             client_id: clientId,
-            scope: `openid profile offline_access ${scopes.join(" ")}`,
+            scope: normScopes(scopes),
         });
         const claims = decodeJwt(json.id_token);
         // like real MSAL, homeAccountId comes from client_info when present
@@ -637,7 +641,7 @@ export function createClient(
         return {
             accessToken: json.access_token,
             idToken: json.id_token,
-            scopes: grantedStr.toLowerCase().split(" "),
+            scopes: [...new Set(grantedStr.split(" "))],
             expiresOn: new Date(expiresOn * 1000),
             account,
             fromCache: false,
@@ -877,7 +881,7 @@ export function createClient(
                 const result = {
                     accessToken: at.secret,
                     idToken: id?.secret ?? "",
-                    scopes: (at.target ?? "").toLowerCase().split(" "),
+                    scopes: (at.target ?? "").split(" "),
                     expiresOn: new Date(Number(at.expiresOn) * 1000),
                     account,
                     fromCache: true,

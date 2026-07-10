@@ -145,6 +145,13 @@ Entries (append as you go):
   20.1 → 18.7 KB min for free; core-only floor is 10.9 KB min / 4.2 KB gz
   (`mini-core` variant in `npm run measure`).
 
+- **A4 (2026-07-10)**: judgment call — "pass count went UP" validation is
+  waived when a task's scenario ALSO depends on a later task (here B1's
+  result-shape fields); the bar is then "task's expected diffs eliminated +
+  zero regressions". Discovered: the conformance harness SORTS result.scopes
+  (lib.mjs) — snapshot scope order is alphabetical, not wire order; real
+  result scopes = ScopeSet.fromString(AT target).asArray(), casing preserved.
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -200,10 +207,15 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 - [x] **A3** `done 2026-07-10 — pass 10/75, mini-stack 19.4 KB min / 7.2 gz` — Account filters: `getAccount({})` → null;
   `getAllAccounts(filter)` honors filter; username matching case-insensitive.
   Scenario: accounts.get-account-filters.
-- [ ] **A4** `pending` — Scope normalization: dedupe exact duplicates
-  (preserve casing variants like real), no trailing space on empty scopes,
-  OIDC defaults appended once, order = request order then defaults (match
-  snapshot params.scopes-normalization exactly).
+- [x] **A4** `done 2026-07-10 — pass 10/75, mini-stack 19.4 KB min / 7.2 gz` —
+  Scope normalization: dedupe exact duplicates (preserve casing variants like
+  real), no trailing space on empty scopes, OIDC defaults appended once,
+  order = request order then defaults. All 8 scope diffs on
+  params.scopes-normalization eliminated (18→10); the scenario can't PASS
+  until B1 supplies result-shape fields (authority/correlationId/tokenType/
+  state/fromPlatformBroker) — pass count unchanged by design, zero
+  regressions. Result scopes now preserve granted-string casing
+  (harness sorts them; real never lowercases).
 - [ ] **A5** `pending` — CacheLookupPolicy full semantics + forceRefresh:
   AccessToken(1): AT-or-throw ClientAuthError `token_refresh_required`;
   AccessTokenAndRefreshToken(2): AT→RT, no iframe; RefreshToken(3): RT only
@@ -363,3 +375,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | A1 | done 2026-07-10 | 8/75 | 19.2 KB min / 7.1 gz | +6 pass (popup-closed-by-user, iframe-timeout, interaction-required-variants, redirect-in-iframe, silent-unknown-account, 5xx-server-error); e2e 25/25; mini-core 11.4 min / 4.4 gz |
 | A2 | done 2026-07-10 | 9/75 | 19.3 KB min / 7.2 gz | +1 pass (errors.uninitialized-client): `initialized` flag, guard first in preflight(), handleRedirectPromise rejects pre-init (own check — full preflight would break iframe null path); e2e 25/25; mini-core 11.5 min / 4.5 gz |
 | A3 | done 2026-07-10 | 10/75 | 19.4 KB min / 7.2 gz | +1 pass (accounts.get-account-filters): getAllAccounts(filter?) honors filter; getAccount({}) / all-empty filter → null (matches real CacheManager.getAccountInfoFilteredBy); shared matchesFilter predicate; e2e 25/25; mini-core 11.5 min / 4.5 gz |
+| A4 | done 2026-07-10 | 10/75 | 19.4 KB min / 7.2 gz | +0 pass by design: all 8 scope diffs on params.scopes-normalization gone (18→10 diffs), remainder is B1 result-shape. normScopes = real addScopes ([...req, ...defaults] → Set → join, exact-case dedupe) on authorize+token; result scopes keep granted casing (dropped toLowerCase). No regressions (same 10 pass, 591 total diffs); e2e 25/25; mini-core 11.5 min / 4.5 gz |

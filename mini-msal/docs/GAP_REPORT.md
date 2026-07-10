@@ -20,10 +20,10 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 5. Platform broker / WAM | 7 | 0 | 0 | 7 | 0 |
 | 6. Nested app auth (NAA) | 6 | 0 | 0 | 6 | 0 |
 | 7. Telemetry | 5 | 0 | 0 | 5 | 0 |
-| 8. Request passthrough | 9 | 2 | 0 | 6 | 1 |
+| 8. Request passthrough | 9 | 2 | 1 | 6 | 0 |
 | 9. Resilience | 4 | 1 | 1 | 2 | 0 |
 | 10. Init & misc | 6 | 0 | 3 | 3 | 0 |
-| **Total** | **75** | **10** | **27** | **32** | **6** |
+| **Total** | **75** | **10** | **28** | **32** | **5** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -392,10 +392,10 @@ here instead of being repeated per scenario:
 - **real**: Per-request authority triggers discovery for that authority; result.authority reflects it; token refreshed against it.
 - **mini**: authority + forceRefresh ignored → returned the cached token from the default authority.
 
-#### `params.scopes-normalization` — 🐞 **bug** · est. 0.1 KB to close
+#### `params.scopes-normalization` — ↔️ behavioral-diff · est. 0.1 KB to close
 
 - **real**: Dedupes exact-duplicate scopes (keeps distinct casings), appends OIDC defaults once; empty scopes → 'openid profile offline_access'.
-- **mini**: No dedupe — sent 'openid profile offline_access User.Read USER.READ openid User.Read' (openid twice); empty scopes leaves a trailing space.
+- **mini**: Scope wire format matches (A4); remaining diffs are B1 result-shape fields (authority, correlationId, tokenType, state, fromPlatformBroker).
 
 ### 9. Resilience
 

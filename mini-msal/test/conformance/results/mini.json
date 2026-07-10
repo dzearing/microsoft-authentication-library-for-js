@@ -85,11 +85,6 @@
         "mini": "\"<missing>\""
       },
       {
-        "path": "idp[1].query.scope",
-        "real": "\"User.Read openid profile offline_access\"",
-        "mini": "\"openid profile offline_access User.Read\""
-      },
-      {
         "path": "idp[1].query.x-client-SKU",
         "real": "\"msal.js.browser\"",
         "mini": "\"<missing>\""
@@ -112,7 +107,7 @@
       {
         "path": "idp[2].body",
         "real": "\"<missing>\"",
-        "mini": "{\"client_id\":\"<guid>\",\"code\":\"mock-code-0\",\"code_verifier\":\"<dynamic>\",\"grant_type\":\"authorization_code\",\"redirect_uri\":\"http://localhost:4173/conformance-app/\",\"scope\":\"openid profile offline_access User.Read\"}"
+        "mini": "{\"client_id\":\"<guid>\",\"code\":\"mock-code-0\",\"code_verifier\":\"<dynamic>\",\"grant_type\":\"authorization_code\",\"redirect_uri\":\"http://localhost:4173/conformance-app/\",\"scope\":\"User.Read openid profile offline_access\"}"
       },
       {
         "path": "idp[3]",
@@ -133,21 +128,6 @@
         "path": "result.ok.fromPlatformBroker",
         "real": "false",
         "mini": "null"
-      },
-      {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
       },
       {
         "path": "result.ok.state",
@@ -173,21 +153,6 @@
         "path": "secondHandleRedirectCall.ok.fromPlatformBroker",
         "real": "false",
         "mini": "null"
-      },
-      {
-        "path": "secondHandleRedirectCall.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "secondHandleRedirectCall.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "secondHandleRedirectCall.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
       },
       {
         "path": "secondHandleRedirectCall.ok.state",
@@ -264,7 +229,7 @@
             "redirect_uri": "http://localhost:4173/conformance-app/",
             "response_mode": "fragment",
             "response_type": "code",
-            "scope": "openid profile offline_access User.Read",
+            "scope": "User.Read openid profile offline_access",
             "state": "<dynamic>"
           }
         },
@@ -275,7 +240,7 @@
             "code_verifier": "<dynamic>",
             "grant_type": "authorization_code",
             "redirect_uri": "http://localhost:4173/conformance-app/",
-            "scope": "openid profile offline_access User.Read"
+            "scope": "User.Read openid profile offline_access"
           },
           "endpoint": "token",
           "headers": {
@@ -301,9 +266,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -325,9 +290,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -448,11 +413,6 @@
         "mini": "\"<missing>\""
       },
       {
-        "path": "idp[1].query.scope",
-        "real": "\"User.Read openid profile offline_access\"",
-        "mini": "\"openid profile offline_access User.Read\""
-      },
-      {
         "path": "idp[1].query.x-client-SKU",
         "real": "\"msal.js.browser\"",
         "mini": "\"<missing>\""
@@ -471,11 +431,6 @@
         "path": "idp[2].body.client_info",
         "real": "\"<dynamic>\"",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.scope",
-        "real": "\"User.Read openid profile offline_access\"",
-        "mini": "\"openid profile offline_access User.Read\""
       },
       {
         "path": "idp[2].body.x-client-SKU",
@@ -526,21 +481,6 @@
         "path": "result.ok.fromPlatformBroker",
         "real": "false",
         "mini": "null"
-      },
-      {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
       },
       {
         "path": "result.ok.state",
@@ -603,7 +543,7 @@
             "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
             "response_mode": "fragment",
             "response_type": "code",
-            "scope": "openid profile offline_access User.Read",
+            "scope": "User.Read openid profile offline_access",
             "state": "<dynamic>"
           }
         },
@@ -614,7 +554,7 @@
             "code_verifier": "<dynamic>",
             "grant_type": "authorization_code",
             "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
-            "scope": "openid profile offline_access User.Read"
+            "scope": "User.Read openid profile offline_access"
           },
           "endpoint": "token",
           "headers": {
@@ -640,9 +580,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -736,21 +676,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.state",
         "real": "\"<dynamic>\"",
         "mini": "null"
@@ -810,9 +735,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -876,11 +801,6 @@
         "mini": "\"<missing>\""
       },
       {
-        "path": "idp[1].query.scope",
-        "real": "\"User.Read openid profile offline_access\"",
-        "mini": "\"openid profile offline_access User.Read\""
-      },
-      {
         "path": "idp[1].query.x-client-SKU",
         "real": "\"msal.js.browser\"",
         "mini": "\"<missing>\""
@@ -912,7 +832,7 @@
             "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
             "response_mode": "fragment",
             "response_type": "code",
-            "scope": "openid profile offline_access User.Read",
+            "scope": "User.Read openid profile offline_access",
             "state": "<dynamic>"
           }
         }
@@ -998,11 +918,6 @@
         "mini": "\"<missing>\""
       },
       {
-        "path": "idp[1].query.scope",
-        "real": "\"User.Read openid profile offline_access\"",
-        "mini": "\"openid profile offline_access User.Read\""
-      },
-      {
         "path": "idp[1].query.x-client-SKU",
         "real": "\"msal.js.browser\"",
         "mini": "\"<missing>\""
@@ -1026,11 +941,6 @@
         "path": "idp[2].body.client_info",
         "real": "\"<dynamic>\"",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.scope",
-        "real": "\"User.Read openid profile offline_access\"",
-        "mini": "\"openid profile offline_access User.Read\""
       },
       {
         "path": "idp[2].body.x-client-SKU",
@@ -1083,21 +993,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.state",
         "real": "\"<dynamic>\"",
         "mini": "null"
@@ -1145,7 +1040,7 @@
             "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
             "response_mode": "fragment",
             "response_type": "code",
-            "scope": "openid profile offline_access User.Read",
+            "scope": "User.Read openid profile offline_access",
             "state": "<dynamic>"
           }
         },
@@ -1156,7 +1051,7 @@
             "code_verifier": "<dynamic>",
             "grant_type": "authorization_code",
             "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
-            "scope": "openid profile offline_access User.Read"
+            "scope": "User.Read openid profile offline_access"
           },
           "endpoint": "token",
           "headers": {
@@ -1182,9 +1077,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -1233,11 +1128,6 @@
         "mini": "\"<missing>\""
       },
       {
-        "path": "idp[0].query.scope",
-        "real": "\"Mail.Read openid profile offline_access\"",
-        "mini": "\"openid profile offline_access Mail.Read\""
-      },
-      {
         "path": "idp[0].query.x-client-SKU",
         "real": "\"msal.js.browser\"",
         "mini": "\"<missing>\""
@@ -1260,7 +1150,7 @@
       {
         "path": "idp[1].body",
         "real": "\"<missing>\"",
-        "mini": "{\"client_id\":\"<guid>\",\"code\":\"mock-code-0\",\"code_verifier\":\"<dynamic>\",\"grant_type\":\"authorization_code\",\"redirect_uri\":\"http://localhost:4173/conformance-app/\",\"scope\":\"openid profile offline_access Mail.Read\"}"
+        "mini": "{\"client_id\":\"<guid>\",\"code\":\"mock-code-0\",\"code_verifier\":\"<dynamic>\",\"grant_type\":\"authorization_code\",\"redirect_uri\":\"http://localhost:4173/conformance-app/\",\"scope\":\"Mail.Read openid profile offline_access\"}"
       },
       {
         "path": "idp[2]",
@@ -1281,21 +1171,6 @@
         "path": "result.ok.fromPlatformBroker",
         "real": "false",
         "mini": "null"
-      },
-      {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
       },
       {
         "path": "result.ok.state",
@@ -1321,7 +1196,7 @@
             "redirect_uri": "http://localhost:4173/conformance-app/",
             "response_mode": "fragment",
             "response_type": "code",
-            "scope": "openid profile offline_access Mail.Read",
+            "scope": "Mail.Read openid profile offline_access",
             "state": "<dynamic>"
           }
         },
@@ -1332,7 +1207,7 @@
             "code_verifier": "<dynamic>",
             "grant_type": "authorization_code",
             "redirect_uri": "http://localhost:4173/conformance-app/",
-            "scope": "openid profile offline_access Mail.Read"
+            "scope": "Mail.Read openid profile offline_access"
           },
           "endpoint": "token",
           "headers": {
@@ -1357,9 +1232,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -1596,21 +1471,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
@@ -1637,9 +1497,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -1678,21 +1538,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
@@ -1718,9 +1563,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -1759,21 +1604,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
@@ -1797,11 +1627,6 @@
         "path": "tokenRequest[0].body.redirect_uri",
         "real": "\"http://localhost:4173/conformance-app/popup.html\"",
         "mini": "\"http://localhost:4173/conformance-app/\""
-      },
-      {
-        "path": "tokenRequest[0].body.scope",
-        "real": "\"User.Read openid profile offline_access\"",
-        "mini": "\"openid profile offline_access User.Read\""
       },
       {
         "path": "tokenRequest[0].body.x-client-SKU",
@@ -1859,9 +1684,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -1874,7 +1699,7 @@
             "grant_type": "refresh_token",
             "redirect_uri": "http://localhost:4173/conformance-app/",
             "refresh_token": "mock-rt-0",
-            "scope": "openid profile offline_access User.Read"
+            "scope": "User.Read openid profile offline_access"
           },
           "endpoint": "token",
           "headers": {
@@ -1921,11 +1746,6 @@
         "mini": "\"<missing>\""
       },
       {
-        "path": "authorizeParams[0].query.scope",
-        "real": "\"User.Read openid profile offline_access\"",
-        "mini": "\"openid profile offline_access User.Read\""
-      },
-      {
         "path": "authorizeParams[0].query.x-client-SKU",
         "real": "\"msal.js.browser\"",
         "mini": "\"<missing>\""
@@ -1966,21 +1786,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
@@ -2000,7 +1805,7 @@
             "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
             "response_mode": "fragment",
             "response_type": "code",
-            "scope": "openid profile offline_access User.Read",
+            "scope": "User.Read openid profile offline_access",
             "state": "<dynamic>"
           }
         }
@@ -2025,9 +1830,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -2061,21 +1866,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
@@ -2099,9 +1889,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -2150,9 +1940,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -2191,21 +1981,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
@@ -2231,9 +2006,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -2277,21 +2052,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
@@ -2315,9 +2075,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -2371,21 +2131,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
@@ -2409,9 +2154,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -2455,21 +2200,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
@@ -2495,9 +2225,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -2687,21 +2417,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
@@ -2772,9 +2487,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -2978,21 +2693,6 @@
         "mini": "null"
       },
       {
-        "path": "logins.first.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "logins.first.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "logins.first.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "logins.first.ok.state",
         "real": "\"<dynamic>\"",
         "mini": "null"
@@ -3016,21 +2716,6 @@
         "path": "logins.second.ok.fromPlatformBroker",
         "real": "false",
         "mini": "null"
-      },
-      {
-        "path": "logins.second.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "logins.second.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "logins.second.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
       },
       {
         "path": "logins.second.ok.state",
@@ -3156,9 +2841,9 @@
             "fromPlatformBroker": null,
             "idToken": "<jwt>",
             "scopes": [
+              "User.Read",
               "openid",
-              "profile",
-              "user.read"
+              "profile"
             ],
             "state": null,
             "tokenType": null
@@ -3180,9 +2865,9 @@
             "fromPlatformBroker": null,
             "idToken": "<jwt>",
             "scopes": [
+              "User.Read",
               "openid",
-              "profile",
-              "user.read"
+              "profile"
             ],
             "state": null,
             "tokenType": null
@@ -3697,21 +3382,6 @@
         "mini": "null"
       },
       {
-        "path": "login.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "login.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "login.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "login.ok.state",
         "real": "\"<dynamic>\"",
         "mini": "null"
@@ -3814,9 +3484,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -4210,21 +3880,6 @@
         "mini": "null"
       },
       {
-        "path": "popupCall.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "popupCall.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "popupCall.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "popupCall.ok.state",
         "real": "\"<dynamic>\"",
         "mini": "null"
@@ -4262,9 +3917,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -4286,9 +3941,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -4347,9 +4002,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -4549,21 +4204,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
@@ -4590,9 +4230,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -4621,21 +4261,6 @@
         "mini": "null"
       },
       {
-        "path": "dupes.result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "dupes.result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "dupes.result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "dupes.result.ok.state",
         "real": "\"<dynamic>\"",
         "mini": "null"
@@ -4644,11 +4269,6 @@
         "path": "dupes.result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
-      },
-      {
-        "path": "dupes.scopeParam",
-        "real": "\"User.Read USER.READ openid profile offline_access\"",
-        "mini": "\"openid profile offline_access User.Read USER.READ openid User.Read\""
       },
       {
         "path": "empty.result.ok.authority",
@@ -4666,21 +4286,6 @@
         "mini": "null"
       },
       {
-        "path": "empty.result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "empty.result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "empty.result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "empty.result.ok.state",
         "real": "\"<dynamic>\"",
         "mini": "null"
@@ -4689,11 +4294,6 @@
         "path": "empty.result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
-      },
-      {
-        "path": "empty.scopeParam",
-        "real": "\"openid profile offline_access\"",
-        "mini": "\"openid profile offline_access \""
       }
     ],
     "observed": {
@@ -4714,15 +4314,15 @@
             "fromPlatformBroker": null,
             "idToken": "<jwt>",
             "scopes": [
+              "User.Read",
               "openid",
-              "profile",
-              "user.read"
+              "profile"
             ],
             "state": null,
             "tokenType": null
           }
         },
-        "scopeParam": "openid profile offline_access User.Read USER.READ openid User.Read"
+        "scopeParam": "User.Read USER.READ openid profile offline_access"
       },
       "empty": {
         "result": {
@@ -4741,15 +4341,15 @@
             "fromPlatformBroker": null,
             "idToken": "<jwt>",
             "scopes": [
+              "User.Read",
               "openid",
-              "profile",
-              "user.read"
+              "profile"
             ],
             "state": null,
             "tokenType": null
           }
         },
-        "scopeParam": "openid profile offline_access "
+        "scopeParam": "openid profile offline_access"
       }
     }
   },
@@ -4804,9 +4404,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -4853,21 +4453,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
@@ -4890,9 +4475,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -4927,21 +4512,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
@@ -4969,9 +4539,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -5305,9 +4875,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null
@@ -5575,21 +5145,6 @@
         "mini": "null"
       },
       {
-        "path": "result.ok.scopes[0]",
-        "real": "\"User.Read\"",
-        "mini": "\"openid\""
-      },
-      {
-        "path": "result.ok.scopes[1]",
-        "real": "\"openid\"",
-        "mini": "\"profile\""
-      },
-      {
-        "path": "result.ok.scopes[2]",
-        "real": "\"profile\"",
-        "mini": "\"user.read\""
-      },
-      {
         "path": "result.ok.state",
         "real": "\"<dynamic>\"",
         "mini": "null"
@@ -5618,9 +5173,9 @@
           "fromPlatformBroker": null,
           "idToken": "<jwt>",
           "scopes": [
+            "User.Read",
             "openid",
-            "profile",
-            "user.read"
+            "profile"
           ],
           "state": null,
           "tokenType": null

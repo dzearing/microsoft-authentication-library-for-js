@@ -306,9 +306,9 @@ const C = {
         cost: 0.3,
     },
     "params.scopes-normalization": {
-        class: "bug",
+        class: "behavioral-diff",
         real: "Dedupes exact-duplicate scopes (keeps distinct casings), appends OIDC defaults once; empty scopes → 'openid profile offline_access'.",
-        mini: "No dedupe — sent 'openid profile offline_access User.Read USER.READ openid User.Read' (openid twice); empty scopes leaves a trailing space.",
+        mini: "Scope wire format matches (A4); remaining diffs are B1 result-shape fields (authority, correlationId, tokenType, state, fromPlatformBroker).",
         cost: 0.1,
     },
 
