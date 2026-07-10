@@ -360,6 +360,28 @@ Entries (append as you go):
   whose popup waits out the 60s bridge timeout) — full runs pay +2 min until
   C9 lands; not a pass regression.
 
+- **C6 (2026-07-10)**: localStorage + cross-tab. Core gained a `Store` seam
+  (plaintext get/set/remove for indexes/msal.version/throttle entries +
+  getUser/setUser for entities; default = sessionStorage) — new feature
+  `@mini-msal/browser/local-storage` swaps in real's encrypted store when
+  `cacheLocation: "localStorage"`: HKDF base key in the `msal.cache.encryption`
+  session cookie ({id,key}, Secure, SameSite=None), per-write AES-GCM
+  (HKDF salt = random 16-byte nonce, info = clientId-if-key-contains-it, zero
+  IV — real's exact scheme), `{id,nonce,data,lastUpdatedAt}` wrappers,
+  in-memory plaintext mirror imported at initialize (foreign-key entries
+  pruned + indexes rewritten, real's importExistingCache) and synced across
+  tabs via the `msal.broadcast.cache` channel. Temp state (interaction lock,
+  msal.request) stays in sessionStorage ALWAYS, like real's
+  temporaryCacheStorage — in LS mode sessionStorage dumps empty. Cross-tab
+  EVENTS live in core: real's EventHandler posts loginSuccess/logoutSuccess/
+  activeAccountChanged on `msal.broadcast.event` UNCONDITIONALLY (all cache
+  modes) but subscribes only in localStorage mode
+  (StandardController.initialize) — mini mirrors both sides. Entity writes are
+  now awaited (`writeUser`) since encryption is async. Throttle +
+  active-account + msal.version now route through the configured location
+  (closing the B4/C2 routing notes). Core cost: +0.4 KB min (seam + event
+  bus); the crypto lives in the feature module (compat +2.8 KB min total).
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -527,7 +549,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   InteractionType.None, PromptValue, ProtocolMode, BrowserCacheLocation,
   OIDC_DEFAULT_SCOPES, BrowserAuthErrorCodes (52 keys), error classes.
   Scenarios: init.* remaining.
-- [ ] **C6** `pending` — localStorage + cross-tab: `cacheLocation:
+- [x] **C6** `done 2026-07-10 — pass 64/75, mini-stack 32.1 KB min / 11.3 gz` — localStorage + cross-tab: `cacheLocation:
   "localStorage"` with real's observable shape (encrypted entities
   `{id:<guid>, nonce:<b64>, data:<ciphertext>}` via AES-GCM, session key in
   a cookie like real — study real's LocalStorage/CookieStorage source),
@@ -597,3 +619,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | C3 | done 2026-07-10 | 53/75 | 26.4 KB min / 9.3 gz | +1 pass (telemetry.last-telemetry-after-failure). Iframe fallback eligibility = real's checkIfRefreshTokenErrorCanBeResolvedSilently: invalid_grant/token_refresh_required non-IRAE (or IRAE w/ subError bad_token) + no_tokens_found/refresh_token_expired — RT invalid_grant now recovers via iframe (tokenCalls 2); plain IRAE no longer falls back. Total diffs 127→124; remaining telemetry diffs are C4 perf events. e2e 25/25; mini-core 17.4 min / 6.4 gz |
 | C4 | done 2026-07-10 | 56/75 | 27.1 KB min / 9.6 gz | +3 pass (telemetry.perf-events-popup-login, perf-events-silent, correlation-id-propagation — ALL telemetry.* green). New `@mini-msal/browser/telemetry` feature: BrowserPerformanceClient (opt-in via config.telemetry.client) + method-wrapping telemetry(ctx) composed last in compat. Total diffs 124→118; remaining 19 scenarios all C5–C9 (init/localStorage/broker/naa). GAP_REPORT: 0 bugs, 1 behavioral-diff (init.popup-without-bridge, a C5 item). e2e 25/25; mini-core 17.4 min / 6.4 gz (core unchanged — types only) |
 | C5 | done 2026-07-10 | 62/75 | 29.3 KB min / 10.4 gz | +6 pass (init.get-configuration, logger-callback, exported-surface, popup-without-bridge + free: broker.is-platform-broker-available, naa.no-bridge-fallback — ALL init.* green). Popup/iframe completion migrated to real's redirect-bridge (BroadcastChannel, see Decision Log) — mini bridge page bundle 0.6 KB min (real's: 6.5 KB); logger in core; getConfiguration; full export surface incl. 52 BrowserAuthErrorCodes. GAP_REPORT: 0 bugs, 0 behavioral-diffs, 13 missing-feature (C6–C9 only). NOTE: naa.get-token-popup/error-mapping now ERR at 60s each (+2 min per full run until C9 — see Decision Log). e2e 25/25; mini-core 18.2 min / 6.7 gz |
+| C6 | done 2026-07-10 | 64/75 | 32.1 KB min / 11.3 gz | +2 pass (accounts.local-storage, cross-tab-events — ALL accounts.* green). New `@mini-msal/browser/local-storage` feature (encrypted entities via cookie-keyed HKDF/AES-GCM, plaintext indexes, memory mirror, msal.broadcast.cache sync); core `Store` seam + msal.broadcast.event bus (post always, subscribe in LS mode). GAP_REPORT: 0 bugs, 0 behavioral-diffs, 11 missing-feature (C7–C9 only). e2e 25/25 (sessionStorage interop untouched); mini-core 18.6 min / 6.9 gz |

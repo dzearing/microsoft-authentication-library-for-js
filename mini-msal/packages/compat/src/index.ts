@@ -12,6 +12,7 @@ import {
     type Config,
 } from "@mini-msal/browser";
 import { popup, type PopupClient } from "@mini-msal/browser/popup";
+import { localStorageCache } from "@mini-msal/browser/local-storage";
 import {
     telemetry,
     type TelemetryClient,
@@ -106,6 +107,7 @@ export class PublicClientApplication {
         // return override) — compat adds no wrapper layer; telemetry last
         // so it can wrap the methods other features attach
         return createClient(config, [
+            localStorageCache,
             popup,
             telemetry,
         ]) as PublicClientApplication;

@@ -15,7 +15,7 @@ exists but differs observably · **missing-feature** = absent by design ·
 |---|---|---|---|---|---|
 | 1. Core flows | 9 | 9 | 0 | 0 | 0 |
 | 2. Silent acquisition | 12 | 12 | 0 | 0 | 0 |
-| 3. Accounts & cache | 7 | 5 | 0 | 2 | 0 |
+| 3. Accounts & cache | 7 | 7 | 0 | 0 | 0 |
 | 4. Errors & guards | 10 | 10 | 0 | 0 | 0 |
 | 5. Platform broker / WAM | 7 | 1 | 0 | 6 | 0 |
 | 6. Nested app auth (NAA) | 6 | 1 | 0 | 5 | 0 |
@@ -23,7 +23,7 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 8. Request passthrough | 9 | 9 | 0 | 0 | 0 |
 | 9. Resilience | 4 | 4 | 0 | 0 | 0 |
 | 10. Init & misc | 6 | 6 | 0 | 0 | 0 |
-| **Total** | **75** | **62** | **0** | **13** | **0** |
+| **Total** | **75** | **64** | **0** | **11** | **0** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -192,12 +192,12 @@ here instead of being repeated per scenario:
 - **real**: Sets msal.interaction.status (signout) temp cache; end_session carries state + client-request-id; storage fully cleared after roundtrip.
 - **mini**: Storage cleared (matches); no temp interaction state, no state param on end_session.
 
-#### `accounts.local-storage` — 🚫 missing-feature · est. 2.5 KB to close
+#### `accounts.local-storage` — ✅ pass · est. 2.5 KB to close
 
 - **real**: cacheLocation:'localStorage' honored — and v5 ENCRYPTS localStorage entities ({id, nonce, data:<AES ciphertext>}, per-session key in cookie), only key indexes stay plaintext.
 - **mini**: cacheLocation ignored; everything stays in sessionStorage. NOTE: real's encrypted localStorage means cross-stack cache interop is fundamentally impossible in localStorage mode.
 
-#### `accounts.cross-tab-events` — 🚫 missing-feature · est. 0.5 KB to close
+#### `accounts.cross-tab-events` — ✅ pass · est. 0.5 KB to close
 
 - **real**: Second tab sees the account via localStorage; logout in tab 1 raises events in tab 2 (storage listener).
 - **mini**: No localStorage support → second tab sees nothing.

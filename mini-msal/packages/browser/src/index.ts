@@ -114,7 +114,8 @@ export interface Config {
             piiLoggingEnabled?: boolean;
         };
     };
-    /** sessionStorage is the only implemented location (localStorage: C6) */
+    /** sessionStorage (default) built in; "localStorage" needs the
+     * ./local-storage feature composed */
     cache?: { cacheLocation?: string };
     experimental?: Record<string, unknown>;
     /** perf events opt-in: `client: new BrowserPerformanceClient()` (./telemetry) */
@@ -293,14 +294,13 @@ function decodeJwt(token: string): Record<string, any> {
 async function post(
     url: string,
     body: Record<string, string>,
-    throttleKey?: string
+    store: Store,
+    throttleKey: string
 ) {
     // real's ThrottlingUtils: a cached 429/5xx/Retry-After token response
     // blocks identical requests (same thumbprint) until throttleTime — the
     // retry re-throws the stored error with NO network call
-    const t =
-        throttleKey &&
-        JSON.parse(sessionStorage.getItem(throttleKey) ?? "null");
+    const t = JSON.parse(store.get(throttleKey) ?? "null");
     if (t) {
         if (t.throttleTime >= Date.now()) {
             throw new ServerError(
@@ -309,7 +309,7 @@ async function post(
                 t.subError
             );
         }
-        sessionStorage.removeItem(throttleKey!);
+        store.remove(throttleKey);
     }
     const res = await fetch(url, {
         method: "POST",
@@ -320,13 +320,12 @@ async function post(
     });
     const json = await res.json();
     if (
-        throttleKey &&
-        (res.status === 429 ||
-            res.status >= 500 ||
-            (res.headers.has("Retry-After") && !res.ok))
+        res.status === 429 ||
+        res.status >= 500 ||
+        (res.headers.has("Retry-After") && !res.ok)
     ) {
         const sec = Date.now() / 1000;
-        sessionStorage.setItem(
+        store.set(
             throttleKey,
             JSON.stringify({
                 throttleTime: Math.floor(
@@ -422,6 +421,24 @@ export interface AuthCodeResponse {
     authority?: string;
 }
 
+/**
+ * Storage seam, mirroring real's browserStorage split: plaintext get/set/
+ * remove for key indexes + metadata (msal.version, throttle entries), and
+ * getUser/setUser for cache entities — ./local-storage swaps in an
+ * encrypted-at-rest implementation. Temp state (interaction lock,
+ * msal.request) always stays in sessionStorage, like real's
+ * temporaryCacheStorage.
+ */
+export interface Store {
+    /** async setup (key import, cache decrypt), awaited by initialize() */
+    init?(): Promise<void>;
+    get(key: string): string | null;
+    set(key: string, value: string): void;
+    remove(key: string): void;
+    getUser(key: string): string | null;
+    setUser(key: string, value: string): void | Promise<void>;
+}
+
 /** The core client surface returned by createClient. */
 export interface AuthClient {
     initialize(): Promise<void>;
@@ -475,6 +492,8 @@ export interface ClientContext {
     waitForCode(state: string, timeoutMs: number): Promise<string>;
     redeem(res: AuthCodeResponse): Promise<AuthenticationResult>;
     clearAccount(account?: AccountInfo | null): void;
+    /** replace the cache backend (./local-storage); call before initialize */
+    setStore(store: Store): void;
     logoutUrl(
         req?: { postLogoutRedirectUri?: string; correlationId?: string },
         interactionType?: string
@@ -506,6 +525,15 @@ export function createClient(
     let initialized = false;
     const inFlight = new Map<string, Promise<AuthenticationResult>>();
 
+    // cache backend; ./local-storage swaps in the encrypted implementation
+    let store: Store = {
+        get: (k) => sessionStorage.getItem(k),
+        set: (k, v) => sessionStorage.setItem(k, v),
+        remove: (k) => sessionStorage.removeItem(k),
+        getUser: (k) => sessionStorage.getItem(k),
+        setUser: (k, v) => sessionStorage.setItem(k, v),
+    };
+
     const uninitialized = () =>
         new BrowserAuthError("uninitialized_public_client_application");
 
@@ -528,6 +556,10 @@ export function createClient(
     const unlock = () => sessionStorage.removeItem(lockKey);
 
     // ---- events (EventMessage-shaped like real's EventHandler.emitEvent) ----
+    // real's EventHandler posts login/logout/activeAccountChanged to other
+    // tabs/instances unconditionally; receiving is subscribed at initialize,
+    // only in localStorage mode (StandardController)
+    const eventBus = new BroadcastChannel("msal.broadcast.event");
     const emit = (
         eventType: string,
         interactionType?: string,
@@ -542,6 +574,13 @@ export function createClient(
             error: error ?? null,
             timestamp: Date.now(),
         };
+        if (
+            eventType === EventType.LOGIN_SUCCESS ||
+            eventType === EventType.LOGOUT_SUCCESS ||
+            eventType === EventType.ACTIVE_ACCOUNT_CHANGED
+        ) {
+            eventBus.postMessage(m);
+        }
         listeners.forEach((l) => l(m));
     };
 
@@ -557,13 +596,23 @@ export function createClient(
     };
 
     const readJSON = <T,>(key: string): T | null => {
-        const raw = sessionStorage.getItem(key);
+        const raw = store.get(key);
         return raw ? (JSON.parse(raw) as T) : null;
     };
 
     const writeJSON = (key: string, value: unknown) => {
-        sessionStorage.setItem(key, JSON.stringify(value));
+        store.set(key, JSON.stringify(value));
     };
+
+    // entities go through the user-data path (encrypted at rest by
+    // ./local-storage); indexes/metadata stay plaintext like real
+    const readUser = <T,>(key: string): T | null => {
+        const raw = store.getUser(key);
+        return raw ? (JSON.parse(raw) as T) : null;
+    };
+
+    const writeUser = (key: string, value: unknown) =>
+        store.setUser(key, JSON.stringify(value));
 
     const tokenKeysKey = `${P}.token.keys.${clientId}`;
 
@@ -582,7 +631,7 @@ export function createClient(
         match: (t: TokenEntity) => boolean
     ): TokenEntity | undefined => {
         for (const k of list) {
-            const t = readJSON<TokenEntity>(k);
+            const t = readUser<TokenEntity>(k);
             if (t && t.clientId === clientId && match(t)) {
                 return t;
             }
@@ -622,7 +671,7 @@ export function createClient(
 
     const getAllAccounts = (filter?: AccountFilter): AccountInfo[] =>
         accountKeys()
-            .map((k) => readJSON<AccountEntity>(k))
+            .map((k) => readUser<AccountEntity>(k))
             .filter((e): e is AccountEntity => !!e)
             .map(toAccountInfo)
             .filter((a) => !filter || matchesFilter(a, filter));
@@ -876,6 +925,7 @@ export function createClient(
                 ...(meta?.ccs && { "X-AnchorMailbox": meta.ccs }),
                 ...TOKEN_TELEMETRY,
             },
+            store,
             throttleKey
         );
         log(3, "token response received");
@@ -941,8 +991,8 @@ export function createClient(
             lastUpdatedAt: ts,
             cachedByApiId: meta?.apiId,
         };
-        writeJSON(accountKey, entity);
-        writeJSON(idKey, {
+        await writeUser(accountKey, entity);
+        await writeUser(idKey, {
             credentialType: "IdToken",
             homeAccountId,
             environment,
@@ -951,7 +1001,7 @@ export function createClient(
             realm,
             lastUpdatedAt: ts,
         } satisfies TokenEntity);
-        writeJSON(atKey, {
+        await writeUser(atKey, {
             credentialType: "AccessToken",
             homeAccountId,
             environment,
@@ -967,7 +1017,7 @@ export function createClient(
             lastUpdatedAt: ts,
         } satisfies TokenEntity);
         if (json.refresh_token) {
-            writeJSON(rtKey, {
+            await writeUser(rtKey, {
                 credentialType: "RefreshToken",
                 homeAccountId,
                 environment,
@@ -1365,24 +1415,24 @@ export function createClient(
         };
         for (const type of ["idToken", "accessToken", "refreshToken"] as const) {
             for (const k of keys[type]) {
-                stays(k) ? kept[type].push(k) : sessionStorage.removeItem(k);
+                stays(k) ? kept[type].push(k) : store.remove(k);
             }
         }
         const keptAccounts: string[] = [];
         for (const k of accountKeys()) {
-            stays(k) ? keptAccounts.push(k) : sessionStorage.removeItem(k);
+            stays(k) ? keptAccounts.push(k) : store.remove(k);
         }
         if (account) {
             writeJSON(tokenKeysKey, kept);
             writeJSON(`${P}.account.keys`, keptAccounts);
             const f = readJSON<{ homeAccountId: string }>(activeKey);
             if (f?.homeAccountId === account.homeAccountId) {
-                sessionStorage.removeItem(activeKey);
+                store.remove(activeKey);
             }
         } else {
-            sessionStorage.removeItem(tokenKeysKey);
-            sessionStorage.removeItem(`${P}.account.keys`);
-            sessionStorage.removeItem(activeKey);
+            store.remove(tokenKeysKey);
+            store.remove(`${P}.account.keys`);
+            store.remove(activeKey);
         }
     };
 
@@ -1392,6 +1442,15 @@ export function createClient(
             if (initialized) return;
             log(2, "initializing");
             emit(EventType.INITIALIZE_START);
+            // encryption-key + cache import for ./local-storage (real's
+            // browserStorage.initialize), no-op for the default store
+            await store.init?.();
+            if (config.cache?.cacheLocation === "localStorage") {
+                // real subscribes to cross-tab events only in localStorage
+                // mode (StandardController.initialize)
+                eventBus.onmessage = (ev) =>
+                    listeners.forEach((l) => l(ev.data));
+            }
             // per-instance memory only: real MSAL re-fetches discovery for
             // every new instance and leaves no such key in storage
             metadata ??= await (
@@ -1400,7 +1459,7 @@ export function createClient(
                 )
             ).json();
             // real tracks lib up/downgrades via this key (trackVersionChanges)
-            sessionStorage.setItem("msal.version", WIRE_ID["x-client-VER"]);
+            store.set("msal.version", WIRE_ID["x-client-VER"]);
             initialized = true;
             emit(EventType.INITIALIZE_END);
         },
@@ -1462,7 +1521,7 @@ export function createClient(
                     tenantId: account.tenantId,
                 });
             } else {
-                sessionStorage.removeItem(activeKey);
+                store.remove(activeKey);
             }
             emit(EventType.ACTIVE_ACCOUNT_CHANGED, undefined, account);
         },
@@ -1584,6 +1643,7 @@ export function createClient(
         waitForCode,
         redeem,
         clearAccount,
+        setStore: (s) => (store = s),
         logoutUrl,
     };
     for (const f of features) f(ctx);

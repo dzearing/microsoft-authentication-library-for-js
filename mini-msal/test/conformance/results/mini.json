@@ -2208,79 +2208,7 @@
   {
     "id": "accounts.local-storage",
     "area": "accounts",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "storage.localStorage.msal.3.account.keys",
-        "real": "[\"msal.3|oid-123.tenant-123|localhost:4599|tenant-123\"]",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.localStorage.msal.3.token.keys.<guid>",
-        "real": "{\"accessToken\":[\"msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|\"],\"idToken\":[\"msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||\"],\"refreshToken\":[\"msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||\"]}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.localStorage.msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|",
-        "real": "{\"data\":\"<dynamic>\",\"id\":\"<guid>\",\"lastUpdatedAt\":\"<epoch-ms>\",\"nonce\":\"<dynamic>\"}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.localStorage.msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||",
-        "real": "{\"data\":\"<dynamic>\",\"id\":\"<guid>\",\"lastUpdatedAt\":\"<epoch-ms>\",\"nonce\":\"<dynamic>\"}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.localStorage.msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||",
-        "real": "{\"data\":\"<dynamic>\",\"id\":\"<guid>\",\"lastUpdatedAt\":\"<epoch-ms>\",\"nonce\":\"<dynamic>\"}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.localStorage.msal.3|oid-123.tenant-123|localhost:4599|tenant-123",
-        "real": "{\"data\":\"<dynamic>\",\"id\":\"<guid>\",\"lastUpdatedAt\":\"<epoch-ms>\",\"nonce\":\"<dynamic>\"}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.localStorage.msal.version",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.3.account.keys",
-        "real": "\"<missing>\"",
-        "mini": "[\"msal.3|oid-123.tenant-123|localhost:4599|tenant-123\"]"
-      },
-      {
-        "path": "storage.sessionStorage.msal.3.token.keys.<guid>",
-        "real": "\"<missing>\"",
-        "mini": "{\"accessToken\":[\"msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|\"],\"idToken\":[\"msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||\"],\"refreshToken\":[\"msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||\"]}"
-      },
-      {
-        "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|",
-        "real": "\"<missing>\"",
-        "mini": "{\"cachedAt\":\"<dynamic>\",\"clientId\":\"<guid>\",\"credentialType\":\"AccessToken\",\"environment\":\"localhost:4599\",\"expiresOn\":\"<dynamic>\",\"extendedExpiresOn\":\"<dynamic>\",\"homeAccountId\":\"oid-123.tenant-123\",\"lastUpdatedAt\":\"<epoch-ms>\",\"realm\":\"tenant-123\",\"secret\":\"mock-access-token-0\",\"target\":\"openid pro…"
-      },
-      {
-        "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||",
-        "real": "\"<missing>\"",
-        "mini": "{\"clientId\":\"<guid>\",\"credentialType\":\"IdToken\",\"environment\":\"localhost:4599\",\"homeAccountId\":\"oid-123.tenant-123\",\"lastUpdatedAt\":\"<epoch-ms>\",\"realm\":\"tenant-123\",\"secret\":\"<jwt>\"}"
-      },
-      {
-        "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||",
-        "real": "\"<missing>\"",
-        "mini": "{\"clientId\":\"<guid>\",\"credentialType\":\"RefreshToken\",\"environment\":\"localhost:4599\",\"homeAccountId\":\"oid-123.tenant-123\",\"lastUpdatedAt\":\"<epoch-ms>\",\"secret\":\"mock-rt-0\"}"
-      },
-      {
-        "path": "storage.sessionStorage.msal.3|oid-123.tenant-123|localhost:4599|tenant-123",
-        "real": "\"<missing>\"",
-        "mini": "{\"authorityType\":\"MSSTS\",\"cachedByApiId\":862,\"clientInfo\":\"eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ\",\"environment\":\"localhost:4599\",\"homeAccountId\":\"oid-123.tenant-123\",\"lastUpdatedAt\":\"<epoch-ms>\",\"localAccountId\":\"oid-123\",\"name\":\"Ada Lovelace\",\"realm\":\"tenant-123\",\"tenantProfiles\":[{\"is…"
-      },
-      {
-        "path": "storage.sessionStorage.msal.version",
-        "real": "\"<missing>\"",
-        "mini": "\"5.16.0\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "login": {
         "ok": {
@@ -2313,8 +2241,7 @@
         }
       },
       "storage": {
-        "localStorage": {},
-        "sessionStorage": {
+        "localStorage": {
           "msal.3.account.keys": [
             "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
           ],
@@ -2330,78 +2257,39 @@
             ]
           },
           "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|": {
-            "cachedAt": "<dynamic>",
-            "clientId": "<guid>",
-            "credentialType": "AccessToken",
-            "environment": "localhost:4599",
-            "expiresOn": "<dynamic>",
-            "extendedExpiresOn": "<dynamic>",
-            "homeAccountId": "oid-123.tenant-123",
+            "data": "<dynamic>",
+            "id": "<guid>",
             "lastUpdatedAt": "<epoch-ms>",
-            "realm": "tenant-123",
-            "secret": "mock-access-token-0",
-            "target": "openid profile User.Read",
-            "tokenType": "Bearer"
+            "nonce": "<dynamic>"
           },
           "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||": {
-            "clientId": "<guid>",
-            "credentialType": "IdToken",
-            "environment": "localhost:4599",
-            "homeAccountId": "oid-123.tenant-123",
+            "data": "<dynamic>",
+            "id": "<guid>",
             "lastUpdatedAt": "<epoch-ms>",
-            "realm": "tenant-123",
-            "secret": "<jwt>"
+            "nonce": "<dynamic>"
           },
           "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||": {
-            "clientId": "<guid>",
-            "credentialType": "RefreshToken",
-            "environment": "localhost:4599",
-            "homeAccountId": "oid-123.tenant-123",
+            "data": "<dynamic>",
+            "id": "<guid>",
             "lastUpdatedAt": "<epoch-ms>",
-            "secret": "mock-rt-0"
+            "nonce": "<dynamic>"
           },
           "msal.3|oid-123.tenant-123|localhost:4599|tenant-123": {
-            "authorityType": "MSSTS",
-            "cachedByApiId": 862,
-            "clientInfo": "eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ",
-            "environment": "localhost:4599",
-            "homeAccountId": "oid-123.tenant-123",
+            "data": "<dynamic>",
+            "id": "<guid>",
             "lastUpdatedAt": "<epoch-ms>",
-            "localAccountId": "oid-123",
-            "name": "Ada Lovelace",
-            "realm": "tenant-123",
-            "tenantProfiles": [
-              {
-                "isHomeTenant": true,
-                "localAccountId": "oid-123",
-                "name": "Ada Lovelace",
-                "tenantId": "tenant-123",
-                "username": "ada@contoso.com"
-              }
-            ],
-            "username": "ada@contoso.com"
+            "nonce": "<dynamic>"
           },
           "msal.version": "5.16.0"
-        }
+        },
+        "sessionStorage": {}
       }
     }
   },
   {
     "id": "accounts.cross-tab-events",
     "area": "accounts",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "tab2After.events[2]",
-        "real": "{\"error\":null,\"eventType\":\"msal:logoutSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"account\",\"correlationId\",\"postLogoutRedirectUri\",\"state\"],\"seq\":2}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "tab2Initial[0]",
-        "real": "\"ada@contoso.com\"",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "tab2After": {
         "accounts": [],
@@ -2421,10 +2309,25 @@
             "payloadAccount": null,
             "payloadKeys": null,
             "seq": 1
+          },
+          {
+            "error": null,
+            "eventType": "msal:logoutSuccess",
+            "interactionType": "popup",
+            "payloadAccount": "ada@contoso.com",
+            "payloadKeys": [
+              "account",
+              "correlationId",
+              "postLogoutRedirectUri",
+              "state"
+            ],
+            "seq": 2
           }
         ]
       },
-      "tab2Initial": []
+      "tab2Initial": [
+        "ada@contoso.com"
+      ]
     }
   },
   {
