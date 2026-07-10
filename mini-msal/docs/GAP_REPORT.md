@@ -20,10 +20,10 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 5. Platform broker / WAM | 7 | 0 | 0 | 7 | 0 |
 | 6. Nested app auth (NAA) | 6 | 0 | 0 | 6 | 0 |
 | 7. Telemetry | 5 | 1 | 0 | 4 | 0 |
-| 8. Request passthrough | 9 | 3 | 0 | 6 | 0 |
+| 8. Request passthrough | 9 | 9 | 0 | 0 | 0 |
 | 9. Resilience | 4 | 2 | 0 | 2 | 0 |
 | 10. Init & misc | 6 | 2 | 1 | 3 | 0 |
-| **Total** | **75** | **44** | **1** | **30** | **0** |
+| **Total** | **75** | **50** | **1** | **24** | **0** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -357,27 +357,27 @@ here instead of being repeated per scenario:
 - **real**: prompt login/consent/select_account forwarded verbatim.
 - **mini**: Identical.
 
-#### `params.login-hint-domain-hint` — 🚫 missing-feature · est. 0.1 KB to close
+#### `params.login-hint-domain-hint` — ✅ pass · est. 0.1 KB to close
 
 - **real**: login_hint + domain_hint + derived X-AnchorMailbox (UPN routing) on authorize.
 - **mini**: login_hint works; domainHint and X-AnchorMailbox unsupported.
 
-#### `params.sid-passthrough` — 🚫 missing-feature · est. 0.05 KB to close
+#### `params.sid-passthrough` — ✅ pass · est. 0.05 KB to close
 
 - **real**: sid forwarded on prompt=none requests.
 - **mini**: sid not supported.
 
-#### `params.extra-query-parameters` — 🚫 missing-feature · est. 0.15 KB to close
+#### `params.extra-query-parameters` — ✅ pass · est. 0.15 KB to close
 
 - **real**: extraQueryParameters land on authorize; tokenQueryParameters land on the token endpoint QUERY string (plus client-request-id).
 - **mini**: Neither supported.
 
-#### `params.claims-and-cae` — 🚫 missing-feature · est. 0.3 KB to close
+#### `params.claims-and-cae` — ✅ pass · est. 0.3 KB to close
 
 - **real**: claims + clientCapabilities:['cp1'] merged into one claims JSON (xms_cc added under access_token) on BOTH authorize and token requests.
 - **mini**: claims/CAE unsupported.
 
-#### `params.custom-state` — 🚫 missing-feature · est. 0.2 KB to close
+#### `params.custom-state` — ✅ pass · est. 0.2 KB to close
 
 - **real**: Custom state encoded inside the wire state (libState|userState), returned verbatim on result.state.
 - **mini**: Custom state ignored; result.state absent.
@@ -387,7 +387,7 @@ here instead of being repeated per scenario:
 - **real**: request.redirectUri overrides config for authorize + token redemption.
 - **mini**: Identical.
 
-#### `params.authority-override-per-request` — 🚫 missing-feature · est. 0.3 KB to close
+#### `params.authority-override-per-request` — ✅ pass · est. 0.3 KB to close
 
 - **real**: Per-request authority triggers discovery for that authority; result.authority reflects it; token refreshed against it.
 - **mini**: authority + forceRefresh ignored → returned the cached token from the default authority.

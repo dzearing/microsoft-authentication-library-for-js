@@ -254,6 +254,34 @@ Entries (append as you go):
   sensitivity. Snapshots unaffected (nonce/JWT normalized); real re-checked
   green on roundtrip/sso/scopes scenarios after the change.
 
+- **C1 (2026-07-10)**: request passthrough. KEY DISCOVERY: real browser 5.16
+  IGNORES `tokenQueryParameters` at runtime (the option exists only in
+  typings — zero grep hits in msal-common/msal-browser dist); instead
+  `extraQueryParameters` ride the token-endpoint QUERY string too
+  (createTokenQueryParameters: extras first, then client-request-id) — the
+  snapshot proves it (tokenQuery has dc/slice, `tokenslice` never hits the
+  wire). Mini keeps `tokenQueryParameters` in the TokenRequest type for API
+  compat but sends nothing. Claims: mergedClaims() = real's buildMergedClaims
+  (request claims parsed, default id_token claims appended without overwrite,
+  clientCapabilities → access_token.xms_cc.values), byte-identical
+  JSON.stringify output to the old DEFAULT_CLAIMS literal in the no-input
+  case; sent on authorize + token body. Hints: sid only when prompt=none and
+  it suppresses login_hint; prompt=select_account suppresses all hints AND
+  the X-AnchorMailbox ccs (real's Authorize.mjs hint ladder); silentFrame now
+  passes prompt via the request (`prompt: req.prompt ?? "none"`) so the sid
+  gate sees it — authorizeUrl's separate `extra` param is gone from
+  ClientContext. Custom state: wire = `btoa({id:<uuid>})` + `|<custom>` when
+  present (real's setRequestState; wireStateEqualsCustom false), result.state
+  echoes only the custom part — threaded as `userState` through
+  AuthCodeResponse + msal.request (redirect leg). Per-request authority: NO
+  re-discovery (real reuses cached metadata — snapshot discoveryPaths is []);
+  endpoints get the config-authority prefix swapped for the request authority
+  (no-op on the mock IdP whose endpoints are tenant-less; correct for AAD
+  tenant-in-path URLs); result.authority + acquireTokenNetworkStart payload +
+  AT-cache-hit results all report the canonical request authority.
+  claims/eqp/authority thread through AuthCodeResponse (popup/iframe),
+  msal.request (redirect), and redeemRefresh meta (RT grant).
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -382,7 +410,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 
 ### Phase C — missing features
 
-- [ ] **C1** `pending` — Request passthrough: `sid`, `domainHint`
+- [x] **C1** `done 2026-07-10 — pass 50/75, mini-stack 25.4 KB min / 9.0 gz` — Request passthrough: `sid`, `domainHint`
   (`domain_hint`), `extraQueryParameters` (authorize), `tokenQueryParameters`
   (token endpoint query), custom `state` (wire format `<libState>|<custom>`,
   echo on result.state), `claims` + `clientCapabilities:["cp1"]` → xms_cc
@@ -486,3 +514,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | B2 | done 2026-07-10 | 32/75 | 22.9 KB min / 8.2 gz | +9 pass (handle-redirect-clean-load, acquire-token-popup, redirect-state-tampered, force-refresh, multi-account, active-account-persistence, cancelled-login-redirect, popup-blocked, double-initialize). Full real event streams + full result/account key shapes (payloadKeys = Object.keys). Total diffs 448→265; remaining event diffs only in cross-tab (C6), perf (C4), broker (C7). e2e 25/25; mini-core 14.0 min / 5.2 gz |
 | B3 | done 2026-07-10 | 40/75 | 24.0 KB min / 8.6 gz | +8 pass (login-redirect-roundtrip, login-popup-roundtrip, sso-silent-cold/warm, acquire-token-redirect, refresh-token-grant, iframe-fallback-no-rt, telemetry.token-request-headers). Authorize+token requests now carry real's full param set (nonce+validation, client-request-id, client_info, default claims, clidata, X-AnchorMailbox ccs, x-client-SKU/VER, empty telemetry params, lib-capability, charset content-type, RT redirect_uri). GAP_REPORT: 0 bugs remaining. e2e 25/25; mini-core 15.0 min / 5.6 gz |
 | B4 | done 2026-07-10 | 44/75 | 24.4 KB min / 8.7 gz | +4 pass (core.storage-shape-after-login, init.storage-before-login, accounts.logout-redirect, accounts.logout-popup-per-account; redirect-state-tampered was already done by B2). msal.version on initialize; lastUpdatedAt on all entities + cachedByApiId (real ApiId per flow) on the account; end_session gains client-request-id + state (lib-state format), per-request postLogoutRedirectUri honored on both logout flows. Mock-IdP determinism fix: nonce now keyed per PKCE challenge (see Decision Log — was a global that a stray late authorize could clobber → phantom nonce_mismatch flake). Total diffs 145→143 (accounts.local-storage +1, a C6 item). e2e 25/25; mini-core 15.4 min / 5.8 gz |
+| C1 | done 2026-07-10 | 50/75 | 25.4 KB min / 9.0 gz | +6 pass (params.login-hint-domain-hint, sid-passthrough, extra-query-parameters, claims-and-cae, custom-state, authority-override-per-request — all 9 params.* now green). sid gated on prompt=none, select_account suppresses hints+ccs; eQP on authorize + token QUERY (real ignores tokenQueryParameters — see Decision Log); mergedClaims w/ clientCapabilities xms_cc; custom state `b64(libState)\|custom` echoed on result; per-request authority w/o re-discovery. Total diffs 143→132; remaining diffs all C2–C9 areas. e2e 25/25; mini-core 16.3 min / 6.1 gz |

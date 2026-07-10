@@ -67,6 +67,10 @@ export function popup(ctx: ClientContext): void {
                     nonce,
                     ccs,
                     apiId: 862, // ApiId.acquireTokenPopup
+                    userState: req.state,
+                    claims: req.claims,
+                    eqp: req.extraQueryParameters,
+                    authority: req.authority,
                 });
                 ctx.emit(EventType.ACQUIRE_TOKEN_SUCCESS, "popup", result);
                 if (had < c.getAllAccounts().length) {

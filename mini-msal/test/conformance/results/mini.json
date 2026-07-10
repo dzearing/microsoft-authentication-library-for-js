@@ -2772,95 +2772,60 @@
   {
     "id": "params.login-hint-domain-hint",
     "area": "params",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "domain_hint",
-        "real": "\"contoso.com\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "anchorMailbox": "UPN:grace@contoso.com",
-      "domain_hint": null,
+      "domain_hint": "contoso.com",
       "login_hint": "grace@contoso.com"
     }
   },
   {
     "id": "params.sid-passthrough",
     "area": "params",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "sid",
-        "real": "\"session-id-abc123\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "login_hint": null,
       "prompt": "none",
-      "sid": null
+      "sid": "session-id-abc123"
     }
   },
   {
     "id": "params.extra-query-parameters",
     "area": "params",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "authorizeExtras.dc",
-        "real": "\"ESTS-PUB\"",
-        "mini": "null"
-      },
-      {
-        "path": "authorizeExtras.slice",
-        "real": "\"testslice\"",
-        "mini": "null"
-      },
-      {
-        "path": "tokenQuery.dc",
-        "real": "\"ESTS-PUB\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "tokenQuery.slice",
-        "real": "\"testslice\"",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "authorizeExtras": {
-        "dc": null,
-        "slice": null
+        "dc": "ESTS-PUB",
+        "slice": "testslice"
       },
       "tokenBodyHasExtras": {
         "slice": null,
         "tokenslice": null
       },
       "tokenQuery": {
-        "client-request-id": "<dynamic>"
+        "client-request-id": "<dynamic>",
+        "dc": "ESTS-PUB",
+        "slice": "testslice"
       }
     }
   },
   {
     "id": "params.claims-and-cae",
     "area": "params",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "authorizeClaims.access_token",
-        "real": "{\"nbf\":{\"essential\":true,\"value\":\"<epoch-s>\"},\"xms_cc\":{\"values\":[\"cp1\"]}}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "tokenClaims.access_token",
-        "real": "{\"nbf\":{\"essential\":true,\"value\":\"<epoch-s>\"},\"xms_cc\":{\"values\":[\"cp1\"]}}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "authorizeClaims": {
+        "access_token": {
+          "nbf": {
+            "essential": true,
+            "value": "<epoch-s>"
+          },
+          "xms_cc": {
+            "values": [
+              "cp1"
+            ]
+          }
+        },
         "id_token": {
           "login_hint": {
             "essential": false
@@ -2871,6 +2836,17 @@
         }
       },
       "tokenClaims": {
+        "access_token": {
+          "nbf": {
+            "essential": true,
+            "value": "<epoch-s>"
+          },
+          "xms_cc": {
+            "values": [
+              "cp1"
+            ]
+          }
+        },
         "id_token": {
           "login_hint": {
             "essential": false
@@ -2885,22 +2861,10 @@
   {
     "id": "params.custom-state",
     "area": "params",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "customStateEcho",
-        "real": "\"app-state-123\"",
-        "mini": "\"\""
-      },
-      {
-        "path": "wireStateContainsCustom",
-        "real": "true",
-        "mini": "false"
-      }
-    ],
+    "status": "pass",
     "observed": {
-      "customStateEcho": "",
-      "wireStateContainsCustom": false,
+      "customStateEcho": "app-state-123",
+      "wireStateContainsCustom": true,
       "wireStateEqualsCustom": false
     }
   },
@@ -2916,14 +2880,7 @@
   {
     "id": "params.authority-override-per-request",
     "area": "params",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/other-tenant/\"",
-        "mini": "\"https://localhost:4599/tenant/\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "discoveryPaths": [],
       "login": {
@@ -2937,7 +2894,7 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": "https://localhost:4599/tenant/",
+          "authority": "https://localhost:4599/other-tenant/",
           "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",

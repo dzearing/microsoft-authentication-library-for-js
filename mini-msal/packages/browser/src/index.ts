@@ -73,8 +73,20 @@ export interface TokenRequest {
     scopes: string[];
     account?: AccountInfo;
     loginHint?: string;
+    sid?: string;
+    domainHint?: string;
     prompt?: string;
     redirectUri?: string;
+    /** per-request authority override (no re-discovery, like real) */
+    authority?: string;
+    /** custom state, echoed on result.state (wire: `<libState>|<custom>`) */
+    state?: string;
+    /** claims JSON, merged with defaults + clientCapabilities xms_cc */
+    claims?: string;
+    extraQueryParameters?: Record<string, string>;
+    /** accepted for compat; real 5.16 ignores it at runtime (its
+     * extraQueryParameters ride the token-endpoint query instead) */
+    tokenQueryParameters?: Record<string, string>;
     cacheLookupPolicy?: number;
     forceRefresh?: boolean;
     correlationId?: string;
@@ -86,6 +98,7 @@ export interface Config {
         authority?: string;
         redirectUri?: string;
         postLogoutRedirectUri?: string;
+        clientCapabilities?: string[];
     };
     system?: {
         popupBridgeTimeout?: number;
@@ -113,9 +126,6 @@ const TOKEN_TELEMETRY = {
     "x-client-last-telemetry": "",
     "x-ms-lib-capability": "retry-after, h429",
 } as const;
-/** default claims real always sends on authorize + token requests */
-const DEFAULT_CLAIMS =
-    '{"id_token":{"signin_state":{"essential":false},"login_hint":{"essential":false}}}';
 
 export class AuthError extends Error {
     name = "AuthError";
@@ -329,6 +339,14 @@ export interface AuthCodeResponse {
     ccs?: string;
     /** real MSAL ApiId of the calling flow, cached on the account entity */
     apiId?: number;
+    /** custom request state, echoed on result.state */
+    userState?: string;
+    /** raw request claims JSON (merged with defaults at send time) */
+    claims?: string;
+    /** request extraQueryParameters (ride the token-endpoint query too) */
+    eqp?: Record<string, string>;
+    /** per-request authority override */
+    authority?: string;
 }
 
 /** The core client surface returned by createClient. */
@@ -366,10 +384,7 @@ export interface ClientContext {
     /** take the interaction lock; throws interaction_in_progress if held */
     lock(type?: string): void;
     unlock(): void;
-    authorizeUrl(
-        req: TokenRequest,
-        extra?: Record<string, string>
-    ): Promise<{
+    authorizeUrl(req: TokenRequest): Promise<{
         url: string;
         verifier: string;
         state: string;
@@ -567,6 +582,27 @@ export function createClient(
             " "
         );
 
+    // real's buildMergedClaims: request claims + default id_token claims
+    // (signin_state/login_hint) + xms_cc from auth.clientCapabilities, sent
+    // on authorize AND token requests
+    const mergedClaims = (claims?: string): string => {
+        const c = claims ? JSON.parse(claims) : {};
+        c.id_token = {
+            signin_state: { essential: false },
+            login_hint: { essential: false },
+            ...c.id_token,
+        };
+        const caps = config.auth.clientCapabilities;
+        if (caps?.length) {
+            (c.access_token ??= {}).xms_cc = { values: caps };
+        }
+        return JSON.stringify(c);
+    };
+
+    /** canonical per-request authority (no trailing slash) */
+    const authorityFor = (req?: { authority?: string }): string =>
+        (req?.authority ?? authority).replace(/\/$/, "");
+
     // CCS routing hint, like real's ccsCredential: account wins over hint
     const ccsFrom = (req: TokenRequest): string | undefined =>
         req.account
@@ -577,8 +613,7 @@ export function createClient(
 
     // ---- authorize-request plumbing ----
     const authorizeUrl = async (
-        req: TokenRequest,
-        extra?: Record<string, string>
+        req: TokenRequest
     ): Promise<{
         url: string;
         verifier: string;
@@ -589,15 +624,30 @@ export function createClient(
         ccs?: string;
     }> => {
         const { verifier, challenge } = await pkce();
-        const state = randomString();
+        // real's wire state: base64 lib state, "|<custom>" appended when the
+        // request carries one (result.state echoes only the custom part)
+        const state =
+            btoa(JSON.stringify({ id: crypto.randomUUID() })) +
+            (req.state ? `|${req.state}` : "");
         const correlationId = req.correlationId ?? crypto.randomUUID();
         const nonce = crypto.randomUUID();
-        const ccs = ccsFrom(req);
-        const hint = req.loginHint ?? req.account?.username;
+        // real's hint ladder: sid only on prompt=none (and it suppresses
+        // login_hint); no account hints at all with prompt=select_account
+        const sid = req.prompt === "none" ? req.sid : undefined;
+        const skipHints = !!sid || req.prompt === "select_account";
+        const hint = skipHints
+            ? undefined
+            : req.loginHint ?? req.account?.username;
+        const ccs = skipHints ? undefined : ccsFrom(req);
         const reqRedirectUri = req.redirectUri
             ? new URL(req.redirectUri, location.href).href
             : redirectUri;
-        const url = new URL(metadata!.authorization_endpoint);
+        const url = new URL(
+            metadata!.authorization_endpoint.replace(
+                authority,
+                authorityFor(req)
+            )
+        );
         const p = url.searchParams;
         p.set("client_id", clientId);
         p.set("response_type", "code");
@@ -610,14 +660,19 @@ export function createClient(
         p.set("response_mode", "fragment");
         p.set("client_info", "1");
         p.set("client-request-id", correlationId);
-        p.set("claims", DEFAULT_CLAIMS);
+        p.set("claims", mergedClaims(req.claims));
         p.set("clidata", "1");
         p.set("x-client-SKU", WIRE_ID["x-client-SKU"]);
         p.set("x-client-VER", WIRE_ID["x-client-VER"]);
+        if (sid) p.set("sid", sid);
         if (hint) p.set("login_hint", hint);
+        if (req.domainHint) p.set("domain_hint", req.domainHint);
         if (ccs) p.set("X-AnchorMailbox", ccs);
         if (req.prompt) p.set("prompt", req.prompt);
-        for (const k in extra) p.set(k, extra[k]);
+        // like real's addExtraParameters: never overrides standard params
+        for (const [k, v] of Object.entries(req.extraQueryParameters ?? {})) {
+            if (!p.has(k) && v) p.set(k, v);
+        }
         return {
             url: url.href,
             verifier,
@@ -684,19 +739,26 @@ export function createClient(
             nonce?: string;
             ccs?: string;
             apiId?: number;
+            claims?: string;
+            eqp?: Record<string, string>;
+            authority?: string;
         }
     ): Promise<AuthenticationResult> => {
         const correlationId = meta?.correlationId ?? crypto.randomUUID();
+        const reqAuthority = authorityFor(meta);
+        // extraQueryParameters + client-request-id ride the token endpoint
+        // QUERY string (real 5.16's createTokenQueryParameters)
+        const q = new URLSearchParams(meta?.eqp);
+        q.set("client-request-id", correlationId);
         const json = await post(
-            // client-request-id rides the token endpoint QUERY string
-            `${metadata!.token_endpoint}?client-request-id=${correlationId}`,
+            `${metadata!.token_endpoint.replace(authority, reqAuthority)}?${q}`,
             {
                 redirect_uri: redirectUri,
                 ...grant,
                 client_id: clientId,
                 scope: normScopes(scopes),
                 client_info: "1",
-                claims: DEFAULT_CLAIMS,
+                claims: mergedClaims(meta?.claims),
                 ...(meta?.ccs && { "X-AnchorMailbox": meta.ccs }),
                 ...TOKEN_TELEMETRY,
             }
@@ -811,7 +873,7 @@ export function createClient(
         // real emits no same-tab accountAdded event; cross-tab propagation
         // is the localStorage/BroadcastChannel feature's job
         return {
-            authority: `${authority}/`,
+            authority: `${reqAuthority}/`,
             uniqueId: localAccountId,
             tenantId: realm,
             scopes: [...new Set(grantedStr.split(" "))],
@@ -848,10 +910,13 @@ export function createClient(
             },
             {
                 correlationId: res.correlationId,
-                state: "",
+                state: res.userState ?? "",
                 nonce: res.nonce,
                 ccs: res.ccs,
                 apiId: res.apiId,
+                claims: res.claims,
+                eqp: res.eqp,
+                authority: res.authority,
             }
         );
 
@@ -870,7 +935,14 @@ export function createClient(
                 }),
             },
             // 61 = real's ApiId.acquireTokenSilent_silentFlow
-            { correlationId: req.correlationId, ccs: ccsFrom(req), apiId: 61 }
+            {
+                correlationId: req.correlationId,
+                ccs: ccsFrom(req),
+                apiId: 61,
+                claims: req.claims,
+                eqp: req.extraQueryParameters,
+                authority: req.authority,
+            }
         );
 
     // ---- interactive: redirect ----
@@ -890,8 +962,18 @@ export function createClient(
         // clean load: real resolves null silently, no handleRedirect events
         if ((!code && !err) || !stored) return null;
         sessionStorage.removeItem("msal.request");
-        const { verifier, state, scopes, correlationId, nonce, ccs } =
-            JSON.parse(stored);
+        const {
+            verifier,
+            state,
+            scopes,
+            correlationId,
+            nonce,
+            ccs,
+            userState,
+            claims: reqClaims,
+            eqp,
+            authority: reqAuthority,
+        } = JSON.parse(stored);
         const had = accountKeys().length;
         emit(EventType.HANDLE_REDIRECT_START, "redirect");
         try {
@@ -913,6 +995,10 @@ export function createClient(
                 nonce,
                 ccs,
                 apiId: 865, // ApiId.handleRedirectPromise
+                userState,
+                claims: reqClaims,
+                eqp,
+                authority: reqAuthority,
             });
             emit(EventType.ACQUIRE_TOKEN_SUCCESS, "redirect", result);
             if (had < accountKeys().length) {
@@ -941,7 +1027,7 @@ export function createClient(
             correlationId,
             nonce,
             ccs,
-        } = await authorizeUrl(req, { prompt: "none" });
+        } = await authorizeUrl({ ...req, prompt: req.prompt ?? "none" });
         const frame = document.createElement("iframe");
         frame.style.display = "none";
         document.body.append(frame);
@@ -961,6 +1047,10 @@ export function createClient(
                 nonce,
                 ccs,
                 apiId,
+                userState: req.state,
+                claims: req.claims,
+                eqp: req.extraQueryParameters,
+                authority: req.authority,
             });
         } finally {
             frame.remove();
@@ -997,6 +1087,7 @@ export function createClient(
         account: AccountInfo
     ): Promise<AuthenticationResult> => {
         const pol = req.cacheLookupPolicy ?? CacheLookupPolicy.Default;
+        const reqAuthority = authorityFor(req);
         const useAT =
             !req.forceRefresh &&
             pol <= CacheLookupPolicy.AccessTokenAndRefreshToken;
@@ -1024,7 +1115,7 @@ export function createClient(
                 (t) => t.homeAccountId === account.homeAccountId
             );
             return {
-                authority: `${authority}/`,
+                authority: `${reqAuthority}/`,
                 uniqueId: account.localAccountId,
                 tenantId: account.tenantId,
                 scopes: (at.target ?? "").split(" "),
@@ -1056,7 +1147,7 @@ export function createClient(
         emit(EventType.ACQUIRE_TOKEN_NETWORK_START, "silent", {
             account,
             authenticationScheme: "Bearer",
-            authority: `${authority}/`,
+            authority: `${reqAuthority}/`,
             correlationId: req.correlationId,
             forceRefresh: !!req.forceRefresh,
             redirectUri: req.redirectUri,
@@ -1232,6 +1323,10 @@ export function createClient(
                     correlationId,
                     nonce,
                     ccs,
+                    userState: req.state,
+                    claims: req.claims,
+                    eqp: req.extraQueryParameters,
+                    authority: req.authority,
                 })
             );
             location.assign(url);
@@ -1256,8 +1351,8 @@ export function createClient(
             const key = JSON.stringify([
                 req.scopes,
                 account.homeAccountId,
-                (req as { authority?: string }).authority,
-                (req as { claims?: string }).claims,
+                req.authority,
+                req.claims,
             ]);
             let shared = inFlight.get(key);
             if (!shared) {
