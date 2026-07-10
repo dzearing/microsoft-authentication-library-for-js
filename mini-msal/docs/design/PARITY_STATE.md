@@ -103,12 +103,52 @@ Defaults already decided (do not re-litigate without user input):
   identity. Keep these in ONE constants block in packages/browser so a future
   un-impersonation is a one-line change.
 
+- **Pay-to-play architecture (user-decided 2026-07-10)**: refactor BEFORE the
+  parity work. `@mini-msal/browser` becomes a small composable core
+  (`createClient(config, features)`) with features as tree-shakable subpath
+  exports added as they're built (`/popup`, `/broker`, `/naa`, `/telemetry`,
+  `/local-storage`, `/resilience`, `/logger`); a new `@mini-msal/compat`
+  package exports the classic `PublicClientApplication` composing ALL
+  features — the drop-in target. **The 75-scenario conformance suite and the
+  e2e run against compat.** Features are plain functions/closures (not
+  classes) to keep seam bytes near zero and minification strong. Size story
+  becomes a matrix (core-only / core+popup / compat) measured continuously.
+
 Entries (append as you go):
 - (none yet)
 
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
+
+### Phase A0 — architecture (do this FIRST)
+
+- [ ] **A0** `pending` — Pay-to-play refactor (see Decision Log):
+  1. Split `packages/browser/src/index.ts` into a core (`createClient`:
+     config, discovery, redirect login + handleRedirectPromise, silent
+     ladder cache→RT→iframe, accounts/active-account, events, errors,
+     cache read/write in msal.3 schema) and a first feature module
+     `@mini-msal/browser/popup` (loginPopup/acquireTokenPopup/logoutPopup +
+     popup polling). Feature = function receiving the client's internal
+     context (closure-based; no classes for seams).
+  2. New `packages/compat` → `@mini-msal/compat`: exports
+     `PublicClientApplication` (classic constructor + initialize()) that
+     composes core + all current features, API-identical to today's class.
+     Also re-export error classes/enums/EventType from browser so compat is
+     a one-import drop-in.
+  3. Repoint consumers at compat: `test/infra/sync-variants.mjs` replacement
+     `"@azure/msal-browser"` → `"@mini-msal/compat"`;
+     `test/apps/harness/harness-mini.ts` imports `@mini-msal/compat`;
+     `@mini-msal/react` keeps working against the composed instance
+     (it only uses the public instance API — verify).
+  4. Size matrix: add a minimal core-only entry (redirect+silent, no popup,
+     no react) as rspack variant `mini-core` and include it in
+     `npm run measure` output.
+  5. Validate: build clean; `npm run conformance:mini` — pass/diff counts
+     IDENTICAL to baseline (2 pass / 73 diff, same per-scenario statuses:
+     this is a pure refactor); e2e 25/25; record compat + core sizes below.
+  All later tasks implement features as modules in their final homes; compat
+  composes each new module as it lands.
 
 ### Phase A — bugs (mini misbehaves on claimed features)
 
