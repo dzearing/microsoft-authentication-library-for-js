@@ -3326,42 +3326,49 @@
   {
     "id": "telemetry.perf-events-popup-login",
     "area": "telemetry",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "perf[0]",
-        "real": "{\"correlationId\":\"<dynamic>\",\"errorCode\":null,\"hasDuration\":true,\"name\":\"initializeClientApplication\",\"success\":true}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "perf[1]",
-        "real": "{\"correlationId\":\"<dynamic>\",\"errorCode\":null,\"hasDuration\":true,\"name\":\"acquireTokenPopup\",\"success\":true}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
-      "perf": []
+      "perf": [
+        {
+          "correlationId": "<dynamic>",
+          "errorCode": null,
+          "hasDuration": true,
+          "name": "initializeClientApplication",
+          "success": true
+        },
+        {
+          "correlationId": "<dynamic>",
+          "errorCode": null,
+          "hasDuration": true,
+          "name": "acquireTokenPopup",
+          "success": true
+        }
+      ]
     }
   },
   {
     "id": "telemetry.perf-events-silent",
     "area": "telemetry",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "cacheHitPerf[0]",
-        "real": "{\"correlationId\":\"<dynamic>\",\"errorCode\":null,\"hasDuration\":true,\"name\":\"acquireTokenSilent\",\"success\":true}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "refreshPerf[0]",
-        "real": "{\"correlationId\":\"<dynamic>\",\"errorCode\":null,\"hasDuration\":true,\"name\":\"acquireTokenSilent\",\"success\":true}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
-      "cacheHitPerf": [],
-      "refreshPerf": []
+      "cacheHitPerf": [
+        {
+          "correlationId": "<dynamic>",
+          "errorCode": null,
+          "hasDuration": true,
+          "name": "acquireTokenSilent",
+          "success": true
+        }
+      ],
+      "refreshPerf": [
+        {
+          "correlationId": "<dynamic>",
+          "errorCode": null,
+          "hasDuration": true,
+          "name": "acquireTokenSilent",
+          "success": true
+        }
+      ]
     }
   },
   {
@@ -3380,17 +3387,10 @@
   {
     "id": "telemetry.correlation-id-propagation",
     "area": "telemetry",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "perfEventWithCid",
-        "real": "true",
-        "mini": "false"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "authorizeParamMatches": true,
-      "perfEventWithCid": false,
+      "perfEventWithCid": true,
       "resultMatches": true,
       "tokenBodyClientRequestId": null
     }

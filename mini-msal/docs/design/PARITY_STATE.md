@@ -313,6 +313,22 @@ Entries (append as you go):
   tokenCalls=2), while a true interaction_required IRAE from the RT grant now
   surfaces immediately instead of burning an iframe attempt.
 
+- **C4 (2026-07-10)**: perf events live in a new feature module
+  `@mini-msal/browser/telemetry` (pay-to-play): `telemetry(ctx)` wraps the
+  client's initialize/acquireTokenSilent/ssoSilent/acquireTokenPopup AFTER
+  other features attach (compat composes `[popup, telemetry]` — order
+  matters), emitting one event per top-level call
+  ({name, correlationId, durationMs, success, errorCode?}) via the opt-in
+  `config.telemetry.client` (`BrowserPerformanceClient`, exported from the
+  subpath + re-exported by compat). Like real, no opt-in client → 
+  addPerformanceCallback registers but nothing ever fires. Event
+  correlationId = result's on success / request's on failure (correlation-id
+  scenario requires the request CID to surface). Names kept to real's
+  observed set; acquireTokenRedirect NOT wrapped (real's redirect perf event
+  is "acquireTokenPreRedirect", unobserved — add in C10 only if compared).
+  Core paid zero runtime bytes (only a `PerfClient` type + `telemetry?`
+  config key; mini-core size unchanged at 17.4 KB min).
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -463,7 +479,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   matches real's checkIfRefreshTokenErrorCanBeResolvedSilently (see Decision
   Log) — telemetry.last-telemetry-after-failure passes.
   telemetry.correlation-id-propagation's last diff is the perf event (C4).
-- [ ] **C4** `pending` — Perf events: `addPerformanceCallback` +
+- [x] **C4** `done 2026-07-10 — pass 56/75, mini-stack 27.1 KB min / 9.6 gz` — Perf events: `addPerformanceCallback` +
   BrowserPerformanceClient-equivalent opt-in via `telemetry.client` config;
   emit `initializeClientApplication`, `acquireTokenPopup`,
   `acquireTokenSilent` (+ cache-hit variant) events with
@@ -548,3 +564,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | C1 | done 2026-07-10 | 50/75 | 25.4 KB min / 9.0 gz | +6 pass (params.login-hint-domain-hint, sid-passthrough, extra-query-parameters, claims-and-cae, custom-state, authority-override-per-request — all 9 params.* now green). sid gated on prompt=none, select_account suppresses hints+ccs; eQP on authorize + token QUERY (real ignores tokenQueryParameters — see Decision Log); mergedClaims w/ clientCapabilities xms_cc; custom state `b64(libState)\|custom` echoed on result; per-request authority w/o re-discovery. Total diffs 143→132; remaining diffs all C2–C9 areas. e2e 25/25; mini-core 16.3 min / 6.1 gz |
 | C2 | done 2026-07-10 | 52/75 | 26.2 KB min / 9.3 gz | +2 pass (resilience.throttle-429-retry-after, proactive-refresh — all 4 resilience.* green). Throttle cache in post() keyed by real-shaped thumbprint; blocked retry re-throws stored ServerError w/ errorCode "" + raw error_description, zero network; refresh_in → refreshOn on AT entity + result. Total diffs 132→127; remaining 23 diff scenarios all C3–C9 areas. e2e 25/25; mini-core 17.2 min / 6.3 gz |
 | C3 | done 2026-07-10 | 53/75 | 26.4 KB min / 9.3 gz | +1 pass (telemetry.last-telemetry-after-failure). Iframe fallback eligibility = real's checkIfRefreshTokenErrorCanBeResolvedSilently: invalid_grant/token_refresh_required non-IRAE (or IRAE w/ subError bad_token) + no_tokens_found/refresh_token_expired — RT invalid_grant now recovers via iframe (tokenCalls 2); plain IRAE no longer falls back. Total diffs 127→124; remaining telemetry diffs are C4 perf events. e2e 25/25; mini-core 17.4 min / 6.4 gz |
+| C4 | done 2026-07-10 | 56/75 | 27.1 KB min / 9.6 gz | +3 pass (telemetry.perf-events-popup-login, perf-events-silent, correlation-id-propagation — ALL telemetry.* green). New `@mini-msal/browser/telemetry` feature: BrowserPerformanceClient (opt-in via config.telemetry.client) + method-wrapping telemetry(ctx) composed last in compat. Total diffs 124→118; remaining 19 scenarios all C5–C9 (init/localStorage/broker/naa). GAP_REPORT: 0 bugs, 1 behavioral-diff (init.popup-without-bridge, a C5 item). e2e 25/25; mini-core 17.4 min / 6.4 gz (core unchanged — types only) |

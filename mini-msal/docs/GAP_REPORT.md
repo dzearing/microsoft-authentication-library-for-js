@@ -19,11 +19,11 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 4. Errors & guards | 10 | 10 | 0 | 0 | 0 |
 | 5. Platform broker / WAM | 7 | 0 | 0 | 7 | 0 |
 | 6. Nested app auth (NAA) | 6 | 0 | 0 | 6 | 0 |
-| 7. Telemetry | 5 | 2 | 0 | 3 | 0 |
+| 7. Telemetry | 5 | 5 | 0 | 0 | 0 |
 | 8. Request passthrough | 9 | 9 | 0 | 0 | 0 |
 | 9. Resilience | 4 | 4 | 0 | 0 | 0 |
 | 10. Init & misc | 6 | 2 | 1 | 3 | 0 |
-| **Total** | **75** | **53** | **1** | **21** | **0** |
+| **Total** | **75** | **56** | **1** | **18** | **0** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -325,12 +325,12 @@ here instead of being repeated per scenario:
 
 ### 7. Telemetry
 
-#### `telemetry.perf-events-popup-login` — 🚫 missing-feature · est. 2 KB to close
+#### `telemetry.perf-events-popup-login` — ✅ pass · est. 2 KB to close
 
 - **real**: With telemetry.client=BrowserPerformanceClient: initializeClientApplication + acquireTokenPopup events (success, durations, correlationId). NOTE: default client is a stub — apps must opt in.
 - **mini**: No performance client / addPerformanceCallback.
 
-#### `telemetry.perf-events-silent` — 🚫 missing-feature
+#### `telemetry.perf-events-silent` — ✅ pass
 
 - **real**: acquireTokenSilent perf event for cache hit AND network refresh (cache hit event has success+duration).
 - **mini**: None.
@@ -340,7 +340,7 @@ here instead of being repeated per scenario:
 - **real**: Server telemetry travels as token BODY params (not HTTP headers): x-client-SKU=msal.js.browser, x-client-VER, x-client-current-telemetry, x-client-last-telemetry, x-ms-lib-capability='retry-after, h429'.
 - **mini**: None of the telemetry params.
 
-#### `telemetry.correlation-id-propagation` — 🚫 missing-feature · est. 0.2 KB to close
+#### `telemetry.correlation-id-propagation` — ✅ pass · est. 0.2 KB to close
 
 - **real**: request.correlationId → authorize client-request-id param, result.correlationId, perf events.
 - **mini**: correlationId not supported anywhere.

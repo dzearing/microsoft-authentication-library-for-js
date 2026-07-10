@@ -12,6 +12,12 @@ import {
     type Config,
 } from "@mini-msal/browser";
 import { popup, type PopupClient } from "@mini-msal/browser/popup";
+import {
+    telemetry,
+    type TelemetryClient,
+} from "@mini-msal/browser/telemetry";
+
+export { BrowserPerformanceClient } from "@mini-msal/browser/telemetry";
 
 export {
     AuthError,
@@ -33,12 +39,19 @@ export {
     type TokenRequest,
 } from "@mini-msal/browser";
 
-export interface PublicClientApplication extends AuthClient, PopupClient {}
+export interface PublicClientApplication
+    extends AuthClient,
+        PopupClient,
+        TelemetryClient {}
 export class PublicClientApplication {
     constructor(config: Config) {
         // the composed closure-based client IS the instance (constructor
-        // return override) — compat adds no wrapper layer
-        return createClient(config, [popup]) as PublicClientApplication;
+        // return override) — compat adds no wrapper layer; telemetry last
+        // so it can wrap the methods other features attach
+        return createClient(config, [
+            popup,
+            telemetry,
+        ]) as PublicClientApplication;
     }
 }
 

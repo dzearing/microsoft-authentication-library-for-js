@@ -104,6 +104,18 @@ export interface Config {
         popupBridgeTimeout?: number;
         iframeBridgeTimeout?: number;
     };
+    /** perf events opt-in: `client: new BrowserPerformanceClient()` (./telemetry) */
+    telemetry?: {
+        client?: PerfClient;
+    };
+}
+
+/** Duck-typed seam for ./telemetry's BrowserPerformanceClient — the core
+ * never imports the feature module. */
+export interface PerfClient {
+    addPerformanceCallback(cb: (events: any[]) => void): string;
+    removePerformanceCallback(id: string): boolean;
+    emitEvents(events: any[]): void;
 }
 
 /** default error prose, same as real MSAL's */
