@@ -2976,29 +2976,7 @@
   {
     "id": "resilience.throttle-429-retry-after",
     "area": "resilience",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "immediateRetry.err",
-        "real": "{\"errorCode\":\"\",\"message\":\"AADSTS90101: too many requests\",\"name\":\"ServerError\",\"subError\":null}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "immediateRetry.ok",
-        "real": "\"<missing>\"",
-        "mini": "{\"accessToken\":\"mock-access-token-0\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":\"https://localhost:4599/tenant/\",\"correlationIdPresent\":true,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":fal…"
-      },
-      {
-        "path": "throttleEntriesInStorage",
-        "real": "1",
-        "mini": "0"
-      },
-      {
-        "path": "tokenEndpointHits",
-        "real": "1",
-        "mini": "2"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "first": {
         "err": {
@@ -3009,31 +2987,15 @@
         }
       },
       "immediateRetry": {
-        "ok": {
-          "accessToken": "mock-access-token-0",
-          "account": {
-            "homeAccountId": "oid-123.tenant-123",
-            "tenantId": "tenant-123",
-            "username": "ada@contoso.com"
-          },
-          "authority": "https://localhost:4599/tenant/",
-          "correlationIdPresent": true,
-          "expiresInFuture": true,
-          "expiresOnType": "Date",
-          "fromCache": false,
-          "fromPlatformBroker": false,
-          "idToken": "<jwt>",
-          "scopes": [
-            "User.Read",
-            "openid",
-            "profile"
-          ],
-          "state": null,
-          "tokenType": "Bearer"
+        "err": {
+          "errorCode": "",
+          "message": "AADSTS90101: too many requests",
+          "name": "ServerError",
+          "subError": null
         }
       },
-      "throttleEntriesInStorage": 0,
-      "tokenEndpointHits": 2
+      "throttleEntriesInStorage": 1,
+      "tokenEndpointHits": 1
     }
   },
   {
@@ -3087,20 +3049,13 @@
   {
     "id": "resilience.proactive-refresh",
     "area": "resilience",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "refreshOnStored",
-        "real": "\"present\"",
-        "mini": "\"absent\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "backgroundTokenRequests": 0,
       "login": {
         "ok": true
       },
-      "refreshOnStored": "absent",
+      "refreshOnStored": "present",
       "result": {
         "ok": {
           "accessToken": "mock-access-token-0",

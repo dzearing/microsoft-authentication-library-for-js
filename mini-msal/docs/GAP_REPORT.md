@@ -21,9 +21,9 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 6. Nested app auth (NAA) | 6 | 0 | 0 | 6 | 0 |
 | 7. Telemetry | 5 | 1 | 0 | 4 | 0 |
 | 8. Request passthrough | 9 | 9 | 0 | 0 | 0 |
-| 9. Resilience | 4 | 2 | 0 | 2 | 0 |
+| 9. Resilience | 4 | 4 | 0 | 0 | 0 |
 | 10. Init & misc | 6 | 2 | 1 | 3 | 0 |
-| **Total** | **75** | **50** | **1** | **24** | **0** |
+| **Total** | **75** | **52** | **1** | **22** | **0** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -399,7 +399,7 @@ here instead of being repeated per scenario:
 
 ### 9. Resilience
 
-#### `resilience.throttle-429-retry-after` — 🚫 missing-feature · est. 0.8 KB to close
+#### `resilience.throttle-429-retry-after` — ✅ pass · est. 0.8 KB to close
 
 - **real**: 429+Retry-After → ServerError; writes a throttling cache entry; an immediate retry is served the SAME error from the throttle cache with NO network request.
 - **mini**: Error surfaced (generic), no throttle cache — immediate retry hits the IdP again (and succeeded once the injection expired).
@@ -414,7 +414,7 @@ here instead of being repeated per scenario:
 - **real**: Dropped socket transparently retried by the browser fetch stack — request succeeded on both stacks; only result-shape diffs.
 - **mini**: Same recovery; shape gaps only.
 
-#### `resilience.proactive-refresh` — 🚫 missing-feature · est. 0.2 KB to close
+#### `resilience.proactive-refresh` — ✅ pass · est. 0.2 KB to close
 
 - **real**: refresh_in from the token response is persisted as refreshOn on the AT entity (basis for proactive refresh).
 - **mini**: refresh_in ignored; no refreshOn.

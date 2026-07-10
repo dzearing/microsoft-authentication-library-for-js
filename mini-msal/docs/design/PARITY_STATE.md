@@ -282,6 +282,25 @@ Entries (append as you go):
   claims/eqp/authority thread through AuthCodeResponse (popup/iframe),
   msal.request (redirect), and redeemRefresh meta (RT grant).
 
+- **C2 (2026-07-10)**: resilience. Throttle cache = real's ThrottlingUtils in
+  mini's `post()`: key `throttling.<JSON RequestThumbprint>` (clientId,
+  authority-with-slash, scopes, homeAccountIdentifier, claims,
+  authenticationScheme — undefined dropped), written on 429 / 5xx /
+  Retry-After+non-2xx with `{throttleTime,error,errorCodes,errorMessage,
+  subError}`; throttleTime = min(now+RetryAfter||60s, now+3600s) in ms.
+  Blocked retry re-throws `ServerError(errorCodes.join(" ")||"",
+  errorMessage, subError)` — errorCode is EMPTY STRING (real preProcess),
+  not the original error code, and the message is the RAW error_description
+  (no "Error(s): …" formatting — that only wraps live token responses).
+  Expired entries removed at pre-check. `refresh_in` → `refreshOn` stored on
+  the AT entity (epoch-s string) + result.refreshOn Date (network + cache-hit
+  paths). NOTE: real 5.16 fires NO observable background refresh when
+  refreshOn has passed (snapshot backgroundTokenRequests=0, fromCache:true) —
+  mini implements none. Real's Authorize-side removeThrottle-on-interactive-
+  success NOT implemented (unobservable in scenarios; add in C10 sweep only
+  if something compares it). Throttle store is sessionStorage directly —
+  C6 must route it through the configured cacheLocation like real.
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -417,7 +436,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   merge on authorize+token, per-request `authority` override (discovery for
   that authority, result.authority reflects it, forceRefresh honored with it).
   Scenarios: params.* (all remaining).
-- [ ] **C2** `pending` — Resilience: 429 throttle cache (storage entry shaped
+- [x] **C2** `done 2026-07-10 — pass 52/75, mini-stack 26.2 KB min / 9.3 gz` — Resilience: 429 throttle cache (storage entry shaped
   like real's `throttling.*`, immediate retry re-throws same ServerError with
   NO network until Retry-After passes); ServerError formatting for 5xx
   (message format per snapshot); `refresh_in` → `refreshOn` on the AT entity
@@ -515,3 +534,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | B3 | done 2026-07-10 | 40/75 | 24.0 KB min / 8.6 gz | +8 pass (login-redirect-roundtrip, login-popup-roundtrip, sso-silent-cold/warm, acquire-token-redirect, refresh-token-grant, iframe-fallback-no-rt, telemetry.token-request-headers). Authorize+token requests now carry real's full param set (nonce+validation, client-request-id, client_info, default claims, clidata, X-AnchorMailbox ccs, x-client-SKU/VER, empty telemetry params, lib-capability, charset content-type, RT redirect_uri). GAP_REPORT: 0 bugs remaining. e2e 25/25; mini-core 15.0 min / 5.6 gz |
 | B4 | done 2026-07-10 | 44/75 | 24.4 KB min / 8.7 gz | +4 pass (core.storage-shape-after-login, init.storage-before-login, accounts.logout-redirect, accounts.logout-popup-per-account; redirect-state-tampered was already done by B2). msal.version on initialize; lastUpdatedAt on all entities + cachedByApiId (real ApiId per flow) on the account; end_session gains client-request-id + state (lib-state format), per-request postLogoutRedirectUri honored on both logout flows. Mock-IdP determinism fix: nonce now keyed per PKCE challenge (see Decision Log — was a global that a stray late authorize could clobber → phantom nonce_mismatch flake). Total diffs 145→143 (accounts.local-storage +1, a C6 item). e2e 25/25; mini-core 15.4 min / 5.8 gz |
 | C1 | done 2026-07-10 | 50/75 | 25.4 KB min / 9.0 gz | +6 pass (params.login-hint-domain-hint, sid-passthrough, extra-query-parameters, claims-and-cae, custom-state, authority-override-per-request — all 9 params.* now green). sid gated on prompt=none, select_account suppresses hints+ccs; eQP on authorize + token QUERY (real ignores tokenQueryParameters — see Decision Log); mergedClaims w/ clientCapabilities xms_cc; custom state `b64(libState)\|custom` echoed on result; per-request authority w/o re-discovery. Total diffs 143→132; remaining diffs all C2–C9 areas. e2e 25/25; mini-core 16.3 min / 6.1 gz |
+| C2 | done 2026-07-10 | 52/75 | 26.2 KB min / 9.3 gz | +2 pass (resilience.throttle-429-retry-after, proactive-refresh — all 4 resilience.* green). Throttle cache in post() keyed by real-shaped thumbprint; blocked retry re-throws stored ServerError w/ errorCode "" + raw error_description, zero network; refresh_in → refreshOn on AT entity + result. Total diffs 132→127; remaining 23 diff scenarios all C3–C9 areas. e2e 25/25; mini-core 17.2 min / 6.3 gz |

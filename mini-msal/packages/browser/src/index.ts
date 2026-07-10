@@ -262,7 +262,27 @@ function decodeJwt(token: string): Record<string, any> {
     );
 }
 
-async function post(url: string, body: Record<string, string>) {
+async function post(
+    url: string,
+    body: Record<string, string>,
+    throttleKey?: string
+) {
+    // real's ThrottlingUtils: a cached 429/5xx/Retry-After token response
+    // blocks identical requests (same thumbprint) until throttleTime — the
+    // retry re-throws the stored error with NO network call
+    const t =
+        throttleKey &&
+        JSON.parse(sessionStorage.getItem(throttleKey) ?? "null");
+    if (t) {
+        if (t.throttleTime >= Date.now()) {
+            throw new ServerError(
+                t.errorCodes?.join(" ") || "",
+                t.errorMessage,
+                t.subError
+            );
+        }
+        sessionStorage.removeItem(throttleKey!);
+    }
     const res = await fetch(url, {
         method: "POST",
         headers: {
@@ -271,6 +291,30 @@ async function post(url: string, body: Record<string, string>) {
         body: new URLSearchParams(body).toString(),
     });
     const json = await res.json();
+    if (
+        throttleKey &&
+        (res.status === 429 ||
+            res.status >= 500 ||
+            (res.headers.has("Retry-After") && !res.ok))
+    ) {
+        const sec = Date.now() / 1000;
+        sessionStorage.setItem(
+            throttleKey,
+            JSON.stringify({
+                throttleTime: Math.floor(
+                    Math.min(
+                        sec +
+                            (parseInt(res.headers.get("Retry-After")!) || 60),
+                        sec + 3600
+                    ) * 1000
+                ),
+                error: json.error,
+                errorCodes: json.error_codes,
+                errorMessage: json.error_description,
+                subError: json.suberror,
+            })
+        );
+    }
     if (json.error || json.error_description || json.suberror) {
         const err = classify(json.error ?? "", json.error_description, json.suberror);
         if (err instanceof ServerError) {
@@ -303,6 +347,7 @@ interface TokenEntity {
     cachedAt?: string;
     expiresOn?: string;
     extendedExpiresOn?: string;
+    refreshOn?: string;
     tokenType?: string;
     lastUpdatedAt?: string;
 }
@@ -742,10 +787,21 @@ export function createClient(
             claims?: string;
             eqp?: Record<string, string>;
             authority?: string;
+            homeAccountId?: string;
         }
     ): Promise<AuthenticationResult> => {
         const correlationId = meta?.correlationId ?? crypto.randomUUID();
         const reqAuthority = authorityFor(meta);
+        // throttle key mirrors real's RequestThumbprint (undefined fields
+        // dropped by JSON.stringify)
+        const throttleKey = `throttling.${JSON.stringify({
+            clientId,
+            authority: `${reqAuthority}/`,
+            scopes,
+            homeAccountIdentifier: meta?.homeAccountId,
+            claims: meta?.claims,
+            authenticationScheme: "Bearer",
+        })}`;
         // extraQueryParameters + client-request-id ride the token endpoint
         // QUERY string (real 5.16's createTokenQueryParameters)
         const q = new URLSearchParams(meta?.eqp);
@@ -761,7 +817,8 @@ export function createClient(
                 claims: mergedClaims(meta?.claims),
                 ...(meta?.ccs && { "X-AnchorMailbox": meta.ccs }),
                 ...TOKEN_TELEMETRY,
-            }
+            },
+            throttleKey
         );
         const claims = decodeJwt(json.id_token);
         if (meta?.nonce && claims.nonce !== meta.nonce) {
@@ -791,6 +848,10 @@ export function createClient(
         // real stamps every entity write with lastUpdatedAt (epoch ms string)
         const ts = String(Date.now());
         const expiresOn = now + json.expires_in;
+        // refresh_in → refreshOn on the AT entity + result (proactive refresh)
+        const refreshOn = json.refresh_in
+            ? now + Number(json.refresh_in)
+            : undefined;
         const environment = env();
         const realm = claims.tid ?? "";
         const base = `${P}|${homeAccountId}|${environment}`;
@@ -842,6 +903,7 @@ export function createClient(
             cachedAt: String(now),
             expiresOn: String(expiresOn),
             extendedExpiresOn: String(expiresOn),
+            ...(refreshOn ? { refreshOn: String(refreshOn) } : undefined),
             tokenType: "Bearer",
             lastUpdatedAt: ts,
         } satisfies TokenEntity);
@@ -886,7 +948,7 @@ export function createClient(
             extExpiresOn: new Date(
                 (now + (json.ext_expires_in ?? json.expires_in)) * 1000
             ),
-            refreshOn: undefined,
+            refreshOn: refreshOn ? new Date(refreshOn * 1000) : undefined,
             correlationId,
             requestId: "",
             familyId: json.foci ?? "",
@@ -942,6 +1004,7 @@ export function createClient(
                 claims: req.claims,
                 eqp: req.extraQueryParameters,
                 authority: req.authority,
+                homeAccountId: req.account?.homeAccountId,
             }
         );
 
@@ -1126,7 +1189,9 @@ export function createClient(
                 fromCache: true,
                 expiresOn: new Date(Number(at.expiresOn) * 1000),
                 extExpiresOn: new Date(Number(at.extendedExpiresOn) * 1000),
-                refreshOn: undefined,
+                refreshOn: at.refreshOn
+                    ? new Date(Number(at.refreshOn) * 1000)
+                    : undefined,
                 correlationId: req.correlationId ?? crypto.randomUUID(),
                 requestId: "",
                 familyId: "",
