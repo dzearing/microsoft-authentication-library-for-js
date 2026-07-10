@@ -116,26 +116,26 @@ const C = {
     "silent.policy-at-and-rt": {
         class: "behavioral-diff",
         real: "Expired AT → RT grant (no iframe).",
-        mini: "Same outcome by accident (default path); policy not actually enforced.",
+        mini: "Policy enforced (A5); result-shape gaps only (B1).",
         cost: 0,
     },
     "silent.policy-refresh-token": {
-        class: "bug",
+        class: "behavioral-diff",
         real: "CacheLookupPolicy.RefreshToken IGNORES the valid AT and uses the RT grant (fromCache=false).",
-        mini: "Returns the cached AT (fromCache=true) — policy ignored.",
-        cost: 0.2,
+        mini: "Policy enforced (A5): same RT grant, fromCache=false; result-shape gaps only (B1).",
+        cost: 0,
     },
     "silent.policy-rt-and-network": {
-        class: "bug",
+        class: "behavioral-diff",
         real: "RT grant fails (invalid_grant) → falls back to prompt=none iframe → new code exchange.",
-        mini: "Returns the cached AT with zero network — policy ignored entirely.",
-        cost: 0.2,
+        mini: "Policy enforced (A5): same RT→iframe network sequence; result-shape gaps only (B1).",
+        cost: 0,
     },
     "silent.policy-skip": {
         class: "behavioral-diff",
         real: "Skip → straight to prompt=none iframe (skips AT cache AND RT).",
-        mini: "Skip honored for the AT cache but still uses the RT grant instead of the iframe.",
-        cost: 0.2,
+        mini: "Policy enforced (A5): straight to the iframe like real; result-shape gaps only (B1).",
+        cost: 0,
     },
     "silent.concurrent-dedupe": {
         class: "bug",
@@ -144,10 +144,10 @@ const C = {
         cost: 0.3,
     },
     "silent.force-refresh": {
-        class: "missing-feature",
+        class: "behavioral-diff",
         real: "forceRefresh:true bypasses a valid cached AT and refreshes over the network; emits acquireTokenFromNetworkStart.",
-        mini: "forceRefresh not implemented — returns the cached token (fromCache=true).",
-        cost: 0.1,
+        mini: "forceRefresh honored (A5): same RT-grant network refresh; remaining diffs are event-stream (B2) + result shape (B1).",
+        cost: 0,
     },
 
     // ---- accounts ----

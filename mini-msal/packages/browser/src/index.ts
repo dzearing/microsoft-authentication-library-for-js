@@ -46,6 +46,7 @@ export interface TokenRequest {
     prompt?: string;
     redirectUri?: string;
     cacheLookupPolicy?: number;
+    forceRefresh?: boolean;
 }
 
 export interface Config {
@@ -779,18 +780,13 @@ export function createClient(
     const client: AuthClient = {
         async initialize() {
             initialized = true;
-            const key = `msal.meta.${authority}`;
-            const cached = sessionStorage.getItem(key);
-            if (cached) {
-                metadata = JSON.parse(cached);
-                return;
-            }
-            metadata = await (
+            // per-instance memory only: real MSAL re-fetches discovery for
+            // every new instance and leaves no such key in storage
+            metadata ??= await (
                 await fetch(
                     `${authority}/v2.0/.well-known/openid-configuration`
                 )
             ).json();
-            sessionStorage.setItem(key, JSON.stringify(metadata));
         },
 
         handleRedirectPromise(): Promise<AuthenticationResult | null> {
@@ -858,21 +854,33 @@ export function createClient(
                 // real rejects unknown accounts as an authority mismatch
                 throw new ClientConfigurationError("authority_mismatch");
             }
+            // CacheLookupPolicy gates each rung of the silent ladder
+            // (AT -> RT -> iframe); forceRefresh bypasses the AT rung.
+            // Same semantics as real MSAL's acquireTokenSilentAsync.
+            const pol = req.cacheLookupPolicy ?? CacheLookupPolicy.Default;
+            const useAT =
+                !req.forceRefresh &&
+                pol <= CacheLookupPolicy.AccessTokenAndRefreshToken;
+            const useRT =
+                pol !== CacheLookupPolicy.AccessToken &&
+                pol !== CacheLookupPolicy.Skip;
+            const useFrame =
+                pol === CacheLookupPolicy.Default ||
+                pol >= CacheLookupPolicy.RefreshTokenAndNetwork;
             const keys = tokenKeys();
             const wanted = req.scopes.map((sc) => sc.toLowerCase());
-            const at =
-                req.cacheLookupPolicy === CacheLookupPolicy.Skip
-                    ? undefined
-                    : findCred(keys.accessToken, (t) => {
-                          const target = (t.target ?? "")
-                              .toLowerCase()
-                              .split(" ");
-                          return (
-                              t.homeAccountId === account.homeAccountId &&
-                              wanted.every((sc) => target.includes(sc)) &&
-                              Number(t.expiresOn) - 300 > Date.now() / 1000
-                          );
-                      });
+            const at = useAT
+                ? findCred(keys.accessToken, (t) => {
+                      const target = (t.target ?? "")
+                          .toLowerCase()
+                          .split(" ");
+                      return (
+                          t.homeAccountId === account.homeAccountId &&
+                          wanted.every((sc) => target.includes(sc)) &&
+                          Number(t.expiresOn) - 300 > Date.now() / 1000
+                      );
+                  })
+                : undefined;
             if (at) {
                 const id = findCred(
                     keys.idToken,
@@ -889,17 +897,33 @@ export function createClient(
                 emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
                 return result;
             }
-            const rt = findCred(
-                keys.refreshToken,
-                (t) => t.homeAccountId === account.homeAccountId
-            );
-            if (rt) {
-                try {
-                    const result = await redeemRefresh(req.scopes, rt.secret);
-                    emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
-                    return result;
-                } catch (e) {
-                    if (!(e instanceof InteractionRequiredAuthError)) throw e;
+            if (pol === CacheLookupPolicy.AccessToken) {
+                // AT-only policy: expired/missing AT is a hard error
+                throw new ClientAuthError("token_refresh_required");
+            }
+            if (useRT) {
+                const rt = findCred(
+                    keys.refreshToken,
+                    (t) => t.homeAccountId === account.homeAccountId
+                );
+                if (rt) {
+                    try {
+                        const result = await redeemRefresh(
+                            req.scopes,
+                            rt.secret
+                        );
+                        emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
+                        return result;
+                    } catch (e) {
+                        if (
+                            !useFrame ||
+                            !(e instanceof InteractionRequiredAuthError)
+                        ) {
+                            throw e;
+                        }
+                    }
+                } else if (!useFrame) {
+                    throw new InteractionRequiredAuthError("no_tokens_found");
                 }
             }
             // last resort: hidden iframe with prompt=none

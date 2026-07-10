@@ -152,6 +152,17 @@ Entries (append as you go):
   (lib.mjs) — snapshot scope order is alphabetical, not wire order; real
   result scopes = ScopeSet.fromString(AT target).asArray(), casing preserved.
 
+- **A5 (2026-07-10)**: silent ladder now policy-gated: useAT (pol 0/1/2 and
+  !forceRefresh) → useRT (pol ≠ 1/5) → useFrame (pol 0/4/5). AccessToken(1)
+  miss → ClientAuthError `token_refresh_required`; RT missing with no iframe
+  rung → IRAE `no_tokens_found` (real's RefreshTokenClient behavior; not
+  scenario-covered but kept for parity). ALSO front-ran part of B4: dropped
+  the `msal.meta.*` sessionStorage discovery cache — real re-fetches
+  discovery per instance (every policy snapshot has `networkCalls[0] =
+  "discovery"` on the second instance), so discovery is now per-instance
+  memory only. This is what eliminated the networkCalls diffs across all
+  silent.* scenarios.
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -216,7 +227,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   state/fromPlatformBroker) — pass count unchanged by design, zero
   regressions. Result scopes now preserve granted-string casing
   (harness sorts them; real never lowercases).
-- [ ] **A5** `pending` — CacheLookupPolicy full semantics + forceRefresh:
+- [x] **A5** `done 2026-07-10 — pass 11/75, mini-stack 19.5 KB min / 7.3 gz` — CacheLookupPolicy full semantics + forceRefresh:
   AccessToken(1): AT-or-throw ClientAuthError `token_refresh_required`;
   AccessTokenAndRefreshToken(2): AT→RT, no iframe; RefreshToken(3): RT only
   (skip valid AT), no iframe; RefreshTokenAndNetwork(4): RT→iframe;
@@ -265,11 +276,9 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   token redemption `redirect_uri` = request's redirectUri. Compare snapshot
   `idp[*].query/body` blocks exactly (volatile values normalize away).
 - [ ] **B4** `pending` — Storage + misc behavior parity: write `msal.version`,
-  per-entity `lastUpdatedAt` + `cachedByApiId`; drop mini's `msal.meta.*` key
-  from the msal-visible namespace OR keep but confirm scenarios pass
-  (storage dumps diff on it — must match real, so move discovery cache to a
-  key real also lacks? NO — snapshots are ground truth: real has no such key;
-  cache discovery in memory per instance instead); forged-state redirect →
+  per-entity `lastUpdatedAt` + `cachedByApiId`; ~~drop mini's `msal.meta.*`
+  key~~ DONE in A5 (discovery now cached in per-instance memory only — the
+  key is gone and every new instance re-fetches discovery like real); forged-state redirect →
   resolve null silently (no throw, no loginFailure event);
   logout: end_session gets `state` + `client-request-id` params, temp
   `msal.interaction.status` signout entry, honor per-request
@@ -376,3 +385,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | A2 | done 2026-07-10 | 9/75 | 19.3 KB min / 7.2 gz | +1 pass (errors.uninitialized-client): `initialized` flag, guard first in preflight(), handleRedirectPromise rejects pre-init (own check — full preflight would break iframe null path); e2e 25/25; mini-core 11.5 min / 4.5 gz |
 | A3 | done 2026-07-10 | 10/75 | 19.4 KB min / 7.2 gz | +1 pass (accounts.get-account-filters): getAllAccounts(filter?) honors filter; getAccount({}) / all-empty filter → null (matches real CacheManager.getAccountInfoFilteredBy); shared matchesFilter predicate; e2e 25/25; mini-core 11.5 min / 4.5 gz |
 | A4 | done 2026-07-10 | 10/75 | 19.4 KB min / 7.2 gz | +0 pass by design: all 8 scope diffs on params.scopes-normalization gone (18→10 diffs), remainder is B1 result-shape. normScopes = real addScopes ([...req, ...defaults] → Set → join, exact-case dedupe) on authorize+token; result scopes keep granted casing (dropped toLowerCase). No regressions (same 10 pass, 591 total diffs); e2e 25/25; mini-core 11.5 min / 4.5 gz |
+| A5 | done 2026-07-10 | 11/75 | 19.5 KB min / 7.3 gz | +1 pass (silent.policy-access-token-expired). Policy ladder gates AT/RT/iframe rungs; forceRefresh skips AT; AT-only miss → token_refresh_required ClientAuthError. Discovery cache moved to per-instance memory (msal.meta.* key dropped — B4 item front-ran): networkCalls now match on ALL silent.* scenarios; remaining policy-scenario diffs are pure B1 result-shape (authority/correlationId/tokenType/fromPlatformBroker), force-refresh remainder is B2 events. Total diffs 591→568; e2e 25/25; mini-core 11.7 min / 4.6 gz |

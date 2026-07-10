@@ -14,7 +14,7 @@ exists but differs observably · **missing-feature** = absent by design ·
 | Area | Scenarios | Pass | Behavioral diff | Missing feature | Bug |
 |---|---|---|---|---|---|
 | 1. Core flows | 9 | 0 | 9 | 0 | 0 |
-| 2. Silent acquisition | 12 | 0 | 7 | 1 | 4 |
+| 2. Silent acquisition | 12 | 1 | 10 | 0 | 1 |
 | 3. Accounts & cache | 7 | 1 | 4 | 2 | 0 |
 | 4. Errors & guards | 10 | 6 | 3 | 0 | 1 |
 | 5. Platform broker / WAM | 7 | 0 | 0 | 7 | 0 |
@@ -23,7 +23,7 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 8. Request passthrough | 9 | 2 | 1 | 6 | 0 |
 | 9. Resilience | 4 | 1 | 1 | 2 | 0 |
 | 10. Init & misc | 6 | 0 | 3 | 3 | 0 |
-| **Total** | **75** | **10** | **28** | **32** | **5** |
+| **Total** | **75** | **11** | **31** | **31** | **2** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -130,7 +130,7 @@ here instead of being repeated per scenario:
 - **real**: CacheLookupPolicy.AccessToken + valid AT → cache hit.
 - **mini**: Same outcome; shape gaps only.
 
-#### `silent.policy-access-token-expired` — 🐞 **bug** · est. 0.3 KB to close
+#### `silent.policy-access-token-expired` — ✅ pass · est. 0.3 KB to close
 
 - **real**: CacheLookupPolicy.AccessToken + expired AT → throws ClientAuthError token_refresh_required (no fallback, as documented).
 - **mini**: Ignores the policy: silently falls through to the RT grant and RETURNS A TOKEN where real throws.
@@ -138,32 +138,32 @@ here instead of being repeated per scenario:
 #### `silent.policy-at-and-rt` — ↔️ behavioral-diff
 
 - **real**: Expired AT → RT grant (no iframe).
-- **mini**: Same outcome by accident (default path); policy not actually enforced.
+- **mini**: Policy enforced (A5); result-shape gaps only (B1).
 
-#### `silent.policy-refresh-token` — 🐞 **bug** · est. 0.2 KB to close
+#### `silent.policy-refresh-token` — ↔️ behavioral-diff
 
 - **real**: CacheLookupPolicy.RefreshToken IGNORES the valid AT and uses the RT grant (fromCache=false).
-- **mini**: Returns the cached AT (fromCache=true) — policy ignored.
+- **mini**: Policy enforced (A5): same RT grant, fromCache=false; result-shape gaps only (B1).
 
-#### `silent.policy-rt-and-network` — 🐞 **bug** · est. 0.2 KB to close
+#### `silent.policy-rt-and-network` — ↔️ behavioral-diff
 
 - **real**: RT grant fails (invalid_grant) → falls back to prompt=none iframe → new code exchange.
-- **mini**: Returns the cached AT with zero network — policy ignored entirely.
+- **mini**: Policy enforced (A5): same RT→iframe network sequence; result-shape gaps only (B1).
 
-#### `silent.policy-skip` — ↔️ behavioral-diff · est. 0.2 KB to close
+#### `silent.policy-skip` — ↔️ behavioral-diff
 
 - **real**: Skip → straight to prompt=none iframe (skips AT cache AND RT).
-- **mini**: Skip honored for the AT cache but still uses the RT grant instead of the iframe.
+- **mini**: Policy enforced (A5): straight to the iframe like real; result-shape gaps only (B1).
 
 #### `silent.concurrent-dedupe` — 🐞 **bug** · est. 0.3 KB to close
 
 - **real**: Two parallel identical acquireTokenSilent calls → ONE token-endpoint request (in-flight dedupe), both callers get the same token.
 - **mini**: Two parallel calls → TWO refresh requests (no dedupe). Same tokens returned, but doubled IdP load and RT-rotation hazard against real AAD.
 
-#### `silent.force-refresh` — 🚫 missing-feature · est. 0.1 KB to close
+#### `silent.force-refresh` — ↔️ behavioral-diff
 
 - **real**: forceRefresh:true bypasses a valid cached AT and refreshes over the network; emits acquireTokenFromNetworkStart.
-- **mini**: forceRefresh not implemented — returns the cached token (fromCache=true).
+- **mini**: forceRefresh honored (A5): same RT-grant network refresh; remaining diffs are event-stream (B2) + result shape (B1).
 
 ### 3. Accounts & cache
 
