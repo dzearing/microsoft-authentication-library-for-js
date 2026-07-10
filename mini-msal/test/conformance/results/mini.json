@@ -3280,84 +3280,181 @@
   {
     "id": "broker.dom-probe-and-interactive",
     "area": "broker",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "accountShape.ok",
-        "real": "{\"nativeAccountId\":\"native-acc-1\",\"username\":\"ada@contoso.com\"}",
-        "mini": "null"
-      },
-      {
-        "path": "brokerLog[0]",
-        "real": "{\"brokerId\":\"MicrosoftEntra\",\"call\":\"getSupportedContracts\"}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "brokerLog[1]",
-        "real": "{\"accountId\":\"native-acc-1\",\"brokerId\":\"MicrosoftEntra\",\"call\":\"executeGetToken\",\"clientId\":\"<guid>\",\"extraParameterKeys\":[\"claims\",\"nativeAccountId\",\"telemetry\",\"windowTitleSubstring\",\"x-client-xtra-sku\"],\"hasCorrelationId\":true,\"isSecurityTokenService\":false,\"redirectUri\":\"http://localhost:4173/co…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "brokerLog[2]",
-        "real": "{\"accountId\":\"native-acc-1\",\"brokerId\":\"MicrosoftEntra\",\"call\":\"executeGetToken\",\"clientId\":\"<guid>\",\"extraParameterKeys\":[\"account\",\"authenticationScheme\",\"claims\",\"prompt\",\"telemetry\",\"tokenType\",\"windowTitleSubstring\",\"x-client-xtra-sku\"],\"hasCorrelationId\":true,\"isSecurityTokenService\":false,\"re…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[0]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenStart\",\"interactionType\":\"silent\",\"payloadAccount\":null,\"payloadKeys\":[\"nativeAccountId\",\"scopes\"],\"seq\":2}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[1]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenStart\",\"interactionType\":\"silent\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"account\",\"correlationId\",\"scopes\"],\"seq\":3}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[2]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenSuccess\",\"interactionType\":\"silent\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"accessToken\",\"account\",\"authority\",\"correlationId\",\"expiresOn\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"idTokenClaims\",\"scopes\",\"state\",\"tenantId\",\"tokenType\",\"unique…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.ok",
-        "real": "{\"accessToken\":\"broker-access-token\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":\"https://localhost:4599/tenant/\",\"correlationIdPresent\":true,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":tru…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.err",
-        "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":null,\"message\":\"globalThis.__msal.acquireTokenByCode is not a function\",\"name\":\"TypeError\",\"subError\":null}"
-      },
-      {
-        "path": "silentResult.ok",
-        "real": "{\"accessToken\":\"broker-access-token\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":\"https://localhost:4599/tenant/\",\"correlationIdPresent\":true,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":tru…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "silentResult.err",
-        "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":\"no_account_error\",\"message\":\"See https://aka.ms/msal.js.errors#no_account_error for details\",\"name\":\"BrowserAuthError\",\"subError\":null}"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "accountShape": {
-        "ok": null
+        "ok": {
+          "nativeAccountId": "native-acc-1",
+          "username": "ada@contoso.com"
+        }
       },
-      "brokerLog": [],
-      "events": [],
+      "brokerLog": [
+        {
+          "brokerId": "MicrosoftEntra",
+          "call": "getSupportedContracts"
+        },
+        {
+          "accountId": "native-acc-1",
+          "brokerId": "MicrosoftEntra",
+          "call": "executeGetToken",
+          "clientId": "<guid>",
+          "extraParameterKeys": [
+            "claims",
+            "nativeAccountId",
+            "telemetry",
+            "windowTitleSubstring",
+            "x-client-xtra-sku"
+          ],
+          "hasCorrelationId": true,
+          "isSecurityTokenService": false,
+          "redirectUri": "http://localhost:4173/conformance-app/",
+          "requestKeys": [
+            "accountId",
+            "authority",
+            "brokerId",
+            "clientId",
+            "correlationId",
+            "embeddedClientId",
+            "extraParameters",
+            "isSecurityTokenService",
+            "redirectUri",
+            "scope",
+            "state",
+            "storeInCache"
+          ],
+          "scope": "User.Read openid profile offline_access"
+        },
+        {
+          "accountId": "native-acc-1",
+          "brokerId": "MicrosoftEntra",
+          "call": "executeGetToken",
+          "clientId": "<guid>",
+          "extraParameterKeys": [
+            "account",
+            "authenticationScheme",
+            "claims",
+            "prompt",
+            "telemetry",
+            "tokenType",
+            "windowTitleSubstring",
+            "x-client-xtra-sku"
+          ],
+          "hasCorrelationId": true,
+          "isSecurityTokenService": false,
+          "redirectUri": "http://localhost:4173/conformance-app/",
+          "requestKeys": [
+            "accountId",
+            "authority",
+            "brokerId",
+            "clientId",
+            "correlationId",
+            "embeddedClientId",
+            "extraParameters",
+            "isSecurityTokenService",
+            "redirectUri",
+            "scope",
+            "state",
+            "storeInCache"
+          ],
+          "scope": "Mail.Read openid profile offline_access"
+        }
+      ],
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "silent",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "nativeAccountId",
+            "scopes"
+          ],
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "silent",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "account",
+            "correlationId",
+            "scopes"
+          ],
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "silent",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "correlationId",
+            "expiresOn",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 4
+        }
+      ],
       "result": {
-        "err": {
-          "errorCode": null,
-          "message": "globalThis.__msal.acquireTokenByCode is not a function",
-          "name": "TypeError",
-          "subError": null
+        "ok": {
+          "accessToken": "broker-access-token",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": true,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "offline_access",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
         }
       },
       "silentResult": {
-        "err": {
-          "errorCode": "no_account_error",
-          "message": "See https://aka.ms/msal.js.errors#no_account_error for details",
-          "name": "BrowserAuthError",
-          "subError": null
+        "ok": {
+          "accessToken": "broker-access-token",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": true,
+          "idToken": "<jwt>",
+          "scopes": [
+            "Mail.Read",
+            "offline_access",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
         }
       }
     }
@@ -3365,16 +3462,14 @@
   {
     "id": "broker.dom-first-login",
     "area": "broker",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "brokerLog[0]",
-        "real": "{\"brokerId\":\"MicrosoftEntra\",\"call\":\"getSupportedContracts\"}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
-      "brokerLog": [],
+      "brokerLog": [
+        {
+          "brokerId": "MicrosoftEntra",
+          "call": "getSupportedContracts"
+        }
+      ],
       "result": {
         "ok": {
           "accessToken": "mock-access-token-0",
@@ -3404,76 +3499,29 @@
   {
     "id": "broker.dom-error-mapping",
     "area": "broker",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "ACCOUNT_UNAVAILABLE.err.errorCode",
-        "real": "\"native_account_unavailable\"",
-        "mini": "null"
-      },
-      {
-        "path": "ACCOUNT_UNAVAILABLE.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#account_unavailable for details\"",
-        "mini": "\"globalThis.__msal.acquireTokenByCode is not a function\""
-      },
-      {
-        "path": "ACCOUNT_UNAVAILABLE.err.name",
-        "real": "\"InteractionRequiredAuthError\"",
-        "mini": "\"TypeError\""
-      },
-      {
-        "path": "NO_NETWORK.err.errorCode",
-        "real": "\"no_network_connectivity\"",
-        "mini": "null"
-      },
-      {
-        "path": "NO_NETWORK.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#no_network_connectivity for details\"",
-        "mini": "\"globalThis.__msal.acquireTokenByCode is not a function\""
-      },
-      {
-        "path": "NO_NETWORK.err.name",
-        "real": "\"BrowserAuthError\"",
-        "mini": "\"TypeError\""
-      },
-      {
-        "path": "USER_CANCEL.err.errorCode",
-        "real": "\"user_cancelled\"",
-        "mini": "null"
-      },
-      {
-        "path": "USER_CANCEL.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#user_cancelled for details\"",
-        "mini": "\"globalThis.__msal.acquireTokenByCode is not a function\""
-      },
-      {
-        "path": "USER_CANCEL.err.name",
-        "real": "\"BrowserAuthError\"",
-        "mini": "\"TypeError\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "ACCOUNT_UNAVAILABLE": {
         "err": {
-          "errorCode": null,
-          "message": "globalThis.__msal.acquireTokenByCode is not a function",
-          "name": "TypeError",
+          "errorCode": "native_account_unavailable",
+          "message": "See https://aka.ms/msal.js.errors#account_unavailable for details",
+          "name": "InteractionRequiredAuthError",
           "subError": null
         }
       },
       "NO_NETWORK": {
         "err": {
-          "errorCode": null,
-          "message": "globalThis.__msal.acquireTokenByCode is not a function",
-          "name": "TypeError",
+          "errorCode": "no_network_connectivity",
+          "message": "See https://aka.ms/msal.js.errors#no_network_connectivity for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       },
       "USER_CANCEL": {
         "err": {
-          "errorCode": null,
-          "message": "globalThis.__msal.acquireTokenByCode is not a function",
-          "name": "TypeError",
+          "errorCode": "user_cancelled",
+          "message": "See https://aka.ms/msal.js.errors#user_cancelled for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       }
@@ -3482,65 +3530,23 @@
   {
     "id": "broker.dom-disabled-fallback",
     "area": "broker",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "brokerCallsAfterFirst",
-        "real": "2",
-        "mini": "0"
-      },
-      {
-        "path": "brokerCallsAfterSecond",
-        "real": "2",
-        "mini": "0"
-      },
-      {
-        "path": "result.err.errorCode",
-        "real": "\"disabled\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.err.message",
-        "real": "\"broker disabled by policy\"",
-        "mini": "\"globalThis.__msal.acquireTokenByCode is not a function\""
-      },
-      {
-        "path": "result.err.name",
-        "real": "\"NativeAuthError\"",
-        "mini": "\"TypeError\""
-      },
-      {
-        "path": "second.err.errorCode",
-        "real": "\"unable_to_acquire_token_from_native_platform\"",
-        "mini": "null"
-      },
-      {
-        "path": "second.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#unable_to_acquire_token_from_native_platform for details\"",
-        "mini": "\"globalThis.__msal.acquireTokenByCode is not a function\""
-      },
-      {
-        "path": "second.err.name",
-        "real": "\"BrowserAuthError\"",
-        "mini": "\"TypeError\""
-      }
-    ],
+    "status": "pass",
     "observed": {
-      "brokerCallsAfterFirst": 0,
-      "brokerCallsAfterSecond": 0,
+      "brokerCallsAfterFirst": 2,
+      "brokerCallsAfterSecond": 2,
       "result": {
         "err": {
-          "errorCode": null,
-          "message": "globalThis.__msal.acquireTokenByCode is not a function",
-          "name": "TypeError",
+          "errorCode": "disabled",
+          "message": "broker disabled by policy",
+          "name": "NativeAuthError",
           "subError": null
         }
       },
       "second": {
         "err": {
-          "errorCode": null,
-          "message": "globalThis.__msal.acquireTokenByCode is not a function",
-          "name": "TypeError",
+          "errorCode": "unable_to_acquire_token_from_native_platform",
+          "message": "See https://aka.ms/msal.js.errors#unable_to_acquire_token_from_native_platform for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       }
@@ -3598,16 +3604,16 @@
       {
         "path": "result.err",
         "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":null,\"message\":\"globalThis.__msal.acquireTokenByCode is not a function\",\"name\":\"TypeError\",\"subError\":null}"
+        "mini": "{\"errorCode\":\"unable_to_acquire_token_from_native_platform\",\"message\":\"See https://aka.ms/msal.js.errors#unable_to_acquire_token_from_native_platform for details\",\"name\":\"BrowserAuthError\",\"subError\":null}"
       }
     ],
     "observed": {
       "extLog": [],
       "result": {
         "err": {
-          "errorCode": null,
-          "message": "globalThis.__msal.acquireTokenByCode is not a function",
-          "name": "TypeError",
+          "errorCode": "unable_to_acquire_token_from_native_platform",
+          "message": "See https://aka.ms/msal.js.errors#unable_to_acquire_token_from_native_platform for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       }
@@ -3784,17 +3790,17 @@
       {
         "path": "acquireTokenByCode.err.errorCode",
         "real": "\"unsupported_method\"",
-        "mini": "null"
+        "mini": "\"auth_code_or_nativeAccountId_required\""
       },
       {
         "path": "acquireTokenByCode.err.message",
         "real": "\"See https://aka.ms/msal.js.errors#unsupported_method for details\"",
-        "mini": "\"globalThis.__msal[name] is not a function\""
+        "mini": "\"See https://aka.ms/msal.js.errors#auth_code_or_nativeAccountId_required for details\""
       },
       {
         "path": "acquireTokenByCode.err.name",
         "real": "\"NestedAppAuthError\"",
-        "mini": "\"TypeError\""
+        "mini": "\"BrowserAuthError\""
       },
       {
         "path": "addPerformanceCallback.err",
@@ -3855,9 +3861,9 @@
     "observed": {
       "acquireTokenByCode": {
         "err": {
-          "errorCode": null,
-          "message": "globalThis.__msal[name] is not a function",
-          "name": "TypeError",
+          "errorCode": "auth_code_or_nativeAccountId_required",
+          "message": "See https://aka.ms/msal.js.errors#auth_code_or_nativeAccountId_required for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       },

@@ -382,6 +382,42 @@ Entries (append as you go):
   (closing the B4/C2 routing notes). Core cost: +0.4 KB min (seam + event
   bus); the crypto lives in the feature module (compat +2.8 KB min total).
 
+- **C7 (2026-07-10)**: DOM broker = new feature `@mini-msal/browser/broker`
+  (compat composes [localStorageCache, popup, broker, telemetry]). Core seams
+  added: `ctx.writeAccount(entity)` (entity + account.keys index through the
+  Store seam) and `ctx.nativeSilent?(req, account)` — acquireTokenSilent runs
+  `nativeSilent ?? silentLadder` inside the deduped promise, so broker silent
+  keeps start/success events and dedupe but emits NO acquireTokenFromNetworkStart
+  (matches real); toAccountInfo now surfaces the entity's nativeAccountId.
+  KEY DISCOVERIES from real 5.16: (1) acquireTokenByCode({nativeAccountId})
+  emits acquireTokenStart with the RAW request (no correlationId stamp) and NO
+  success event on the native path (success only exists in the hybrid
+  spa-code branch); (2) brokered AuthenticationResult is a 14-key shape
+  (authority/uniqueId/tenantId/scopes/account/idToken/idTokenClaims/
+  accessToken/fromCache/expiresOn/tokenType/correlationId/state/
+  fromPlatformBroker) — NOT the web 21-key shape; byCode result.state =
+  response.state || "" (string), silent overrides state to undefined (key
+  present); scopes INCLUDE offline_access (response.scope verbatim);
+  (3) ACCOUNT_UNAVAILABLE maps to IRAE with errorCode
+  `native_account_unavailable` but message aka.ms#account_unavailable (code
+  and anchor differ — real passes the broker's code to getDefaultErrorMessage);
+  DISABLED falls to the default branch → NativeAuthError(code, raw
+  description), fatal → provider dropped, next call
+  `unable_to_acquire_token_from_native_platform`; (4) DOM request = named
+  protocol fields + every remaining TRUTHY request prop stringified into
+  extraParameters (falsy dropped — that's why prompt/tokenType appear only on
+  silent and extendedExpiryToken:false never shows) + telemetry:"MATS" +
+  x-client-xtra-sku. Simplifications (all scenario-unobservable): no native
+  in-memory token cache (real caches broker ATs in nativeInternalStorage —
+  mini re-calls executeGetToken every time); popup/ssoSilent/redirect broker
+  routing not implemented (dom-first-login proves cold-cache popup goes web
+  anyway); fatal-on-silent doesn't convert to token_refresh_required+iframe
+  fallback; isPlatformBrokerAvailable stays async false (real gates the DOM
+  probe on its domConfig ARGUMENT, which callers don't pass — snapshot is
+  false/false even with a DOM broker installed). NativeAuthError exported
+  from ./broker + re-exported by compat (exported-surface checks specific
+  keys only — verified no diff).
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -557,7 +593,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   propagating to other tabs (storage listener). sessionStorage remains
   default; interop e2e must stay green. Scenarios: accounts.local-storage,
   accounts.cross-tab-events.
-- [ ] **C7** `pending` — Platform broker, DOM transport: config
+- [x] **C7** `done 2026-07-10 — pass 68/75, mini-stack 37.0 KB min / 12.6 gz` — Platform broker, DOM transport: config
   `system.allowPlatformBroker` + `experimental.allowPlatformBrokerWithDOM`;
   probe via navigator.platformAuthentication.getSupportedContracts
   ("MicrosoftEntra" → "get-token-and-sign-out"); `acquireTokenByCode({
@@ -620,3 +656,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | C4 | done 2026-07-10 | 56/75 | 27.1 KB min / 9.6 gz | +3 pass (telemetry.perf-events-popup-login, perf-events-silent, correlation-id-propagation — ALL telemetry.* green). New `@mini-msal/browser/telemetry` feature: BrowserPerformanceClient (opt-in via config.telemetry.client) + method-wrapping telemetry(ctx) composed last in compat. Total diffs 124→118; remaining 19 scenarios all C5–C9 (init/localStorage/broker/naa). GAP_REPORT: 0 bugs, 1 behavioral-diff (init.popup-without-bridge, a C5 item). e2e 25/25; mini-core 17.4 min / 6.4 gz (core unchanged — types only) |
 | C5 | done 2026-07-10 | 62/75 | 29.3 KB min / 10.4 gz | +6 pass (init.get-configuration, logger-callback, exported-surface, popup-without-bridge + free: broker.is-platform-broker-available, naa.no-bridge-fallback — ALL init.* green). Popup/iframe completion migrated to real's redirect-bridge (BroadcastChannel, see Decision Log) — mini bridge page bundle 0.6 KB min (real's: 6.5 KB); logger in core; getConfiguration; full export surface incl. 52 BrowserAuthErrorCodes. GAP_REPORT: 0 bugs, 0 behavioral-diffs, 13 missing-feature (C6–C9 only). NOTE: naa.get-token-popup/error-mapping now ERR at 60s each (+2 min per full run until C9 — see Decision Log). e2e 25/25; mini-core 18.2 min / 6.7 gz |
 | C6 | done 2026-07-10 | 64/75 | 32.1 KB min / 11.3 gz | +2 pass (accounts.local-storage, cross-tab-events — ALL accounts.* green). New `@mini-msal/browser/local-storage` feature (encrypted entities via cookie-keyed HKDF/AES-GCM, plaintext indexes, memory mirror, msal.broadcast.cache sync); core `Store` seam + msal.broadcast.event bus (post always, subscribe in LS mode). GAP_REPORT: 0 bugs, 0 behavioral-diffs, 11 missing-feature (C7–C9 only). e2e 25/25 (sessionStorage interop untouched); mini-core 18.6 min / 6.9 gz |
+| C7 | done 2026-07-10 | 68/75 | 37.0 KB min / 12.6 gz | +4 pass (broker.dom-probe-and-interactive, dom-first-login, dom-error-mapping, dom-disabled-fallback — all 4 first try). New `@mini-msal/browser/broker` feature (DOM transport): initialize probe, acquireTokenByCode({nativeAccountId}), brokered silent via new ctx.nativeSilent seam, real's error mapping + fatal-DISABLED provider drop. Core +ctx.writeAccount, toAccountInfo surfaces nativeAccountId (mini-core 18.8 min / 7.0 gz, +0.2). GAP_REPORT: 68 pass, 7 missing-feature (C8 extension ×2, C9 naa ×5). e2e 25/25 |

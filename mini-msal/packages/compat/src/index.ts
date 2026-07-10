@@ -12,6 +12,7 @@ import {
     type Config,
 } from "@mini-msal/browser";
 import { popup, type PopupClient } from "@mini-msal/browser/popup";
+import { broker, type BrokerClient } from "@mini-msal/browser/broker";
 import { localStorageCache } from "@mini-msal/browser/local-storage";
 import {
     telemetry,
@@ -19,6 +20,7 @@ import {
 } from "@mini-msal/browser/telemetry";
 
 export { BrowserPerformanceClient } from "@mini-msal/browser/telemetry";
+export { NativeAuthError } from "@mini-msal/browser/broker";
 
 export {
     AuthError,
@@ -100,6 +102,7 @@ export const BrowserAuthErrorCodes: Record<string, string> =
 export interface PublicClientApplication
     extends AuthClient,
         PopupClient,
+        BrokerClient,
         TelemetryClient {}
 export class PublicClientApplication {
     constructor(config: Config) {
@@ -109,6 +112,7 @@ export class PublicClientApplication {
         return createClient(config, [
             localStorageCache,
             popup,
+            broker,
             telemetry,
         ]) as PublicClientApplication;
     }

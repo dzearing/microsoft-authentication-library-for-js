@@ -103,6 +103,8 @@ export interface Config {
     system?: {
         popupBridgeTimeout?: number;
         iframeBridgeTimeout?: number;
+        /** probe/use the platform broker (./broker feature) */
+        allowPlatformBroker?: boolean;
         loggerOptions?: {
             loggerCallback?: (
                 level: number,
@@ -379,7 +381,7 @@ interface TokenEntity {
     lastUpdatedAt?: string;
 }
 
-interface AccountEntity {
+export interface AccountEntity {
     homeAccountId: string;
     environment: string;
     realm: string;
@@ -389,6 +391,7 @@ interface AccountEntity {
     name?: string;
     clientInfo?: string;
     tenantProfiles?: unknown[];
+    nativeAccountId?: string;
     lastUpdatedAt?: string;
     cachedByApiId?: number;
 }
@@ -494,6 +497,14 @@ export interface ClientContext {
     clearAccount(account?: AccountInfo | null): void;
     /** replace the cache backend (./local-storage); call before initialize */
     setStore(store: Store): void;
+    /** cache an account entity + index it (routed through the Store seam) */
+    writeAccount(entity: AccountEntity): Promise<void>;
+    /** ./broker's silent interception: a promise routes the request to the
+     * platform broker; undefined runs the web silent ladder */
+    nativeSilent?: (
+        req: TokenRequest,
+        account: AccountInfo
+    ) => Promise<AuthenticationResult> | undefined;
     logoutUrl(
         req?: { postLogoutRedirectUri?: string; correlationId?: string },
         interactionType?: string
@@ -655,7 +666,7 @@ export function createClient(
             localAccountId: e.localAccountId,
             loginHint: undefined,
             name: e.name,
-            nativeAccountId: undefined,
+            nativeAccountId: e.nativeAccountId,
             tenantId: e.realm,
             tenantProfiles: e.tenantProfiles,
             upn: undefined,
@@ -1590,7 +1601,10 @@ export function createClient(
                     correlationId: req.correlationId ?? crypto.randomUUID(),
                 };
                 emit(EventType.ACQUIRE_TOKEN_START, "silent", validRequest);
-                shared = silentLadder(validRequest, account)
+                shared = (
+                    ctx.nativeSilent?.(validRequest, account) ??
+                    silentLadder(validRequest, account)
+                )
                     .then(
                         (r) => {
                             emit(EventType.ACQUIRE_TOKEN_SUCCESS, "silent", r);
@@ -1644,6 +1658,14 @@ export function createClient(
         redeem,
         clearAccount,
         setStore: (s) => (store = s),
+        writeAccount: async (e) => {
+            const key = `${P}|${e.homeAccountId}|${e.environment}|${e.realm}`;
+            await writeUser(key, e);
+            const ks = accountKeys();
+            if (!ks.includes(key)) {
+                writeJSON(`${P}.account.keys`, [...ks, key]);
+            }
+        },
         logoutUrl,
     };
     for (const f of features) f(ctx);

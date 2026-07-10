@@ -8,6 +8,7 @@
     "exports": {
         ".": "./src/index.ts",
         "./popup": "./src/popup.ts",
+        "./broker": "./src/broker.ts",
         "./local-storage": "./src/local-storage.ts",
         "./telemetry": "./src/telemetry.ts",
         "./redirect-bridge": "./src/redirect-bridge.ts"

@@ -17,13 +17,13 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 2. Silent acquisition | 12 | 12 | 0 | 0 | 0 |
 | 3. Accounts & cache | 7 | 7 | 0 | 0 | 0 |
 | 4. Errors & guards | 10 | 10 | 0 | 0 | 0 |
-| 5. Platform broker / WAM | 7 | 1 | 0 | 6 | 0 |
+| 5. Platform broker / WAM | 7 | 5 | 0 | 2 | 0 |
 | 6. Nested app auth (NAA) | 6 | 1 | 0 | 5 | 0 |
 | 7. Telemetry | 5 | 5 | 0 | 0 | 0 |
 | 8. Request passthrough | 9 | 9 | 0 | 0 | 0 |
 | 9. Resilience | 4 | 4 | 0 | 0 | 0 |
 | 10. Init & misc | 6 | 6 | 0 | 0 | 0 |
-| **Total** | **75** | **64** | **0** | **11** | **0** |
+| **Total** | **75** | **68** | **0** | **7** | **0** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -256,22 +256,22 @@ here instead of being repeated per scenario:
 
 ### 5. Platform broker / WAM
 
-#### `broker.dom-probe-and-interactive` — 🚫 missing-feature · est. 10 KB to close
+#### `broker.dom-probe-and-interactive` — ✅ pass · est. 10 KB to close
 
 - **real**: DOM broker probed via navigator.platformAuthentication.getSupportedContracts('MicrosoftEntra'); acquireTokenByCode({nativeAccountId}) routes to executeGetToken (request: accountId/clientId/scope/redirectUri/correlationId/extraParameters incl. telemetry:MATS); result has fromPlatformBroker=true; account caches nativeAccountId; subsequent SILENT calls also broker-route.
 - **mini**: No acquireTokenByCode, no broker (TypeError).
 
-#### `broker.dom-first-login` — 🚫 missing-feature
+#### `broker.dom-first-login` — ✅ pass
 
 - **real**: KEY CONTRACT: even with a live broker, a first-time interactive login does NOT use it (no cached nativeAccountId) — web flow + spa_accountid/hybrid seeding is required first.
 - **mini**: Same observable outcome (web flow) — but only because mini has no broker at all.
 
-#### `broker.dom-error-mapping` — 🚫 missing-feature
+#### `broker.dom-error-mapping` — ✅ pass
 
 - **real**: Broker statuses map exactly: USER_CANCEL→BrowserAuthError user_cancelled; ACCOUNT_UNAVAILABLE→IRAE native_account_unavailable; NO_NETWORK→BrowserAuthError no_network_connectivity.
 - **mini**: n/a (no broker).
 
-#### `broker.dom-disabled-fallback` — 🚫 missing-feature
+#### `broker.dom-disabled-fallback` — ✅ pass
 
 - **real**: DISABLED is fatal: NativeAuthError surfaced, broker dropped — the second call doesn't touch the broker and throws unable_to_acquire_token_from_native_platform.
 - **mini**: n/a.
