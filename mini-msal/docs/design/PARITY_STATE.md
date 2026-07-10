@@ -209,6 +209,31 @@ Entries (append as you go):
   timestamp} — no correlationId field yet (unobserved by harness; add if a
   scenario ever compares it). InteractionType gained None:"none" (C5 item).
 
+- **B3 (2026-07-10)**: protocol params. KEY DISCOVERY: real browser 5.16 sends
+  `x-client-current-telemetry: ""` / `x-client-last-telemetry: ""` — LITERAL
+  empty strings, even after failures (StubServerTelemetryManager is what
+  StandardController uses; verified in ServerTelemetryManager.mjs + every
+  snapshot incl. last-telemetry-after-failure). C3's "5|apiId,…" format never
+  hits the wire — telemetry.token-request-headers now passes with "" values.
+  Implementation: one `WIRE_ID`/`TOKEN_TELEMETRY` constants block (Decision
+  Log impersonation). Authorize query adds nonce (GUID), client_info=1,
+  client-request-id (request correlationId; authorizeUrl generates when
+  absent and returns it so callers reuse ONE cid per request), claims
+  (default literal, signin_state before login_hint — string-compared),
+  clidata=1, x-client-SKU/VER, login_hint falls back to account.username,
+  X-AnchorMailbox ccs = account ? `Oid:<localAccountId>@<tenantId>` :
+  loginHint ? `UPN:<hint>` : absent (account wins). Token requests add the
+  same claims/client_info/ccs + TOKEN_TELEMETRY in the BODY,
+  client-request-id on the QUERY string, content-type gains `;charset=utf-8`.
+  ccs/nonce thread via AuthCodeResponse (popup/iframe) and the msal.request
+  temp entry (redirect). RT grant redeems against the REQUEST's redirectUri.
+  id_token nonce now VALIDATED on auth-code redemption (`nonce_mismatch`
+  ClientAuthError, only when we sent one — mock IdP echoes nonce; RT grants
+  skip it like real). Remaining telemetry.last-telemetry-after-failure diff
+  is NOT about telemetry params: real's failedCall SUCCEEDED (tokenCalls 2)
+  — real appears to fall back to iframe when the RT grant fails with the
+  injected invalid_grant, mini surfaces the error; investigate in C3.
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -315,7 +340,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   silently), logoutStart/Success/End for logout flows,
   acquireTokenFromNetworkStart on forced refresh, ordering matches snapshots.
   EventMessage gained interactionType. React layer updated (see Decision Log).
-- [ ] **B3** `pending` — Protocol params on authorize/token requests: `nonce`
+- [x] **B3** `done 2026-07-10 — pass 40/75, mini-stack 24.0 KB min / 8.6 gz` — Protocol params on authorize/token requests: `nonce`
   (send + VALIDATE id_token nonce claim on redemption), `client-request-id`
   (= correlationId) on authorize query AND token query string, `client_info=1`,
   `claims` default `{"id_token":{"signin_state":…,"login_hint":…}}` merged
@@ -351,15 +376,14 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   + proactive-refresh observable behavior per snapshot
   (resilience.proactive-refresh: what real did — study snapshot first).
   Scenarios: resilience.*.
-- [ ] **C3** `pending` — Server telemetry + correlationId: token BODY params
-  with real's literal identity values per the Decision Log
-  (`x-client-SKU: msal.js.browser`, `x-client-VER: 5.16.0`),
-  x-client-current/last-telemetry (real format: `5|apiId,cacheStatus,,,|,`
-  — study snapshots incl. last-telemetry-after-failure), x-ms-lib-capability
-  `retry-after, h429`, client-request-id token QUERY param;
-  request.correlationId accepted + surfaced (result, events, headers).
-  Scenarios: telemetry.token-request-headers,
-  telemetry.correlation-id-propagation, telemetry.last-telemetry-after-failure.
+- [ ] **C3** `pending` — MOSTLY DONE BY B3 (identity/telemetry/lib-capability
+  body params, client-request-id query param, correlationId threading —
+  telemetry.token-request-headers passes; real sends EMPTY telemetry values,
+  see B3 log entry). Remaining: telemetry.correlation-id-propagation's last
+  diff is the perf event (C4's job); telemetry.last-telemetry-after-failure
+  needs real's behavior on a failed RT grant (real completed the call via
+  fallback — tokenCalls 2, failedCall.ok — study scenario + real source;
+  likely RT-failure → iframe fallback breadth, not telemetry).
 - [ ] **C4** `pending` — Perf events: `addPerformanceCallback` +
   BrowserPerformanceClient-equivalent opt-in via `telemetry.client` config;
   emit `initializeClientApplication`, `acquireTokenPopup`,
@@ -440,3 +464,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | A8 | done 2026-07-10 | 13/75 | 19.9 KB min / 7.4 gz | +0 pass by design (scenarios also need B1/B2): removed the auto-write of `active-account-filters` on login — active account ONLY via setActiveAccount, logout still clears it when it matches. All active-account diffs gone (activeAfterSecondLogin, logout.ok.active, storage active-account-filters keys). e2e 25/25 unchanged — demo app already calls setActiveAccount explicitly. Total diffs 561→554; mini-core 12.0 min / 4.7 gz |
 | B1 | done 2026-07-10 | 23/75 | 20.4 KB min / 7.5 gz | +10 pass (silent.cache-hit-fresh, expiry-window-refresh, policy-access-token-valid/at-and-rt/refresh-token/rt-and-network/skip, params.per-request-redirect-uri, params.scopes-normalization, resilience.network-drop). Result gains authority (`<authority>/`), correlationId (request's or per-request uuid; threaded redirect via msal.request, popup/ssoSilent via AuthCodeResponse, RT via redeemRefresh arg), tokenType "Bearer", fromPlatformBroker false, state "" on interactive+ssoSilent ONLY (absent on acquireTokenSilent — snapshots show real silent results carry NO state; silentLadder deletes it from the iframe rung). AccountInfo gains environment (cache entity's). telemetry.correlation-id-propagation resultMatches now true (rest of that scenario is C3). Total diffs 554→448; e2e 25/25; mini-core 12.5 min / 4.9 gz |
 | B2 | done 2026-07-10 | 32/75 | 22.9 KB min / 8.2 gz | +9 pass (handle-redirect-clean-load, acquire-token-popup, redirect-state-tampered, force-refresh, multi-account, active-account-persistence, cancelled-login-redirect, popup-blocked, double-initialize). Full real event streams + full result/account key shapes (payloadKeys = Object.keys). Total diffs 448→265; remaining event diffs only in cross-tab (C6), perf (C4), broker (C7). e2e 25/25; mini-core 14.0 min / 5.2 gz |
+| B3 | done 2026-07-10 | 40/75 | 24.0 KB min / 8.6 gz | +8 pass (login-redirect-roundtrip, login-popup-roundtrip, sso-silent-cold/warm, acquire-token-redirect, refresh-token-grant, iframe-fallback-no-rt, telemetry.token-request-headers). Authorize+token requests now carry real's full param set (nonce+validation, client-request-id, client_info, default claims, clidata, X-AnchorMailbox ccs, x-client-SKU/VER, empty telemetry params, lib-capability, charset content-type, RT redirect_uri). GAP_REPORT: 0 bugs remaining. e2e 25/25; mini-core 15.0 min / 5.6 gz |

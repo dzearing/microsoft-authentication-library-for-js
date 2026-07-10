@@ -2,89 +2,7 @@
   {
     "id": "core.login-redirect-roundtrip",
     "area": "core",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "idp[1].query.claims",
-        "real": "\"{\\\"id_token\\\":{\\\"signin_state\\\":{\\\"essential\\\":false},\\\"login_hint\\\":{\\\"essential\\\":false}}}\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.clidata",
-        "real": "\"1\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.client-request-id",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.client_info",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.nonce",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.x-client-SKU",
-        "real": "\"msal.js.browser\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.x-client-VER",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[3].body.claims",
-        "real": "\"{\\\"id_token\\\":{\\\"signin_state\\\":{\\\"essential\\\":false},\\\"login_hint\\\":{\\\"essential\\\":false}}}\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[3].body.client_info",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[3].body.x-client-SKU",
-        "real": "\"msal.js.browser\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[3].body.x-client-VER",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[3].body.x-client-current-telemetry",
-        "real": "\"\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[3].body.x-client-last-telemetry",
-        "real": "\"\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[3].body.x-ms-lib-capability",
-        "real": "\"retry-after, h429\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[3].headers.content-type",
-        "real": "\"application/x-www-form-urlencoded;charset=utf-8\"",
-        "mini": "\"application/x-www-form-urlencoded\""
-      },
-      {
-        "path": "idp[3].query",
-        "real": "{\"client-request-id\":\"<dynamic>\"}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "accounts": {
         "ok": [
@@ -191,14 +109,21 @@
           "endpoint": "authorize",
           "headers": {},
           "query": {
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "clidata": "1",
+            "client-request-id": "<dynamic>",
             "client_id": "<guid>",
+            "client_info": "<dynamic>",
             "code_challenge": "<dynamic>",
             "code_challenge_method": "S256",
+            "nonce": "<dynamic>",
             "redirect_uri": "http://localhost:4173/conformance-app/",
             "response_mode": "fragment",
             "response_type": "code",
             "scope": "User.Read openid profile offline_access",
-            "state": "<dynamic>"
+            "state": "<dynamic>",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0"
           }
         },
         {
@@ -209,17 +134,27 @@
         },
         {
           "body": {
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
             "client_id": "<guid>",
+            "client_info": "<dynamic>",
             "code": "mock-code-0",
             "code_verifier": "<dynamic>",
             "grant_type": "authorization_code",
             "redirect_uri": "http://localhost:4173/conformance-app/",
-            "scope": "User.Read openid profile offline_access"
+            "scope": "User.Read openid profile offline_access",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0",
+            "x-client-current-telemetry": "",
+            "x-client-last-telemetry": "",
+            "x-ms-lib-capability": "retry-after, h429"
           },
           "endpoint": "token",
           "headers": {
-            "content-type": "application/x-www-form-urlencoded",
+            "content-type": "application/x-www-form-urlencoded;charset=utf-8",
             "origin": "http://localhost:4173"
+          },
+          "query": {
+            "client-request-id": "<dynamic>"
           }
         }
       ],
@@ -305,89 +240,7 @@
   {
     "id": "core.login-popup-roundtrip",
     "area": "core",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "idp[1].query.claims",
-        "real": "\"{\\\"id_token\\\":{\\\"signin_state\\\":{\\\"essential\\\":false},\\\"login_hint\\\":{\\\"essential\\\":false}}}\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.clidata",
-        "real": "\"1\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.client-request-id",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.client_info",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.nonce",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.x-client-SKU",
-        "real": "\"msal.js.browser\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.x-client-VER",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.claims",
-        "real": "\"{\\\"id_token\\\":{\\\"signin_state\\\":{\\\"essential\\\":false},\\\"login_hint\\\":{\\\"essential\\\":false}}}\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.client_info",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-client-SKU",
-        "real": "\"msal.js.browser\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-client-VER",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-client-current-telemetry",
-        "real": "\"\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-client-last-telemetry",
-        "real": "\"\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-ms-lib-capability",
-        "real": "\"retry-after, h429\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].headers.content-type",
-        "real": "\"application/x-www-form-urlencoded;charset=utf-8\"",
-        "mini": "\"application/x-www-form-urlencoded\""
-      },
-      {
-        "path": "idp[2].query",
-        "real": "{\"client-request-id\":\"<dynamic>\"}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "events": [
         {
@@ -494,29 +347,46 @@
           "endpoint": "authorize",
           "headers": {},
           "query": {
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "clidata": "1",
+            "client-request-id": "<dynamic>",
             "client_id": "<guid>",
+            "client_info": "<dynamic>",
             "code_challenge": "<dynamic>",
             "code_challenge_method": "S256",
+            "nonce": "<dynamic>",
             "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
             "response_mode": "fragment",
             "response_type": "code",
             "scope": "User.Read openid profile offline_access",
-            "state": "<dynamic>"
+            "state": "<dynamic>",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0"
           }
         },
         {
           "body": {
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
             "client_id": "<guid>",
+            "client_info": "<dynamic>",
             "code": "mock-code-0",
             "code_verifier": "<dynamic>",
             "grant_type": "authorization_code",
             "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
-            "scope": "User.Read openid profile offline_access"
+            "scope": "User.Read openid profile offline_access",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0",
+            "x-client-current-telemetry": "",
+            "x-client-last-telemetry": "",
+            "x-ms-lib-capability": "retry-after, h429"
           },
           "endpoint": "token",
           "headers": {
-            "content-type": "application/x-www-form-urlencoded",
+            "content-type": "application/x-www-form-urlencoded;charset=utf-8",
             "origin": "http://localhost:4173"
+          },
+          "query": {
+            "client-request-id": "<dynamic>"
           }
         }
       ],
@@ -726,49 +596,7 @@
   {
     "id": "core.sso-silent-cold",
     "area": "core",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "idp[1].query.X-AnchorMailbox",
-        "real": "\"UPN:ada@contoso.com\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.claims",
-        "real": "\"{\\\"id_token\\\":{\\\"signin_state\\\":{\\\"essential\\\":false},\\\"login_hint\\\":{\\\"essential\\\":false}}}\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.clidata",
-        "real": "\"1\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.client-request-id",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.client_info",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.nonce",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.x-client-SKU",
-        "real": "\"msal.js.browser\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.x-client-VER",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "events": [
         {
@@ -825,16 +653,24 @@
           "endpoint": "authorize",
           "headers": {},
           "query": {
+            "X-AnchorMailbox": "UPN:ada@contoso.com",
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "clidata": "1",
+            "client-request-id": "<dynamic>",
             "client_id": "<guid>",
+            "client_info": "<dynamic>",
             "code_challenge": "<dynamic>",
             "code_challenge_method": "S256",
             "login_hint": "ada@contoso.com",
+            "nonce": "<dynamic>",
             "prompt": "none",
             "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
             "response_mode": "fragment",
             "response_type": "code",
             "scope": "User.Read openid profile offline_access",
-            "state": "<dynamic>"
+            "state": "<dynamic>",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0"
           }
         }
       ],
@@ -851,99 +687,7 @@
   {
     "id": "core.sso-silent-warm",
     "area": "core",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "idp[1].query.X-AnchorMailbox",
-        "real": "\"UPN:ada@contoso.com\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.claims",
-        "real": "\"{\\\"id_token\\\":{\\\"signin_state\\\":{\\\"essential\\\":false},\\\"login_hint\\\":{\\\"essential\\\":false}}}\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.clidata",
-        "real": "\"1\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.client-request-id",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.client_info",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.nonce",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.x-client-SKU",
-        "real": "\"msal.js.browser\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[1].query.x-client-VER",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.X-AnchorMailbox",
-        "real": "\"UPN:ada@contoso.com\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.claims",
-        "real": "\"{\\\"id_token\\\":{\\\"signin_state\\\":{\\\"essential\\\":false},\\\"login_hint\\\":{\\\"essential\\\":false}}}\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.client_info",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-client-SKU",
-        "real": "\"msal.js.browser\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-client-VER",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-client-current-telemetry",
-        "real": "\"\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-client-last-telemetry",
-        "real": "\"\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-ms-lib-capability",
-        "real": "\"retry-after, h429\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].headers.content-type",
-        "real": "\"application/x-www-form-urlencoded;charset=utf-8\"",
-        "mini": "\"application/x-www-form-urlencoded\""
-      },
-      {
-        "path": "idp[2].query",
-        "real": "{\"client-request-id\":\"<dynamic>\"}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "events": [
         {
@@ -1041,31 +785,50 @@
           "endpoint": "authorize",
           "headers": {},
           "query": {
+            "X-AnchorMailbox": "UPN:ada@contoso.com",
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "clidata": "1",
+            "client-request-id": "<dynamic>",
             "client_id": "<guid>",
+            "client_info": "<dynamic>",
             "code_challenge": "<dynamic>",
             "code_challenge_method": "S256",
             "login_hint": "ada@contoso.com",
+            "nonce": "<dynamic>",
             "prompt": "none",
             "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
             "response_mode": "fragment",
             "response_type": "code",
             "scope": "User.Read openid profile offline_access",
-            "state": "<dynamic>"
+            "state": "<dynamic>",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0"
           }
         },
         {
           "body": {
+            "X-AnchorMailbox": "UPN:ada@contoso.com",
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
             "client_id": "<guid>",
+            "client_info": "<dynamic>",
             "code": "mock-code-0",
             "code_verifier": "<dynamic>",
             "grant_type": "authorization_code",
             "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
-            "scope": "User.Read openid profile offline_access"
+            "scope": "User.Read openid profile offline_access",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0",
+            "x-client-current-telemetry": "",
+            "x-client-last-telemetry": "",
+            "x-ms-lib-capability": "retry-after, h429"
           },
           "endpoint": "token",
           "headers": {
-            "content-type": "application/x-www-form-urlencoded",
+            "content-type": "application/x-www-form-urlencoded;charset=utf-8",
             "origin": "http://localhost:4173"
+          },
+          "query": {
+            "client-request-id": "<dynamic>"
           }
         }
       ],
@@ -1099,104 +862,7 @@
   {
     "id": "core.acquire-token-redirect",
     "area": "core",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "idp[0].query.X-AnchorMailbox",
-        "real": "\"Oid:oid-123@tenant-123\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[0].query.claims",
-        "real": "\"{\\\"id_token\\\":{\\\"signin_state\\\":{\\\"essential\\\":false},\\\"login_hint\\\":{\\\"essential\\\":false}}}\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[0].query.clidata",
-        "real": "\"1\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[0].query.client-request-id",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[0].query.client_info",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[0].query.login_hint",
-        "real": "\"ada@contoso.com\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[0].query.nonce",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[0].query.x-client-SKU",
-        "real": "\"msal.js.browser\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[0].query.x-client-VER",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.X-AnchorMailbox",
-        "real": "\"Oid:oid-123@tenant-123\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.claims",
-        "real": "\"{\\\"id_token\\\":{\\\"signin_state\\\":{\\\"essential\\\":false},\\\"login_hint\\\":{\\\"essential\\\":false}}}\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.client_info",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-client-SKU",
-        "real": "\"msal.js.browser\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-client-VER",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-client-current-telemetry",
-        "real": "\"\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-client-last-telemetry",
-        "real": "\"\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].body.x-ms-lib-capability",
-        "real": "\"retry-after, h429\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "idp[2].headers.content-type",
-        "real": "\"application/x-www-form-urlencoded;charset=utf-8\"",
-        "mini": "\"application/x-www-form-urlencoded\""
-      },
-      {
-        "path": "idp[2].query",
-        "real": "{\"client-request-id\":\"<dynamic>\"}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "hashAfterProcessing": "",
       "idp": [
@@ -1204,14 +870,23 @@
           "endpoint": "authorize",
           "headers": {},
           "query": {
+            "X-AnchorMailbox": "Oid:oid-123@tenant-123",
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "clidata": "1",
+            "client-request-id": "<dynamic>",
             "client_id": "<guid>",
+            "client_info": "<dynamic>",
             "code_challenge": "<dynamic>",
             "code_challenge_method": "S256",
+            "login_hint": "ada@contoso.com",
+            "nonce": "<dynamic>",
             "redirect_uri": "http://localhost:4173/conformance-app/",
             "response_mode": "fragment",
             "response_type": "code",
             "scope": "Mail.Read openid profile offline_access",
-            "state": "<dynamic>"
+            "state": "<dynamic>",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0"
           }
         },
         {
@@ -1222,17 +897,28 @@
         },
         {
           "body": {
+            "X-AnchorMailbox": "Oid:oid-123@tenant-123",
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
             "client_id": "<guid>",
+            "client_info": "<dynamic>",
             "code": "mock-code-0",
             "code_verifier": "<dynamic>",
             "grant_type": "authorization_code",
             "redirect_uri": "http://localhost:4173/conformance-app/",
-            "scope": "Mail.Read openid profile offline_access"
+            "scope": "Mail.Read openid profile offline_access",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0",
+            "x-client-current-telemetry": "",
+            "x-client-last-telemetry": "",
+            "x-ms-lib-capability": "retry-after, h429"
           },
           "endpoint": "token",
           "headers": {
-            "content-type": "application/x-www-form-urlencoded",
+            "content-type": "application/x-www-form-urlencoded;charset=utf-8",
             "origin": "http://localhost:4173"
+          },
+          "query": {
+            "client-request-id": "<dynamic>"
           }
         }
       ],
@@ -1487,64 +1173,7 @@
   {
     "id": "silent.refresh-token-grant",
     "area": "silent",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "tokenRequest[0].body.X-AnchorMailbox",
-        "real": "\"Oid:oid-123@tenant-123\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "tokenRequest[0].body.claims",
-        "real": "\"{\\\"id_token\\\":{\\\"signin_state\\\":{\\\"essential\\\":false},\\\"login_hint\\\":{\\\"essential\\\":false}}}\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "tokenRequest[0].body.client_info",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "tokenRequest[0].body.redirect_uri",
-        "real": "\"http://localhost:4173/conformance-app/popup.html\"",
-        "mini": "\"http://localhost:4173/conformance-app/\""
-      },
-      {
-        "path": "tokenRequest[0].body.x-client-SKU",
-        "real": "\"msal.js.browser\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "tokenRequest[0].body.x-client-VER",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "tokenRequest[0].body.x-client-current-telemetry",
-        "real": "\"\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "tokenRequest[0].body.x-client-last-telemetry",
-        "real": "\"\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "tokenRequest[0].body.x-ms-lib-capability",
-        "real": "\"retry-after, h429\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "tokenRequest[0].headers.content-type",
-        "real": "\"application/x-www-form-urlencoded;charset=utf-8\"",
-        "mini": "\"application/x-www-form-urlencoded\""
-      },
-      {
-        "path": "tokenRequest[0].query",
-        "real": "{\"client-request-id\":\"<dynamic>\"}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "networkCalls": [
         "discovery",
@@ -1577,16 +1206,27 @@
       "tokenRequest": [
         {
           "body": {
+            "X-AnchorMailbox": "Oid:oid-123@tenant-123",
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
             "client_id": "<guid>",
+            "client_info": "<dynamic>",
             "grant_type": "refresh_token",
-            "redirect_uri": "http://localhost:4173/conformance-app/",
+            "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
             "refresh_token": "mock-rt-0",
-            "scope": "User.Read openid profile offline_access"
+            "scope": "User.Read openid profile offline_access",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0",
+            "x-client-current-telemetry": "",
+            "x-client-last-telemetry": "",
+            "x-ms-lib-capability": "retry-after, h429"
           },
           "endpoint": "token",
           "headers": {
-            "content-type": "application/x-www-form-urlencoded",
+            "content-type": "application/x-www-form-urlencoded;charset=utf-8",
             "origin": "http://localhost:4173"
+          },
+          "query": {
+            "client-request-id": "<dynamic>"
           }
         }
       ]
@@ -1595,65 +1235,31 @@
   {
     "id": "silent.iframe-fallback-no-rt",
     "area": "silent",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "authorizeParams[0].query.X-AnchorMailbox",
-        "real": "\"Oid:oid-123@tenant-123\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "authorizeParams[0].query.claims",
-        "real": "\"{\\\"id_token\\\":{\\\"signin_state\\\":{\\\"essential\\\":false},\\\"login_hint\\\":{\\\"essential\\\":false}}}\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "authorizeParams[0].query.clidata",
-        "real": "\"1\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "authorizeParams[0].query.client-request-id",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "authorizeParams[0].query.client_info",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "authorizeParams[0].query.nonce",
-        "real": "\"<dynamic>\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "authorizeParams[0].query.x-client-SKU",
-        "real": "\"msal.js.browser\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "authorizeParams[0].query.x-client-VER",
-        "real": "\"5.16.0\"",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "authorizeParams": [
         {
           "endpoint": "authorize",
           "headers": {},
           "query": {
+            "X-AnchorMailbox": "Oid:oid-123@tenant-123",
+            "claims": "{\"id_token\":{\"signin_state\":{\"essential\":false},\"login_hint\":{\"essential\":false}}}",
+            "clidata": "1",
+            "client-request-id": "<dynamic>",
             "client_id": "<guid>",
+            "client_info": "<dynamic>",
             "code_challenge": "<dynamic>",
             "code_challenge_method": "S256",
             "login_hint": "ada@contoso.com",
+            "nonce": "<dynamic>",
             "prompt": "none",
             "redirect_uri": "http://localhost:4173/conformance-app/popup.html",
             "response_mode": "fragment",
             "response_type": "code",
             "scope": "User.Read openid profile offline_access",
-            "state": "<dynamic>"
+            "state": "<dynamic>",
+            "x-client-SKU": "msal.js.browser",
+            "x-client-VER": "5.16.0"
           }
         }
       ],
@@ -3240,18 +2846,13 @@
     "status": "diff",
     "diffs": [
       {
-        "path": "anchorMailbox",
-        "real": "\"UPN:grace@contoso.com\"",
-        "mini": "null"
-      },
-      {
         "path": "domain_hint",
         "real": "\"contoso.com\"",
         "mini": "null"
       }
     ],
     "observed": {
-      "anchorMailbox": null,
+      "anchorMailbox": "UPN:grace@contoso.com",
       "domain_hint": null,
       "login_hint": "grace@contoso.com"
     }
@@ -3289,9 +2890,14 @@
         "mini": "null"
       },
       {
-        "path": "tokenQuery",
-        "real": "{\"client-request-id\":\"<dynamic>\",\"dc\":\"ESTS-PUB\",\"slice\":\"testslice\"}",
-        "mini": "null"
+        "path": "tokenQuery.dc",
+        "real": "\"ESTS-PUB\"",
+        "mini": "\"<missing>\""
+      },
+      {
+        "path": "tokenQuery.slice",
+        "real": "\"testslice\"",
+        "mini": "\"<missing>\""
       }
     ],
     "observed": {
@@ -3303,7 +2909,9 @@
         "slice": null,
         "tokenslice": null
       },
-      "tokenQuery": null
+      "tokenQuery": {
+        "client-request-id": "<dynamic>"
+      }
     }
   },
   {
@@ -3312,19 +2920,37 @@
     "status": "diff",
     "diffs": [
       {
-        "path": "authorizeClaims",
-        "real": "{\"access_token\":{\"nbf\":{\"essential\":true,\"value\":\"<epoch-s>\"},\"xms_cc\":{\"values\":[\"cp1\"]}},\"id_token\":{\"login_hint\":{\"essential\":false},\"signin_state\":{\"essential\":false}}}",
-        "mini": "null"
+        "path": "authorizeClaims.access_token",
+        "real": "{\"nbf\":{\"essential\":true,\"value\":\"<epoch-s>\"},\"xms_cc\":{\"values\":[\"cp1\"]}}",
+        "mini": "\"<missing>\""
       },
       {
-        "path": "tokenClaims",
-        "real": "{\"access_token\":{\"nbf\":{\"essential\":true,\"value\":\"<epoch-s>\"},\"xms_cc\":{\"values\":[\"cp1\"]}},\"id_token\":{\"login_hint\":{\"essential\":false},\"signin_state\":{\"essential\":false}}}",
-        "mini": "null"
+        "path": "tokenClaims.access_token",
+        "real": "{\"nbf\":{\"essential\":true,\"value\":\"<epoch-s>\"},\"xms_cc\":{\"values\":[\"cp1\"]}}",
+        "mini": "\"<missing>\""
       }
     ],
     "observed": {
-      "authorizeClaims": null,
-      "tokenClaims": null
+      "authorizeClaims": {
+        "id_token": {
+          "login_hint": {
+            "essential": false
+          },
+          "signin_state": {
+            "essential": false
+          }
+        }
+      },
+      "tokenClaims": {
+        "id_token": {
+          "login_hint": {
+            "essential": false
+          },
+          "signin_state": {
+            "essential": false
+          }
+        }
+      }
     }
   },
   {
@@ -3905,41 +3531,14 @@
   {
     "id": "telemetry.token-request-headers",
     "area": "telemetry",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "currentTelemetry",
-        "real": "\"\"",
-        "mini": "null"
-      },
-      {
-        "path": "lastTelemetry",
-        "real": "\"\"",
-        "mini": "null"
-      },
-      {
-        "path": "libCapability",
-        "real": "\"retry-after, h429\"",
-        "mini": "null"
-      },
-      {
-        "path": "sku",
-        "real": "\"msal.js.browser\"",
-        "mini": "null"
-      },
-      {
-        "path": "ver",
-        "real": "\"5.16.0\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "anyTelemetryHttpHeaders": [],
-      "currentTelemetry": null,
-      "lastTelemetry": null,
-      "libCapability": null,
-      "sku": null,
-      "ver": null
+      "currentTelemetry": "",
+      "lastTelemetry": "",
+      "libCapability": "retry-after, h429",
+      "sku": "msal.js.browser",
+      "ver": "5.16.0"
     }
   },
   {
@@ -3948,18 +3547,13 @@
     "status": "diff",
     "diffs": [
       {
-        "path": "authorizeParamMatches",
-        "real": "true",
-        "mini": "false"
-      },
-      {
         "path": "perfEventWithCid",
         "real": "true",
         "mini": "false"
       }
     ],
     "observed": {
-      "authorizeParamMatches": false,
+      "authorizeParamMatches": true,
       "perfEventWithCid": false,
       "resultMatches": true,
       "tokenBodyClientRequestId": null
@@ -3981,11 +3575,6 @@
         "mini": "{\"errorCode\":\"invalid_grant\",\"message\":\"Error(s): Not Available - Timestamp: Not Available - Description: injected 400 - Correlation ID: Not Available - Trace I\",\"name\":\"ServerError\",\"subError\":null}"
       },
       {
-        "path": "lastTelemetryParam",
-        "real": "\"\"",
-        "mini": "null"
-      },
-      {
         "path": "tokenCalls",
         "real": "2",
         "mini": "1"
@@ -4001,7 +3590,7 @@
         }
       },
       "lastTelemetryMentionsError": false,
-      "lastTelemetryParam": null,
+      "lastTelemetryParam": "",
       "tokenCalls": 1
     }
   },

@@ -13,17 +13,17 @@ exists but differs observably · **missing-feature** = absent by design ·
 
 | Area | Scenarios | Pass | Behavioral diff | Missing feature | Bug |
 |---|---|---|---|---|---|
-| 1. Core flows | 9 | 3 | 6 | 0 | 0 |
-| 2. Silent acquisition | 12 | 10 | 2 | 0 | 0 |
+| 1. Core flows | 9 | 8 | 1 | 0 | 0 |
+| 2. Silent acquisition | 12 | 12 | 0 | 0 | 0 |
 | 3. Accounts & cache | 7 | 3 | 2 | 2 | 0 |
 | 4. Errors & guards | 10 | 10 | 0 | 0 | 0 |
 | 5. Platform broker / WAM | 7 | 0 | 0 | 7 | 0 |
 | 6. Nested app auth (NAA) | 6 | 0 | 0 | 6 | 0 |
-| 7. Telemetry | 5 | 0 | 0 | 5 | 0 |
+| 7. Telemetry | 5 | 1 | 0 | 4 | 0 |
 | 8. Request passthrough | 9 | 3 | 0 | 6 | 0 |
 | 9. Resilience | 4 | 2 | 0 | 2 | 0 |
 | 10. Init & misc | 6 | 1 | 2 | 3 | 0 |
-| **Total** | **75** | **32** | **12** | **31** | **0** |
+| **Total** | **75** | **40** | **5** | **30** | **0** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -58,7 +58,7 @@ here instead of being repeated per scenario:
 
 ### 1. Core flows
 
-#### `core.login-redirect-roundtrip` — ↔️ behavioral-diff · est. 1 KB to close
+#### `core.login-redirect-roundtrip` — ✅ pass · est. 1 KB to close
 
 - **real**: Full event sequence (initializeStart/End, handleRedirectStart, acquireTokenSuccess, loginSuccess, handleRedirectEnd w/ interactionType); authorize carries nonce, client-request-id, client_info=1, claims(login_hint/signin_state), x-client-SKU/VER, X-AnchorMailbox; result has authority/correlationId/tokenType/state; scopes keep request casing.
 - **mini**: Only accountAdded+loginSuccess+handleRedirectEnd events; authorize lacks nonce (no id_token nonce validation — security-relevant), telemetry and routing params; result lacks authority/correlationId/tokenType/state; scopes lowercased, different order.
@@ -68,7 +68,7 @@ here instead of being repeated per scenario:
 - **real**: Clean load emits initializeStart/End only; handleRedirectPromise resolves null with NO handleRedirect events.
 - **mini**: No initialize events; emits handleRedirectEnd even on a clean load.
 
-#### `core.login-popup-roundtrip` — ↔️ behavioral-diff · est. 0.8 KB to close
+#### `core.login-popup-roundtrip` — ✅ pass · est. 0.8 KB to close
 
 - **real**: acquireTokenStart/popupOpened/acquireTokenSuccess/loginSuccess (interactionType=popup); token POST carries x-client-SKU/VER, telemetry params, x-ms-lib-capability, claims, client-request-id query.
 - **mini**: loginSuccess+accountAdded only; token POST carries only the OAuth basics; same PKCE correctness (S256 verified on both).
@@ -78,17 +78,17 @@ here instead of being repeated per scenario:
 - **real**: Popup acquisition for new scopes: full event stream, result metadata.
 - **mini**: Works (token acquired); shape/event gaps as above.
 
-#### `core.sso-silent-cold` — ↔️ behavioral-diff · est. 0.1 KB to close
+#### `core.sso-silent-cold` — ✅ pass · est. 0.1 KB to close
 
 - **real**: InteractionRequiredAuthError named class, acquireTokenStart/Failure events.
 - **mini**: Correct login_required code and IRAE classification, but error.name is 'Error' (classes never set .name) and no events on failure.
 
-#### `core.sso-silent-warm` — ↔️ behavioral-diff · est. 0.2 KB to close
+#### `core.sso-silent-warm` — ✅ pass · est. 0.2 KB to close
 
 - **real**: Succeeds via hidden iframe; emits acquireTokenSuccess AND loginSuccess for ssoSilent.
 - **mini**: Succeeds; emits no events for ssoSilent (only cache-level accountAdded on first write).
 
-#### `core.acquire-token-redirect` — ↔️ behavioral-diff · est. 0.2 KB to close
+#### `core.acquire-token-redirect` — ✅ pass · est. 0.2 KB to close
 
 - **real**: Derives login_hint + X-AnchorMailbox from the account on redirect acquisition (sticky account routing).
 - **mini**: No account-derived hints on the authorize request — on a shared IdP session the wrong user could be silently picked.
@@ -115,12 +115,12 @@ here instead of being repeated per scenario:
 - **real**: AT inside 300s renewal window → refresh_token grant.
 - **mini**: Same refresh behavior (300s window matches); shape gaps only.
 
-#### `silent.refresh-token-grant` — ↔️ behavioral-diff · est. 0.1 KB to close
+#### `silent.refresh-token-grant` — ✅ pass · est. 0.1 KB to close
 
 - **real**: RT grant carries telemetry/claims/anchor params; redirect_uri = request redirectUri.
 - **mini**: RT grant works; sends config redirectUri instead of request's; missing protocol extras.
 
-#### `silent.iframe-fallback-no-rt` — ↔️ behavioral-diff
+#### `silent.iframe-fallback-no-rt` — ✅ pass
 
 - **real**: prompt=none iframe fallback with account-derived hints.
 - **mini**: Same fallback chain (authorize prompt=none → code exchange); param gaps only.
@@ -335,7 +335,7 @@ here instead of being repeated per scenario:
 - **real**: acquireTokenSilent perf event for cache hit AND network refresh (cache hit event has success+duration).
 - **mini**: None.
 
-#### `telemetry.token-request-headers` — 🚫 missing-feature · est. 0.5 KB to close
+#### `telemetry.token-request-headers` — ✅ pass · est. 0.5 KB to close
 
 - **real**: Server telemetry travels as token BODY params (not HTTP headers): x-client-SKU=msal.js.browser, x-client-VER, x-client-current-telemetry, x-client-last-telemetry, x-ms-lib-capability='retry-after, h429'.
 - **mini**: None of the telemetry params.

@@ -97,6 +97,26 @@ export interface Config {
 const AKA = (code: string) =>
     `See https://aka.ms/msal.js.errors#${code} for details`;
 
+/**
+ * Real MSAL's literal wire identity (Decision Log: impersonation) — keep in
+ * one block so a future un-impersonation is a one-line change. Real browser
+ * 5.16 uses StubServerTelemetryManager, so the telemetry params are sent as
+ * EMPTY strings on every token request (verified in snapshots).
+ */
+const WIRE_ID = {
+    "x-client-SKU": "msal.js.browser",
+    "x-client-VER": "5.16.0",
+} as const;
+const TOKEN_TELEMETRY = {
+    ...WIRE_ID,
+    "x-client-current-telemetry": "",
+    "x-client-last-telemetry": "",
+    "x-ms-lib-capability": "retry-after, h429",
+} as const;
+/** default claims real always sends on authorize + token requests */
+const DEFAULT_CLAIMS =
+    '{"id_token":{"signin_state":{"essential":false},"login_hint":{"essential":false}}}';
+
 export class AuthError extends Error {
     name = "AuthError";
     constructor(
@@ -235,7 +255,9 @@ function decodeJwt(token: string): Record<string, any> {
 async function post(url: string, body: Record<string, string>) {
     const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+        },
         body: new URLSearchParams(body).toString(),
     });
     const json = await res.json();
@@ -298,6 +320,10 @@ export interface AuthCodeResponse {
     scopes: string[];
     redirectUri?: string;
     correlationId?: string;
+    /** authorize-request nonce, validated against the id_token's claim */
+    nonce?: string;
+    /** CCS routing hint ("Oid:<oid>@<tid>" or "UPN:<hint>") */
+    ccs?: string;
 }
 
 /** The core client surface returned by createClient. */
@@ -343,6 +369,9 @@ export interface ClientContext {
         verifier: string;
         state: string;
         redirectUri: string;
+        correlationId: string;
+        nonce: string;
+        ccs?: string;
     }>;
     pollForCode(
         win: { location: Location; closed?: boolean },
@@ -530,6 +559,14 @@ export function createClient(
             " "
         );
 
+    // CCS routing hint, like real's ccsCredential: account wins over hint
+    const ccsFrom = (req: TokenRequest): string | undefined =>
+        req.account
+            ? `Oid:${req.account.localAccountId}@${req.account.tenantId}`
+            : req.loginHint
+              ? `UPN:${req.loginHint}`
+              : undefined;
+
     // ---- authorize-request plumbing ----
     const authorizeUrl = async (
         req: TokenRequest,
@@ -539,9 +576,16 @@ export function createClient(
         verifier: string;
         state: string;
         redirectUri: string;
+        correlationId: string;
+        nonce: string;
+        ccs?: string;
     }> => {
         const { verifier, challenge } = await pkce();
         const state = randomString();
+        const correlationId = req.correlationId ?? crypto.randomUUID();
+        const nonce = crypto.randomUUID();
+        const ccs = ccsFrom(req);
+        const hint = req.loginHint ?? req.account?.username;
         const reqRedirectUri = req.redirectUri
             ? new URL(req.redirectUri, location.href).href
             : redirectUri;
@@ -552,13 +596,29 @@ export function createClient(
         p.set("redirect_uri", reqRedirectUri);
         p.set("scope", normScopes(req.scopes));
         p.set("state", state);
+        p.set("nonce", nonce);
         p.set("code_challenge", challenge);
         p.set("code_challenge_method", "S256");
         p.set("response_mode", "fragment");
-        if (req.loginHint) p.set("login_hint", req.loginHint);
+        p.set("client_info", "1");
+        p.set("client-request-id", correlationId);
+        p.set("claims", DEFAULT_CLAIMS);
+        p.set("clidata", "1");
+        p.set("x-client-SKU", WIRE_ID["x-client-SKU"]);
+        p.set("x-client-VER", WIRE_ID["x-client-VER"]);
+        if (hint) p.set("login_hint", hint);
+        if (ccs) p.set("X-AnchorMailbox", ccs);
         if (req.prompt) p.set("prompt", req.prompt);
         for (const k in extra) p.set(k, extra[k]);
-        return { url: url.href, verifier, state, redirectUri: reqRedirectUri };
+        return {
+            url: url.href,
+            verifier,
+            state,
+            redirectUri: reqRedirectUri,
+            correlationId,
+            nonce,
+            ccs,
+        };
     };
 
     /** poll a window/iframe we opened until it lands back on redirectUri with a code */
@@ -610,15 +670,32 @@ export function createClient(
         grant: Record<string, string>,
         // state present (custom or "") only on interactive/ssoSilent results,
         // like real; correlationId generated per request when not provided
-        meta?: { correlationId?: string; state?: string }
+        meta?: {
+            correlationId?: string;
+            state?: string;
+            nonce?: string;
+            ccs?: string;
+        }
     ): Promise<AuthenticationResult> => {
-        const json = await post(metadata!.token_endpoint, {
-            redirect_uri: redirectUri,
-            ...grant,
-            client_id: clientId,
-            scope: normScopes(scopes),
-        });
+        const correlationId = meta?.correlationId ?? crypto.randomUUID();
+        const json = await post(
+            // client-request-id rides the token endpoint QUERY string
+            `${metadata!.token_endpoint}?client-request-id=${correlationId}`,
+            {
+                redirect_uri: redirectUri,
+                ...grant,
+                client_id: clientId,
+                scope: normScopes(scopes),
+                client_info: "1",
+                claims: DEFAULT_CLAIMS,
+                ...(meta?.ccs && { "X-AnchorMailbox": meta.ccs }),
+                ...TOKEN_TELEMETRY,
+            }
+        );
         const claims = decodeJwt(json.id_token);
+        if (meta?.nonce && claims.nonce !== meta.nonce) {
+            throw new ClientAuthError("nonce_mismatch");
+        }
         // like real MSAL, homeAccountId comes from client_info when present
         let uid = claims.oid ?? claims.sub;
         let utid = claims.tid ?? "";
@@ -732,7 +809,7 @@ export function createClient(
                 (now + (json.ext_expires_in ?? json.expires_in)) * 1000
             ),
             refreshOn: undefined,
-            correlationId: meta?.correlationId ?? crypto.randomUUID(),
+            correlationId,
             requestId: "",
             familyId: json.foci ?? "",
             tokenType: "Bearer",
@@ -753,21 +830,29 @@ export function createClient(
                 code_verifier: res.verifier,
                 ...(res.redirectUri && { redirect_uri: res.redirectUri }),
             },
-            { correlationId: res.correlationId, state: "" }
+            {
+                correlationId: res.correlationId,
+                state: "",
+                nonce: res.nonce,
+                ccs: res.ccs,
+            }
         );
 
     const redeemRefresh = (
-        scopes: string[],
-        refreshToken: string,
-        correlationId?: string
+        req: TokenRequest,
+        refreshToken: string
     ): Promise<AuthenticationResult> =>
         tokenRequest(
-            scopes,
+            req.scopes,
             {
                 grant_type: "refresh_token",
                 refresh_token: refreshToken,
+                // real redeems against the request's redirectUri
+                ...(req.redirectUri && {
+                    redirect_uri: new URL(req.redirectUri, location.href).href,
+                }),
             },
-            { correlationId }
+            { correlationId: req.correlationId, ccs: ccsFrom(req) }
         );
 
     // ---- interactive: redirect ----
@@ -787,7 +872,8 @@ export function createClient(
         // clean load: real resolves null silently, no handleRedirect events
         if ((!code && !err) || !stored) return null;
         sessionStorage.removeItem("msal.request");
-        const { verifier, state, scopes, correlationId } = JSON.parse(stored);
+        const { verifier, state, scopes, correlationId, nonce, ccs } =
+            JSON.parse(stored);
         const had = accountKeys().length;
         emit(EventType.HANDLE_REDIRECT_START, "redirect");
         try {
@@ -806,6 +892,8 @@ export function createClient(
                 verifier,
                 scopes,
                 correlationId,
+                nonce,
+                ccs,
             });
             emit(EventType.ACQUIRE_TOKEN_SUCCESS, "redirect", result);
             if (had < accountKeys().length) {
@@ -825,10 +913,15 @@ export function createClient(
     const silentFrame = async (
         req: TokenRequest
     ): Promise<AuthenticationResult> => {
-        const { url, verifier, state, redirectUri: ru } = await authorizeUrl(
-            req,
-            { prompt: "none" }
-        );
+        const {
+            url,
+            verifier,
+            state,
+            redirectUri: ru,
+            correlationId,
+            nonce,
+            ccs,
+        } = await authorizeUrl(req, { prompt: "none" });
         const frame = document.createElement("iframe");
         frame.style.display = "none";
         document.body.append(frame);
@@ -844,7 +937,9 @@ export function createClient(
                 verifier,
                 scopes: req.scopes,
                 redirectUri: ru,
-                correlationId: req.correlationId,
+                correlationId,
+                nonce,
+                ccs,
             });
         } finally {
             frame.remove();
@@ -953,11 +1048,7 @@ export function createClient(
             );
             if (rt) {
                 try {
-                    return await redeemRefresh(
-                        req.scopes,
-                        rt.secret,
-                        req.correlationId
-                    );
+                    return await redeemRefresh({ ...req, account }, rt.secret);
                 } catch (e) {
                     if (
                         !useFrame ||
@@ -973,6 +1064,7 @@ export function createClient(
         // last resort: hidden iframe with prompt=none
         const result = await silentFrame({
             ...req,
+            account,
             loginHint: account.username,
         });
         // real's acquireTokenSilent results carry state: undefined (the key
@@ -1087,14 +1179,19 @@ export function createClient(
                 throw new BrowserAuthError("redirect_in_iframe");
             }
             lock();
-            const { url, verifier, state } = await authorizeUrl(req);
+            const { url, verifier, state, correlationId, nonce, ccs } =
+                await authorizeUrl(req);
+            // persisted so the post-redirect redemption reuses the same
+            // correlationId/nonce/CCS hint, like real's temp request cache
             sessionStorage.setItem(
                 "msal.request",
                 JSON.stringify({
                     verifier,
                     state,
                     scopes: req.scopes,
-                    correlationId: req.correlationId ?? crypto.randomUUID(),
+                    correlationId,
+                    nonce,
+                    ccs,
                 })
             );
             location.assign(url);

@@ -48,7 +48,7 @@ export function popup(ctx: ClientContext): void {
         const had = c.getAllAccounts().length;
         ctx.emit(EventType.ACQUIRE_TOKEN_START, "popup", req);
         try {
-            const { url, verifier, state, redirectUri } =
+            const { url, verifier, state, redirectUri, correlationId, nonce, ccs } =
                 await ctx.authorizeUrl(req);
             const win = openPopup(url);
             ctx.emit(EventType.POPUP_OPENED, "popup", { popupWindow: win });
@@ -63,7 +63,9 @@ export function popup(ctx: ClientContext): void {
                     verifier,
                     scopes: req.scopes,
                     redirectUri,
-                    correlationId: req.correlationId,
+                    correlationId,
+                    nonce,
+                    ccs,
                 });
                 ctx.emit(EventType.ACQUIRE_TOKEN_SUCCESS, "popup", result);
                 if (had < c.getAllAccounts().length) {
