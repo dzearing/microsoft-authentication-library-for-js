@@ -1,20 +1,24 @@
 /**
- * mini-msal: a from-scratch minimal implementation of the public API surface
- * exercised by the full-flow app (src/app.tsx):
+ * mini-msal core: a from-scratch minimal implementation of the msal-browser
+ * behaviors every app pays for, exposed as a composable, closure-based
+ * client factory (pay-to-play architecture):
+ *   - createClient(config, features) — core + tree-shakable feature modules
  *   - OIDC discovery (authority metadata fetched at runtime)
- *   - loginRedirect / loginPopup / ssoSilent (auth-code + PKCE S256)
+ *   - loginRedirect / acquireTokenRedirect (auth-code + PKCE S256)
  *   - handleRedirectPromise (code exchange at the token endpoint)
  *   - acquireTokenSilent: cache -> refresh-token grant -> hidden-iframe
- *     prompt=none fallback; acquireTokenPopup / acquireTokenRedirect
+ *     prompt=none fallback; ssoSilent
  *   - single-account sessionStorage cache + active account
- *   - getAllAccounts / getAccountByHomeId / getAccountByUsername
- *   - event callbacks (EventMessage-shaped, add/remove) + account storage events
- *   - logoutRedirect / logoutPopup
+ *   - getAllAccounts / getAccount / getActiveAccount / setActiveAccount
+ *   - event callbacks (EventMessage-shaped, add/remove)
+ *   - logoutRedirect
  *   - InteractionRequiredAuthError / BrowserAuthError classification
  *
- * NOT implemented (see report): platform broker/WAM, nested app auth,
- * multi-account cache, localStorage/cookie/IndexedDB storage, telemetry,
- * logger, CIAM/B2C/ADFS authority variants, claims/CAE, PoP tokens.
+ * Optional features ship as subpath exports (./popup, later ./broker, ./naa,
+ * …): plain functions that receive the client's internal ClientContext and
+ * attach methods to it — no classes, near-zero seam bytes. The
+ * @mini-msal/compat package composes core + ALL features into the classic
+ * PublicClientApplication drop-in.
  */
 
 export interface AccountInfo {
@@ -107,6 +111,12 @@ export interface EventMessage {
 
 type EventCallback = (message: EventMessage) => void;
 
+export interface AccountFilter {
+    homeAccountId?: string;
+    localAccountId?: string;
+    username?: string;
+}
+
 // ---- small utils ----------------------------------------------------------
 
 const enc = new TextEncoder();
@@ -190,121 +200,135 @@ interface TokenKeys {
     refreshToken: string[];
 }
 
-interface AuthCodeResponse {
+export interface AuthCodeResponse {
     code: string;
     verifier: string;
     scopes: string[];
     redirectUri?: string;
 }
 
-export class PublicClientApplication {
-    private authority: string;
-    private redirectUri: string;
-    private clientId: string;
-    private metadata?: {
-        authorization_endpoint: string;
-        token_endpoint: string;
-        end_session_endpoint: string;
-    };
-    private listeners = new Map<string, EventCallback>();
-    private nextListenerId = 0;
-    private redirectResult: Promise<AuthenticationResult | null> | null = null;
+/** The core client surface returned by createClient. */
+export interface AuthClient {
+    initialize(): Promise<void>;
+    addEventCallback(cb: EventCallback): string | null;
+    removeEventCallback(id: string): void;
+    getAllAccounts(): AccountInfo[];
+    getAccount(filter: AccountFilter): AccountInfo | null;
+    getActiveAccount(): AccountInfo | null;
+    setActiveAccount(account: AccountInfo | null): void;
+    loginRedirect(req: TokenRequest): Promise<void>;
+    acquireTokenRedirect(req: TokenRequest): Promise<void>;
+    handleRedirectPromise(): Promise<AuthenticationResult | null>;
+    ssoSilent(req: TokenRequest): Promise<AuthenticationResult>;
+    acquireTokenSilent(req: TokenRequest): Promise<AuthenticationResult>;
+    logoutRedirect(req?: { account?: AccountInfo | null }): Promise<void>;
+}
 
-    constructor(private config: Config) {
-        this.clientId = config.auth.clientId;
-        this.authority = (
-            config.auth.authority ?? "https://login.microsoftonline.com/common"
-        ).replace(/\/$/, "");
-        this.redirectUri = new URL(
-            config.auth.redirectUri ?? "/",
-            location.href
-        ).href;
-    }
+/**
+ * Internal seam handed to feature modules (popup, broker, naa, …). A feature
+ * is a plain function that attaches methods to ctx.client using the internal
+ * plumbing exposed here.
+ */
+export interface ClientContext {
+    config: Config;
+    client: AuthClient & Record<string, any>;
+    emit(eventType: string, payload?: unknown, error?: unknown): void;
+    preflight(): void;
+    authorizeUrl(
+        req: TokenRequest,
+        extra?: Record<string, string>
+    ): Promise<{
+        url: string;
+        verifier: string;
+        state: string;
+        redirectUri: string;
+    }>;
+    pollForCode(
+        win: { location: Location; closed?: boolean },
+        state: string,
+        timeoutMs: number
+    ): Promise<string>;
+    redeem(res: AuthCodeResponse): Promise<AuthenticationResult>;
+    clearAccount(account?: AccountInfo | null): void;
+    logoutUrl(): string;
+}
 
-    async initialize(): Promise<void> {
-        const key = `msal.meta.${this.authority}`;
-        const cached = sessionStorage.getItem(key);
-        if (cached) {
-            this.metadata = JSON.parse(cached);
-            return;
-        }
-        this.metadata = await (
-            await fetch(
-                `${this.authority}/v2.0/.well-known/openid-configuration`
-            )
-        ).json();
-        sessionStorage.setItem(key, JSON.stringify(this.metadata));
-    }
+export type Feature = (ctx: ClientContext) => void;
+
+export function createClient(
+    config: Config,
+    features: Feature[] = []
+): AuthClient {
+    const clientId = config.auth.clientId;
+    const authority = (
+        config.auth.authority ?? "https://login.microsoftonline.com/common"
+    ).replace(/\/$/, "");
+    const redirectUri = new URL(config.auth.redirectUri ?? "/", location.href)
+        .href;
+    let metadata:
+        | {
+              authorization_endpoint: string;
+              token_endpoint: string;
+              end_session_endpoint: string;
+          }
+        | undefined;
+    const listeners = new Map<string, EventCallback>();
+    let nextListenerId = 0;
+    let redirectResult: Promise<AuthenticationResult | null> | null = null;
 
     // ---- events ----
-    addEventCallback(cb: EventCallback): string | null {
-        const id = String(this.nextListenerId++);
-        this.listeners.set(id, cb);
-        return id;
-    }
-
-    removeEventCallback(id: string): void {
-        this.listeners.delete(id);
-    }
-
-    private emit(eventType: string, payload?: unknown, error?: unknown) {
-        this.listeners.forEach((l) => l({ eventType, payload, error }));
-    }
+    const emit = (eventType: string, payload?: unknown, error?: unknown) => {
+        listeners.forEach((l) => l({ eventType, payload, error }));
+    };
 
     // ---- cache (real-MSAL v5 schema) ----
     /** cache environment: real MSAL uses the cloud's preferred_cache host */
-    private get env(): string {
-        const host = new URL(this.authority).host;
+    const env = () => {
+        const host = new URL(authority).host;
         return /login\.microsoftonline\.com|login\.microsoft\.com|sts\.windows\.net/.test(
             host
         )
             ? "login.windows.net"
             : host;
-    }
+    };
 
-    private readJSON<T>(key: string): T | null {
+    const readJSON = <T,>(key: string): T | null => {
         const raw = sessionStorage.getItem(key);
         return raw ? (JSON.parse(raw) as T) : null;
-    }
+    };
 
-    private writeJSON(key: string, value: unknown) {
+    const writeJSON = (key: string, value: unknown) => {
         sessionStorage.setItem(key, JSON.stringify(value));
-    }
+    };
 
-    private get tokenKeysKey() {
-        return `${P}.token.keys.${this.clientId}`;
-    }
+    const tokenKeysKey = `${P}.token.keys.${clientId}`;
 
-    private tokenKeys(): TokenKeys {
-        return (
-            this.readJSON<TokenKeys>(this.tokenKeysKey) ?? {
-                idToken: [],
-                accessToken: [],
-                refreshToken: [],
-            }
-        );
-    }
+    const tokenKeys = (): TokenKeys =>
+        readJSON<TokenKeys>(tokenKeysKey) ?? {
+            idToken: [],
+            accessToken: [],
+            refreshToken: [],
+        };
 
-    private accountKeys(): string[] {
-        return this.readJSON<string[]>(`${P}.account.keys`) ?? [];
-    }
+    const accountKeys = (): string[] =>
+        readJSON<string[]>(`${P}.account.keys`) ?? [];
 
-    private findCred(
+    const findCred = (
         list: string[],
         match: (t: TokenEntity) => boolean
-    ): TokenEntity | undefined {
+    ): TokenEntity | undefined => {
         for (const k of list) {
-            const t = this.readJSON<TokenEntity>(k);
-            if (t && t.clientId === this.clientId && match(t)) {
+            const t = readJSON<TokenEntity>(k);
+            if (t && t.clientId === clientId && match(t)) {
                 return t;
             }
         }
         return undefined;
-    }
+    };
 
-    private toAccountInfo(e: AccountEntity): AccountInfo {
-        const id = this.findCred(
-            this.tokenKeys().idToken,
+    const toAccountInfo = (e: AccountEntity): AccountInfo => {
+        const id = findCred(
+            tokenKeys().idToken,
             (t) => t.homeAccountId === e.homeAccountId
         );
         return {
@@ -315,55 +339,31 @@ export class PublicClientApplication {
             name: e.name,
             idTokenClaims: id ? decodeJwt(id.secret) : {},
         };
-    }
+    };
 
-    getAllAccounts(): AccountInfo[] {
-        return this.accountKeys()
-            .map((k) => this.readJSON<AccountEntity>(k))
+    const getAllAccounts = (): AccountInfo[] =>
+        accountKeys()
+            .map((k) => readJSON<AccountEntity>(k))
             .filter((e): e is AccountEntity => !!e)
-            .map((e) => this.toAccountInfo(e));
-    }
+            .map(toAccountInfo);
 
-    getAccount(filter: {
-        homeAccountId?: string;
-        localAccountId?: string;
-        username?: string;
-    }): AccountInfo | null {
-        return (
-            this.getAllAccounts().find(
-                (a) =>
-                    (!filter.homeAccountId ||
-                        a.homeAccountId === filter.homeAccountId) &&
-                    (!filter.localAccountId ||
-                        a.localAccountId === filter.localAccountId) &&
-                    (!filter.username ||
-                        a.username.toLowerCase() ===
-                            filter.username.toLowerCase())
-            ) ?? null
-        );
-    }
+    const getAccount = (filter: AccountFilter): AccountInfo | null =>
+        getAllAccounts().find(
+            (a) =>
+                (!filter.homeAccountId ||
+                    a.homeAccountId === filter.homeAccountId) &&
+                (!filter.localAccountId ||
+                    a.localAccountId === filter.localAccountId) &&
+                (!filter.username ||
+                    a.username.toLowerCase() === filter.username.toLowerCase())
+        ) ?? null;
 
-    private get activeKey() {
-        return `msal.${this.clientId}.active-account-filters`;
-    }
+    const activeKey = `msal.${clientId}.active-account-filters`;
 
-    getActiveAccount(): AccountInfo | null {
-        const f = this.readJSON<{ homeAccountId: string }>(this.activeKey);
-        return f ? this.getAccount({ homeAccountId: f.homeAccountId }) : null;
-    }
-
-    setActiveAccount(account: AccountInfo | null) {
-        if (account) {
-            this.writeJSON(this.activeKey, {
-                homeAccountId: account.homeAccountId,
-                localAccountId: account.localAccountId,
-                tenantId: account.tenantId,
-            });
-        } else {
-            sessionStorage.removeItem(this.activeKey);
-        }
-        this.emit(EventType.ACTIVE_ACCOUNT_CHANGED, account);
-    }
+    const getActiveAccount = (): AccountInfo | null => {
+        const f = readJSON<{ homeAccountId: string }>(activeKey);
+        return f ? getAccount({ homeAccountId: f.homeAccountId }) : null;
+    };
 
     /**
      * Same environment guards as real MSAL: when this app is re-booted inside
@@ -371,7 +371,7 @@ export class PublicClientApplication {
      * (window named "msal.*"), auth APIs refuse to run — the opener's poller
      * owns the response.
      */
-    private preflight() {
+    const preflight = () => {
         if (
             window !== window.parent &&
             /[#&](code|error)=/.test(location.hash)
@@ -387,10 +387,10 @@ export class PublicClientApplication {
                 "Auth APIs blocked inside MSAL-opened popups"
             );
         }
-    }
+    };
 
     // ---- authorize-request plumbing ----
-    private async authorizeUrl(
+    const authorizeUrl = async (
         req: TokenRequest,
         extra?: Record<string, string>
     ): Promise<{
@@ -398,17 +398,17 @@ export class PublicClientApplication {
         verifier: string;
         state: string;
         redirectUri: string;
-    }> {
+    }> => {
         const { verifier, challenge } = await pkce();
         const state = randomString();
-        const redirectUri = req.redirectUri
+        const reqRedirectUri = req.redirectUri
             ? new URL(req.redirectUri, location.href).href
-            : this.redirectUri;
-        const url = new URL(this.metadata!.authorization_endpoint);
+            : redirectUri;
+        const url = new URL(metadata!.authorization_endpoint);
         const p = url.searchParams;
-        p.set("client_id", this.clientId);
+        p.set("client_id", clientId);
         p.set("response_type", "code");
-        p.set("redirect_uri", redirectUri);
+        p.set("redirect_uri", reqRedirectUri);
         p.set(
             "scope",
             `openid profile offline_access ${req.scopes.join(" ")}`
@@ -420,16 +420,16 @@ export class PublicClientApplication {
         if (req.loginHint) p.set("login_hint", req.loginHint);
         if (req.prompt) p.set("prompt", req.prompt);
         for (const k in extra) p.set(k, extra[k]);
-        return { url: url.href, verifier, state, redirectUri };
-    }
+        return { url: url.href, verifier, state, redirectUri: reqRedirectUri };
+    };
 
     /** poll a window/iframe we opened until it lands back on redirectUri with a code */
-    private pollForCode(
+    const pollForCode = (
         win: { location: Location; closed?: boolean },
         state: string,
         timeoutMs: number
-    ): Promise<string> {
-        return new Promise((resolve, reject) => {
+    ): Promise<string> =>
+        new Promise((resolve, reject) => {
             const started = Date.now();
             const timer = setInterval(() => {
                 if (win.closed) {
@@ -477,227 +477,16 @@ export class PublicClientApplication {
                 }
             }, 50);
         });
-    }
-
-    // ---- interactive: redirect ----
-    async loginRedirect(req: TokenRequest): Promise<void> {
-        return this.acquireTokenRedirect(req);
-    }
-
-    async acquireTokenRedirect(req: TokenRequest): Promise<void> {
-        this.preflight();
-        if (window !== window.parent) {
-            // same guard as real MSAL: no full-page redirects from iframes
-            throw new BrowserAuthError(
-                "redirect_in_iframe",
-                "Redirect interaction is not allowed in an iframe"
-            );
-        }
-        const { url, verifier, state } = await this.authorizeUrl(req);
-        sessionStorage.setItem(
-            "msal.request",
-            JSON.stringify({ verifier, state, scopes: req.scopes })
-        );
-        location.assign(url);
-    }
-
-    handleRedirectPromise(): Promise<AuthenticationResult | null> {
-        return (this.redirectResult ??= this.processRedirect());
-    }
-
-    private async processRedirect(): Promise<AuthenticationResult | null> {
-        if (window !== window.parent) {
-            // app re-loaded inside our own hidden iframe: leave the hash for
-            // the opener's poller (same behavior as real MSAL's iframe guard)
-            return null;
-        }
-        const params = new URLSearchParams(location.hash.slice(1));
-        const code = params.get("code");
-        const err = params.get("error");
-        const stored = sessionStorage.getItem("msal.request");
-        try {
-            if ((!code && !err) || !stored) return null;
-            sessionStorage.removeItem("msal.request");
-            const { verifier, state, scopes } = JSON.parse(stored);
-            if (params.get("state") !== state) {
-                throw new AuthError("state_mismatch", "State does not match");
-            }
-            history.replaceState(null, "", location.pathname + location.search);
-            if (err) {
-                // login was cancelled/denied at the IdP
-                throw classify(err, params.get("error_description") ?? err);
-            }
-            const result = await this.redeem({ code: code!, verifier, scopes });
-            this.emit(EventType.LOGIN_SUCCESS, result);
-            return result;
-        } catch (e) {
-            this.emit(EventType.LOGIN_FAILURE, undefined, e);
-            throw e;
-        } finally {
-            this.emit(EventType.HANDLE_REDIRECT_END);
-        }
-    }
-
-    // ---- interactive: popup ----
-    async loginPopup(req: TokenRequest): Promise<AuthenticationResult> {
-        try {
-            const result = await this.acquireTokenPopup(req);
-            this.emit(EventType.LOGIN_SUCCESS, result);
-            return result;
-        } catch (e) {
-            this.emit(EventType.LOGIN_FAILURE, undefined, e);
-            throw e;
-        }
-    }
-
-    async acquireTokenPopup(req: TokenRequest): Promise<AuthenticationResult> {
-        this.preflight();
-        const { url, verifier, state, redirectUri } = await this.authorizeUrl(
-            req
-        );
-        const popup = open(
-            url,
-            "msal.popup",
-            "width=483,height=600,popup=yes"
-        );
-        if (!popup) {
-            throw new BrowserAuthError(
-                "popup_window_error",
-                "Popup was blocked"
-            );
-        }
-        try {
-            const code = await this.pollForCode(popup, state, 60_000);
-            return await this.redeem({
-                code,
-                verifier,
-                scopes: req.scopes,
-                redirectUri,
-            });
-        } finally {
-            popup.close();
-        }
-    }
-
-    // ---- silent ----
-    async ssoSilent(req: TokenRequest): Promise<AuthenticationResult> {
-        this.preflight();
-        const { url, verifier, state, redirectUri } = await this.authorizeUrl(
-            req,
-            { prompt: "none" }
-        );
-        const frame = document.createElement("iframe");
-        frame.style.display = "none";
-        document.body.append(frame);
-        try {
-            frame.src = url;
-            const code = await this.pollForCode(
-                frame.contentWindow! as Window,
-                state,
-                10_000
-            );
-            return await this.redeem({
-                code,
-                verifier,
-                scopes: req.scopes,
-                redirectUri,
-            });
-        } finally {
-            frame.remove();
-        }
-    }
-
-    async acquireTokenSilent(req: TokenRequest): Promise<AuthenticationResult> {
-        this.preflight();
-        const account = req.account ?? this.getActiveAccount();
-        if (
-            !account ||
-            !this.getAccount({ homeAccountId: account.homeAccountId })
-        ) {
-            throw new InteractionRequiredAuthError(
-                "no_account",
-                "Sign in first"
-            );
-        }
-        const keys = this.tokenKeys();
-        const wanted = req.scopes.map((sc) => sc.toLowerCase());
-        const at =
-            req.cacheLookupPolicy === CacheLookupPolicy.Skip
-                ? undefined
-                : this.findCred(keys.accessToken, (t) => {
-                      const target = (t.target ?? "").toLowerCase().split(" ");
-                      return (
-                          t.homeAccountId === account.homeAccountId &&
-                          wanted.every((sc) => target.includes(sc)) &&
-                          Number(t.expiresOn) - 300 > Date.now() / 1000
-                      );
-                  });
-        if (at) {
-            const id = this.findCred(
-                keys.idToken,
-                (t) => t.homeAccountId === account.homeAccountId
-            );
-            const result = {
-                accessToken: at.secret,
-                idToken: id?.secret ?? "",
-                scopes: (at.target ?? "").toLowerCase().split(" "),
-                expiresOn: new Date(Number(at.expiresOn) * 1000),
-                account,
-                fromCache: true,
-            };
-            this.emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
-            return result;
-        }
-        const rt = this.findCred(
-            keys.refreshToken,
-            (t) => t.homeAccountId === account.homeAccountId
-        );
-        if (rt) {
-            try {
-                const result = await this.redeemRefresh(req.scopes, rt.secret);
-                this.emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
-                return result;
-            } catch (e) {
-                if (!(e instanceof InteractionRequiredAuthError)) throw e;
-            }
-        }
-        // last resort: hidden iframe with prompt=none
-        const result = await this.ssoSilent({
-            ...req,
-            loginHint: account.username,
-        });
-        this.emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
-        return result;
-    }
 
     // ---- token redemption ----
-    private redeem(res: AuthCodeResponse): Promise<AuthenticationResult> {
-        return this.tokenRequest(res.scopes, {
-            grant_type: "authorization_code",
-            code: res.code,
-            code_verifier: res.verifier,
-            ...(res.redirectUri && { redirect_uri: res.redirectUri }),
-        });
-    }
-
-    private redeemRefresh(
-        scopes: string[],
-        refreshToken: string
-    ): Promise<AuthenticationResult> {
-        return this.tokenRequest(scopes, {
-            grant_type: "refresh_token",
-            refresh_token: refreshToken,
-        });
-    }
-
-    private async tokenRequest(
+    const tokenRequest = async (
         scopes: string[],
         grant: Record<string, string>
-    ): Promise<AuthenticationResult> {
-        const json = await post(this.metadata!.token_endpoint, {
-            redirect_uri: this.redirectUri,
+    ): Promise<AuthenticationResult> => {
+        const json = await post(metadata!.token_endpoint, {
+            redirect_uri: redirectUri,
             ...grant,
-            client_id: this.clientId,
+            client_id: clientId,
             scope: `openid profile offline_access ${scopes.join(" ")}`,
         });
         const claims = decodeJwt(json.id_token);
@@ -729,18 +518,18 @@ export class PublicClientApplication {
         const grantedStr: string = json.scope ?? scopes.join(" ");
         const now = Math.floor(Date.now() / 1000);
         const expiresOn = now + json.expires_in;
-        const env = this.env;
+        const environment = env();
         const realm = account.tenantId;
-        const base = `${P}|${homeAccountId}|${env}`;
+        const base = `${P}|${homeAccountId}|${environment}`;
 
         const accountKey = `${base}|${realm}`;
-        const idKey = `${base}|idtoken|${this.clientId}|${realm}||`;
-        const atKey = `${base}|accesstoken|${this.clientId}|${realm}|${grantedStr.toLowerCase()}|`;
-        const rtKey = `${base}|refreshtoken|${this.clientId}|||`;
+        const idKey = `${base}|idtoken|${clientId}|${realm}||`;
+        const atKey = `${base}|accesstoken|${clientId}|${realm}|${grantedStr.toLowerCase()}|`;
+        const rtKey = `${base}|refreshtoken|${clientId}|||`;
 
-        this.writeJSON(accountKey, {
+        writeJSON(accountKey, {
             homeAccountId,
-            environment: env,
+            environment,
             realm,
             localAccountId: account.localAccountId,
             username: account.username,
@@ -757,19 +546,19 @@ export class PublicClientApplication {
                 },
             ],
         } satisfies AccountEntity);
-        this.writeJSON(idKey, {
+        writeJSON(idKey, {
             credentialType: "IdToken",
             homeAccountId,
-            environment: env,
-            clientId: this.clientId,
+            environment,
+            clientId,
             secret: json.id_token,
             realm,
         } satisfies TokenEntity);
-        this.writeJSON(atKey, {
+        writeJSON(atKey, {
             credentialType: "AccessToken",
             homeAccountId,
-            environment: env,
-            clientId: this.clientId,
+            environment,
+            clientId,
             secret: json.access_token,
             realm,
             target: grantedStr,
@@ -779,39 +568,39 @@ export class PublicClientApplication {
             tokenType: "Bearer",
         } satisfies TokenEntity);
         if (json.refresh_token) {
-            this.writeJSON(rtKey, {
+            writeJSON(rtKey, {
                 credentialType: "RefreshToken",
                 homeAccountId,
-                environment: env,
-                clientId: this.clientId,
+                environment,
+                clientId,
                 secret: json.refresh_token,
             } satisfies TokenEntity);
         }
 
-        const keys = this.tokenKeys();
+        const keys = tokenKeys();
         const add = (list: string[], k: string) =>
             list.includes(k) ? list : [...list, k];
-        this.writeJSON(this.tokenKeysKey, {
+        writeJSON(tokenKeysKey, {
             idToken: add(keys.idToken, idKey),
             accessToken: add(keys.accessToken, atKey),
             refreshToken: json.refresh_token
                 ? add(keys.refreshToken, rtKey)
                 : keys.refreshToken,
         });
-        const acctKeys = this.accountKeys();
+        const acctKeys = accountKeys();
         const isNewAccount = !acctKeys.includes(accountKey);
         if (isNewAccount) {
-            this.writeJSON(`${P}.account.keys`, [...acctKeys, accountKey]);
+            writeJSON(`${P}.account.keys`, [...acctKeys, accountKey]);
         }
-        if (!this.readJSON(this.activeKey)) {
-            this.writeJSON(this.activeKey, {
+        if (!readJSON(activeKey)) {
+            writeJSON(activeKey, {
                 homeAccountId,
                 localAccountId: account.localAccountId,
                 tenantId: account.tenantId,
             });
         }
         if (isNewAccount) {
-            this.emit(EventType.ACCOUNT_ADDED, account);
+            emit(EventType.ACCOUNT_ADDED, account);
         }
         return {
             accessToken: json.access_token,
@@ -821,100 +610,293 @@ export class PublicClientApplication {
             account,
             fromCache: false,
         };
-    }
+    };
+
+    const redeem = (res: AuthCodeResponse): Promise<AuthenticationResult> =>
+        tokenRequest(res.scopes, {
+            grant_type: "authorization_code",
+            code: res.code,
+            code_verifier: res.verifier,
+            ...(res.redirectUri && { redirect_uri: res.redirectUri }),
+        });
+
+    const redeemRefresh = (
+        scopes: string[],
+        refreshToken: string
+    ): Promise<AuthenticationResult> =>
+        tokenRequest(scopes, {
+            grant_type: "refresh_token",
+            refresh_token: refreshToken,
+        });
+
+    // ---- interactive: redirect ----
+    const processRedirect = async (): Promise<AuthenticationResult | null> => {
+        if (window !== window.parent) {
+            // app re-loaded inside our own hidden iframe: leave the hash for
+            // the opener's poller (same behavior as real MSAL's iframe guard)
+            return null;
+        }
+        const params = new URLSearchParams(location.hash.slice(1));
+        const code = params.get("code");
+        const err = params.get("error");
+        const stored = sessionStorage.getItem("msal.request");
+        try {
+            if ((!code && !err) || !stored) return null;
+            sessionStorage.removeItem("msal.request");
+            const { verifier, state, scopes } = JSON.parse(stored);
+            if (params.get("state") !== state) {
+                throw new AuthError("state_mismatch", "State does not match");
+            }
+            history.replaceState(null, "", location.pathname + location.search);
+            if (err) {
+                // login was cancelled/denied at the IdP
+                throw classify(err, params.get("error_description") ?? err);
+            }
+            const result = await redeem({ code: code!, verifier, scopes });
+            emit(EventType.LOGIN_SUCCESS, result);
+            return result;
+        } catch (e) {
+            emit(EventType.LOGIN_FAILURE, undefined, e);
+            throw e;
+        } finally {
+            emit(EventType.HANDLE_REDIRECT_END);
+        }
+    };
+
+    // ---- silent ----
+    const ssoSilent = async (
+        req: TokenRequest
+    ): Promise<AuthenticationResult> => {
+        preflight();
+        const { url, verifier, state, redirectUri: ru } = await authorizeUrl(
+            req,
+            { prompt: "none" }
+        );
+        const frame = document.createElement("iframe");
+        frame.style.display = "none";
+        document.body.append(frame);
+        try {
+            frame.src = url;
+            const code = await pollForCode(
+                frame.contentWindow! as Window,
+                state,
+                10_000
+            );
+            return await redeem({
+                code,
+                verifier,
+                scopes: req.scopes,
+                redirectUri: ru,
+            });
+        } finally {
+            frame.remove();
+        }
+    };
 
     // ---- logout ----
-    private logoutUrl(): string {
-        const url = new URL(this.metadata!.end_session_endpoint);
+    const logoutUrl = (): string => {
+        const url = new URL(metadata!.end_session_endpoint);
         url.searchParams.set(
             "post_logout_redirect_uri",
             new URL(
-                this.config.auth.postLogoutRedirectUri ?? this.redirectUri,
+                config.auth.postLogoutRedirectUri ?? redirectUri,
                 location.href
             ).href
         );
         return url.href;
-    }
+    };
 
-    private clearAccount(account?: AccountInfo | null) {
+    const clearAccount = (account?: AccountInfo | null) => {
         const stays = (k: string) =>
             !!account && !k.includes(`|${account.homeAccountId}|`);
-        const keys = this.tokenKeys();
-        const kept: TokenKeys = { idToken: [], accessToken: [], refreshToken: [] };
+        const keys = tokenKeys();
+        const kept: TokenKeys = {
+            idToken: [],
+            accessToken: [],
+            refreshToken: [],
+        };
         for (const type of ["idToken", "accessToken", "refreshToken"] as const) {
             for (const k of keys[type]) {
                 stays(k) ? kept[type].push(k) : sessionStorage.removeItem(k);
             }
         }
         const keptAccounts: string[] = [];
-        for (const k of this.accountKeys()) {
+        for (const k of accountKeys()) {
             stays(k) ? keptAccounts.push(k) : sessionStorage.removeItem(k);
         }
         if (account) {
-            this.writeJSON(this.tokenKeysKey, kept);
-            this.writeJSON(`${P}.account.keys`, keptAccounts);
-            const f = this.readJSON<{ homeAccountId: string }>(this.activeKey);
+            writeJSON(tokenKeysKey, kept);
+            writeJSON(`${P}.account.keys`, keptAccounts);
+            const f = readJSON<{ homeAccountId: string }>(activeKey);
             if (f?.homeAccountId === account.homeAccountId) {
-                sessionStorage.removeItem(this.activeKey);
+                sessionStorage.removeItem(activeKey);
             }
         } else {
-            sessionStorage.removeItem(this.tokenKeysKey);
+            sessionStorage.removeItem(tokenKeysKey);
             sessionStorage.removeItem(`${P}.account.keys`);
-            sessionStorage.removeItem(this.activeKey);
+            sessionStorage.removeItem(activeKey);
         }
-        this.emit(EventType.ACCOUNT_REMOVED, account);
-        this.emit(EventType.LOGOUT_SUCCESS);
-    }
+        emit(EventType.ACCOUNT_REMOVED, account);
+        emit(EventType.LOGOUT_SUCCESS);
+    };
 
-    async logoutRedirect(req?: {
-        account?: AccountInfo | null;
-    }): Promise<void> {
-        this.preflight();
-        this.clearAccount(req?.account);
-        location.assign(this.logoutUrl());
-    }
+    const client: AuthClient = {
+        async initialize() {
+            const key = `msal.meta.${authority}`;
+            const cached = sessionStorage.getItem(key);
+            if (cached) {
+                metadata = JSON.parse(cached);
+                return;
+            }
+            metadata = await (
+                await fetch(
+                    `${authority}/v2.0/.well-known/openid-configuration`
+                )
+            ).json();
+            sessionStorage.setItem(key, JSON.stringify(metadata));
+        },
 
-    async logoutPopup(req?: { account?: AccountInfo | null }): Promise<void> {
-        this.preflight();
-        const popup = open(
-            this.logoutUrl(),
-            "msal.popup",
-            "width=483,height=600,popup=yes"
-        );
-        if (!popup) {
-            throw new BrowserAuthError(
-                "popup_window_error",
-                "Popup was blocked"
+        addEventCallback(cb: EventCallback): string | null {
+            const id = String(nextListenerId++);
+            listeners.set(id, cb);
+            return id;
+        },
+
+        removeEventCallback(id: string): void {
+            listeners.delete(id);
+        },
+
+        getAllAccounts,
+        getAccount,
+        getActiveAccount,
+
+        setActiveAccount(account: AccountInfo | null) {
+            if (account) {
+                writeJSON(activeKey, {
+                    homeAccountId: account.homeAccountId,
+                    localAccountId: account.localAccountId,
+                    tenantId: account.tenantId,
+                });
+            } else {
+                sessionStorage.removeItem(activeKey);
+            }
+            emit(EventType.ACTIVE_ACCOUNT_CHANGED, account);
+        },
+
+        async loginRedirect(req: TokenRequest): Promise<void> {
+            return client.acquireTokenRedirect(req);
+        },
+
+        async acquireTokenRedirect(req: TokenRequest): Promise<void> {
+            preflight();
+            if (window !== window.parent) {
+                // same guard as real MSAL: no full-page redirects from iframes
+                throw new BrowserAuthError(
+                    "redirect_in_iframe",
+                    "Redirect interaction is not allowed in an iframe"
+                );
+            }
+            const { url, verifier, state } = await authorizeUrl(req);
+            sessionStorage.setItem(
+                "msal.request",
+                JSON.stringify({ verifier, state, scopes: req.scopes })
             );
-        }
-        // wait for the popup to land back on the post-logout page (server
-        // session cleared), then close; events fire only after completion,
-        // matching real MSAL's ordering
-        const started = Date.now();
-        await new Promise<void>((resolve) => {
-            const timer = setInterval(() => {
-                let done = popup.closed || Date.now() - started > 5000;
-                try {
-                    done ||= popup.location.origin === location.origin;
-                } catch {
-                    /* still on the IdP: keep waiting */
-                }
-                if (done) {
-                    clearInterval(timer);
-                    resolve();
-                }
-            }, 50);
-        });
-        popup.close();
-        this.clearAccount(req?.account);
-    }
-}
+            location.assign(url);
+        },
 
-/** Shorthand factory: creates and initializes a client in one call. */
-export async function createAuth(
-    config: Config
-): Promise<PublicClientApplication> {
-    const auth = new PublicClientApplication(config);
-    await auth.initialize();
-    return auth;
+        handleRedirectPromise(): Promise<AuthenticationResult | null> {
+            return (redirectResult ??= processRedirect());
+        },
+
+        ssoSilent,
+
+        async acquireTokenSilent(
+            req: TokenRequest
+        ): Promise<AuthenticationResult> {
+            preflight();
+            const account = req.account ?? getActiveAccount();
+            if (
+                !account ||
+                !getAccount({ homeAccountId: account.homeAccountId })
+            ) {
+                throw new InteractionRequiredAuthError(
+                    "no_account",
+                    "Sign in first"
+                );
+            }
+            const keys = tokenKeys();
+            const wanted = req.scopes.map((sc) => sc.toLowerCase());
+            const at =
+                req.cacheLookupPolicy === CacheLookupPolicy.Skip
+                    ? undefined
+                    : findCred(keys.accessToken, (t) => {
+                          const target = (t.target ?? "")
+                              .toLowerCase()
+                              .split(" ");
+                          return (
+                              t.homeAccountId === account.homeAccountId &&
+                              wanted.every((sc) => target.includes(sc)) &&
+                              Number(t.expiresOn) - 300 > Date.now() / 1000
+                          );
+                      });
+            if (at) {
+                const id = findCred(
+                    keys.idToken,
+                    (t) => t.homeAccountId === account.homeAccountId
+                );
+                const result = {
+                    accessToken: at.secret,
+                    idToken: id?.secret ?? "",
+                    scopes: (at.target ?? "").toLowerCase().split(" "),
+                    expiresOn: new Date(Number(at.expiresOn) * 1000),
+                    account,
+                    fromCache: true,
+                };
+                emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
+                return result;
+            }
+            const rt = findCred(
+                keys.refreshToken,
+                (t) => t.homeAccountId === account.homeAccountId
+            );
+            if (rt) {
+                try {
+                    const result = await redeemRefresh(req.scopes, rt.secret);
+                    emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
+                    return result;
+                } catch (e) {
+                    if (!(e instanceof InteractionRequiredAuthError)) throw e;
+                }
+            }
+            // last resort: hidden iframe with prompt=none
+            const result = await ssoSilent({
+                ...req,
+                loginHint: account.username,
+            });
+            emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
+            return result;
+        },
+
+        async logoutRedirect(req?: {
+            account?: AccountInfo | null;
+        }): Promise<void> {
+            preflight();
+            clearAccount(req?.account);
+            location.assign(logoutUrl());
+        },
+    };
+
+    const ctx: ClientContext = {
+        config,
+        client,
+        emit,
+        preflight,
+        authorizeUrl,
+        pollForCode,
+        redeem,
+        clearAccount,
+        logoutUrl,
+    };
+    for (const f of features) f(ctx);
+    return client;
 }

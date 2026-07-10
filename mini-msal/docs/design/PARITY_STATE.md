@@ -115,7 +115,17 @@ Defaults already decided (do not re-litigate without user input):
   becomes a matrix (core-only / core+popup / compat) measured continuously.
 
 Entries (append as you go):
-- (none yet)
+- **A0 (2026-07-10)**: core is `createClient(config, features)` in
+  `packages/browser/src/index.ts`; internal seam = `ClientContext`
+  (emit/preflight/authorizeUrl/pollForCode/redeem/clearAccount/logoutUrl +
+  `client` to attach methods to). First feature: `@mini-msal/browser/popup`.
+  `@mini-msal/compat`'s `PublicClientApplication` uses the constructor-return
+  trick (`return createClient(config, [popup])`) — instances are the composed
+  closure object, so `instanceof PublicClientApplication` is false (nothing
+  relied on it). React types against `AuthClient & PopupClient`
+  (`IPublicClientApplication`). Closure refactor shrank the compat stack
+  20.1 → 18.7 KB min for free; core-only floor is 10.9 KB min / 4.2 KB gz
+  (`mini-core` variant in `npm run measure`).
 
 ## Task list (execute strictly top-to-bottom)
 
@@ -123,7 +133,12 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 
 ### Phase A0 — architecture (do this FIRST)
 
-- [ ] **A0** `pending` — Pay-to-play refactor (see Decision Log):
+- [x] **A0** `done 2026-07-10 — pass 2/75, mini-stack 18.7 KB min / 6.9 gz` —
+  Pay-to-play refactor (see Decision Log). The earlier "1 ERROR" was a
+  first-load flake (harness page timeout on the run's first goto), not a
+  regression: re-run gave 2 pass / 73 diff with per-scenario statuses AND
+  diff counts identical to the pre-refactor baseline; e2e 25/25.
+
   1. Split `packages/browser/src/index.ts` into a core (`createClient`:
      config, discovery, redirect login + handleRedirectPromise, silent
      ladder cache→RT→iframe, accounts/active-account, events, errors,
@@ -320,3 +335,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | Task | Status | Pass | mini-stack size | Notes |
 |---|---|---|---|---|
 | baseline | — | 2/75 | 20.1 KB min / 6.9 gz | e2e 25/25, check 75/75 |
+| A0 | done 2026-07-10 | 2/75 | 18.7 KB min / 6.9 gz | pure refactor, statuses+diff counts identical to baseline; e2e 25/25; NEW mini-core variant 10.9 KB min / 4.2 gz |

@@ -10,7 +10,7 @@ const appsDir = fileURLToPath(new URL("../apps/", import.meta.url));
 const app = readFileSync(appsDir + "app.tsx", "utf8");
 
 const mini = app
-    .replace(/"@azure\/msal-browser"/g, '"@mini-msal/browser"')
+    .replace(/"@azure\/msal-browser"/g, '"@mini-msal/compat"')
     .replace(/"@azure\/msal-react"/g, '"@mini-msal/react"')
     // mini polls the window URL; it needs a blank page, not the v5 bridge
     .replace(/"\/popup\.html"/g, '"/blank.html"');

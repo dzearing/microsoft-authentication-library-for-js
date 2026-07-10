@@ -21,7 +21,7 @@ import {
     type AccountInfo,
     type EventMessage,
     type AuthenticationResult,
-} from "@mini-msal/browser";
+} from "@mini-msal/compat";
 import {
     MsalProvider,
     AuthenticatedTemplate,

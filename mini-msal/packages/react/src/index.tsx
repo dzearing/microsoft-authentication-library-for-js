@@ -6,17 +6,25 @@
  */
 import * as React from "react";
 import {
-    PublicClientApplication,
     AccountInfo,
     AuthenticationResult,
     TokenRequest,
     EventType,
     InteractionType,
     InteractionKind,
+    type AuthClient,
 } from "@mini-msal/browser";
+import type { PopupClient } from "@mini-msal/browser/popup";
+
+/**
+ * The provider works against any composed client instance that has the core +
+ * popup surface — e.g. @mini-msal/compat's PublicClientApplication or
+ * createClient(config, [popup]).
+ */
+export type IPublicClientApplication = AuthClient & PopupClient;
 
 export interface IMsalContext {
-    instance: PublicClientApplication;
+    instance: IPublicClientApplication;
     accounts: AccountInfo[];
     inProgress: "startup" | "handleRedirect" | "none";
     /** internal: lets the provider re-render on active-account switches */
@@ -26,7 +34,7 @@ export interface IMsalContext {
 const MsalContext = React.createContext<IMsalContext | null>(null);
 
 export function MsalProvider(props: {
-    instance: PublicClientApplication;
+    instance: IPublicClientApplication;
     children?: React.ReactNode;
 }) {
     const { instance } = props;
