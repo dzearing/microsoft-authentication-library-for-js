@@ -643,13 +643,6 @@ export function createClient(
         if (isNewAccount) {
             writeJSON(`${P}.account.keys`, [...acctKeys, accountKey]);
         }
-        if (!readJSON(activeKey)) {
-            writeJSON(activeKey, {
-                homeAccountId,
-                localAccountId: account.localAccountId,
-                tenantId: account.tenantId,
-            });
-        }
         if (isNewAccount) {
             emit(EventType.ACCOUNT_ADDED, account);
         }

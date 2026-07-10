@@ -1419,22 +1419,12 @@
         "path": "storage.sessionStorage.msal.version",
         "real": "\"5.16.0\"",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.<guid>.active-account-filters",
-        "real": "\"<missing>\"",
-        "mini": "{\"homeAccountId\":\"oid-123.tenant-123\",\"localAccountId\":\"oid-123\",\"tenantId\":\"tenant-123\"}"
       }
     ],
     "observed": {
       "storage": {
         "localStorage": {},
         "sessionStorage": {
-          "msal.<guid>.active-account-filters": {
-            "homeAccountId": "oid-123.tenant-123",
-            "localAccountId": "oid-123",
-            "tenantId": "tenant-123"
-          },
           "msal.3.account.keys": [
             "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
           ],
@@ -2419,11 +2409,6 @@
         "mini": "null"
       },
       {
-        "path": "activeAfterSecondLogin.ok",
-        "real": "null",
-        "mini": "{\"environment\":null,\"hasIdTokenClaims\":true,\"homeAccountId\":\"oid-123.tenant-123\",\"localAccountId\":\"oid-123\",\"name\":\"Ada Lovelace\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"}"
-      },
-      {
         "path": "events[0].eventType",
         "real": "\"msal:initializeStart\"",
         "mini": "\"msal:accountAdded\""
@@ -2658,15 +2643,7 @@
         ]
       },
       "activeAfterSecondLogin": {
-        "ok": {
-          "environment": null,
-          "hasIdTokenClaims": true,
-          "homeAccountId": "oid-123.tenant-123",
-          "localAccountId": "oid-123",
-          "name": "Ada Lovelace",
-          "tenantId": "tenant-123",
-          "username": "ada@contoso.com"
-        }
+        "ok": null
       },
       "events": [
         {
@@ -2976,11 +2953,6 @@
         "mini": "{\"error\":null,\"eventType\":\"msal:logoutSuccess\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":5}"
       },
       {
-        "path": "logout.ok.active",
-        "real": "null",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
         "path": "logoutRequest[0].query.client-request-id",
         "real": "\"<dynamic>\"",
         "mini": "\"<missing>\""
@@ -3024,11 +2996,6 @@
         "path": "storage.sessionStorage.msal.version",
         "real": "\"5.16.0\"",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "storage.sessionStorage.msal.<guid>.active-account-filters",
-        "real": "\"<missing>\"",
-        "mini": "{\"homeAccountId\":\"oid-123.tenant-123\",\"localAccountId\":\"oid-123\",\"tenantId\":\"tenant-123\"}"
       }
     ],
     "observed": {
@@ -3089,7 +3056,7 @@
       ],
       "logout": {
         "ok": {
-          "active": "ada@contoso.com",
+          "active": null,
           "remaining": [
             "ada@contoso.com"
           ]
@@ -3107,11 +3074,6 @@
       "storage": {
         "localStorage": {},
         "sessionStorage": {
-          "msal.<guid>.active-account-filters": {
-            "homeAccountId": "oid-123.tenant-123",
-            "localAccountId": "oid-123",
-            "tenantId": "tenant-123"
-          },
           "msal.3.account.keys": [
             "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
           ],
@@ -3308,11 +3270,6 @@
         "mini": "\"<missing>\""
       },
       {
-        "path": "storage.sessionStorage.msal.<guid>.active-account-filters",
-        "real": "\"<missing>\"",
-        "mini": "{\"homeAccountId\":\"oid-123.tenant-123\",\"localAccountId\":\"oid-123\",\"tenantId\":\"tenant-123\"}"
-      },
-      {
         "path": "storage.sessionStorage.msal.3.account.keys",
         "real": "\"<missing>\"",
         "mini": "[\"msal.3|oid-123.tenant-123|localhost:4599|tenant-123\"]"
@@ -3377,11 +3334,6 @@
       "storage": {
         "localStorage": {},
         "sessionStorage": {
-          "msal.<guid>.active-account-filters": {
-            "homeAccountId": "oid-123.tenant-123",
-            "localAccountId": "oid-123",
-            "tenantId": "tenant-123"
-          },
           "msal.3.account.keys": [
             "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
           ],
@@ -3757,16 +3709,6 @@
         "path": "popupCall.ok.tokenType",
         "real": "\"Bearer\"",
         "mini": "null"
-      },
-      {
-        "path": "silentCall.err",
-        "real": "{\"errorCode\":\"no_account_error\",\"message\":\"See https://aka.ms/msal.js.errors#no_account_error for details\",\"name\":\"BrowserAuthError\",\"subError\":null}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "silentCall.ok",
-        "real": "\"<missing>\"",
-        "mini": "{\"accessToken\":\"mock-access-token-0\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":null,\"correlationIdPresent\":false,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":true,\"fromPlatformBroker\":null,\"idToken\":\"<jwt>\",\"scopes\"…"
       }
     ],
     "observed": {
@@ -3795,27 +3737,11 @@
         }
       },
       "silentCall": {
-        "ok": {
-          "accessToken": "mock-access-token-0",
-          "account": {
-            "homeAccountId": "oid-123.tenant-123",
-            "tenantId": "tenant-123",
-            "username": "ada@contoso.com"
-          },
-          "authority": null,
-          "correlationIdPresent": false,
-          "expiresInFuture": true,
-          "expiresOnType": "Date",
-          "fromCache": true,
-          "fromPlatformBroker": null,
-          "idToken": "<jwt>",
-          "scopes": [
-            "User.Read",
-            "openid",
-            "profile"
-          ],
-          "state": null,
-          "tokenType": null
+        "err": {
+          "errorCode": "no_account_error",
+          "message": "See https://aka.ms/msal.js.errors#no_account_error for details",
+          "name": "BrowserAuthError",
+          "subError": null
         }
       }
     }
