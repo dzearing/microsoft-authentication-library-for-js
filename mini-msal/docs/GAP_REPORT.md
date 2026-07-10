@@ -16,14 +16,14 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 1. Core flows | 9 | 0 | 9 | 0 | 0 |
 | 2. Silent acquisition | 12 | 2 | 10 | 0 | 0 |
 | 3. Accounts & cache | 7 | 1 | 4 | 2 | 0 |
-| 4. Errors & guards | 10 | 6 | 3 | 0 | 1 |
+| 4. Errors & guards | 10 | 7 | 3 | 0 | 0 |
 | 5. Platform broker / WAM | 7 | 0 | 0 | 7 | 0 |
 | 6. Nested app auth (NAA) | 6 | 0 | 0 | 6 | 0 |
 | 7. Telemetry | 5 | 0 | 0 | 5 | 0 |
 | 8. Request passthrough | 9 | 2 | 1 | 6 | 0 |
 | 9. Resilience | 4 | 1 | 1 | 2 | 0 |
 | 10. Init & misc | 6 | 0 | 3 | 3 | 0 |
-| **Total** | **75** | **12** | **31** | **31** | **1** |
+| **Total** | **75** | **13** | **31** | **31** | **0** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -244,7 +244,7 @@ here instead of being repeated per scenario:
 - **real**: SURPRISE: real v5.16 ALLOWS loginPopup from an msal.*-named window (completes fine); silent fails only with no_account_error. The window-name block documented for v3/v4 is gone in the bridge era.
 - **mini**: Guard removed (matches real): popup completes but result shape differs (B1) and silent then SUCCEEDS because mini auto-set the active account (A8).
 
-#### `errors.interaction-in-progress` — 🐞 **bug** · est. 0.3 KB to close
+#### `errors.interaction-in-progress` — ✅ pass · est. 0.3 KB to close
 
 - **real**: Second interactive call while a popup is pending → BrowserAuthError interaction_in_progress; the FIRST call completes normally.
 - **mini**: No interaction lock + fixed 'msal.popup' window name: the second popup NAVIGATES the first one — first call fails state_mismatch, SECOND call wins the token. Callers race.

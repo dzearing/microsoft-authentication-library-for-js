@@ -3198,11 +3198,6 @@
         "mini": "\"<missing>\""
       },
       {
-        "path": "storage.sessionStorage.msal.interaction.status",
-        "real": "{\"clientId\":\"<guid>\",\"type\":\"signout\"}",
-        "mini": "\"<missing>\""
-      },
-      {
         "path": "storage.sessionStorage.msal.version",
         "real": "\"5.16.0\"",
         "mini": "\"<missing>\""
@@ -3238,7 +3233,12 @@
       ],
       "storage": {
         "localStorage": {},
-        "sessionStorage": {}
+        "sessionStorage": {
+          "msal.interaction.status": {
+            "clientId": "<guid>",
+            "type": "signout"
+          }
+        }
       }
     }
   },
@@ -3823,60 +3823,20 @@
   {
     "id": "errors.interaction-in-progress",
     "area": "errors",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "firstEventuallyResolved.ok",
-        "real": "{\"accessToken\":\"mock-access-token-0\",\"username\":\"ada@contoso.com\"}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "firstEventuallyResolved.err",
-        "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":\"state_mismatch\",\"message\":\"See https://aka.ms/msal.js.errors#state_mismatch for details\",\"name\":\"ClientAuthError\",\"subError\":null}"
-      },
-      {
-        "path": "second.err",
-        "real": "{\"errorCode\":\"interaction_in_progress\",\"message\":\"See https://aka.ms/msal.js.errors#interaction_in_progress for details\",\"name\":\"BrowserAuthError\",\"subError\":null}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "second.ok",
-        "real": "\"<missing>\"",
-        "mini": "{\"accessToken\":\"mock-access-token-0\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":null,\"correlationIdPresent\":false,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":null,\"idToken\":\"<jwt>\",\"scopes…"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "firstEventuallyResolved": {
-        "err": {
-          "errorCode": "state_mismatch",
-          "message": "See https://aka.ms/msal.js.errors#state_mismatch for details",
-          "name": "ClientAuthError",
-          "subError": null
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "username": "ada@contoso.com"
         }
       },
       "second": {
-        "ok": {
-          "accessToken": "mock-access-token-0",
-          "account": {
-            "homeAccountId": "oid-123.tenant-123",
-            "tenantId": "tenant-123",
-            "username": "ada@contoso.com"
-          },
-          "authority": null,
-          "correlationIdPresent": false,
-          "expiresInFuture": true,
-          "expiresOnType": "Date",
-          "fromCache": false,
-          "fromPlatformBroker": null,
-          "idToken": "<jwt>",
-          "scopes": [
-            "User.Read",
-            "openid",
-            "profile"
-          ],
-          "state": null,
-          "tokenType": null
+        "err": {
+          "errorCode": "interaction_in_progress",
+          "message": "See https://aka.ms/msal.js.errors#interaction_in_progress for details",
+          "name": "BrowserAuthError",
+          "subError": null
         }
       }
     }

@@ -278,6 +278,9 @@ export interface ClientContext {
     client: AuthClient & Record<string, any>;
     emit(eventType: string, payload?: unknown, error?: unknown): void;
     preflight(): void;
+    /** take the interaction lock; throws interaction_in_progress if held */
+    lock(type?: string): void;
+    unlock(): void;
     authorizeUrl(
         req: TokenRequest,
         extra?: Record<string, string>
@@ -324,6 +327,16 @@ export function createClient(
 
     const uninitialized = () =>
         new BrowserAuthError("uninitialized_public_client_application");
+
+    // ---- interaction lock (same storage entry as real MSAL) ----
+    const lockKey = "msal.interaction.status";
+    const lock = (type = "signin") => {
+        if (sessionStorage.getItem(lockKey)) {
+            throw new BrowserAuthError("interaction_in_progress");
+        }
+        sessionStorage.setItem(lockKey, JSON.stringify({ clientId, type }));
+    };
+    const unlock = () => sessionStorage.removeItem(lockKey);
 
     // ---- events ----
     const emit = (eventType: string, payload?: unknown, error?: unknown) => {
@@ -674,6 +687,9 @@ export function createClient(
             // the opener's poller (same behavior as real MSAL's iframe guard)
             return null;
         }
+        // back from a redirect (or clean load): release the interaction lock
+        // set before navigating away, like real's handleRedirectPromise
+        unlock();
         const params = new URLSearchParams(location.hash.slice(1));
         const code = params.get("code");
         const err = params.get("error");
@@ -913,6 +929,7 @@ export function createClient(
                 // same guard as real MSAL: no full-page redirects from iframes
                 throw new BrowserAuthError("redirect_in_iframe");
             }
+            lock();
             const { url, verifier, state } = await authorizeUrl(req);
             sessionStorage.setItem(
                 "msal.request",
@@ -957,6 +974,7 @@ export function createClient(
             account?: AccountInfo | null;
         }): Promise<void> {
             preflight();
+            lock("signout");
             clearAccount(req?.account);
             location.assign(logoutUrl());
         },
@@ -967,6 +985,8 @@ export function createClient(
         client,
         emit,
         preflight,
+        lock,
+        unlock,
         authorizeUrl,
         pollForCode,
         redeem,

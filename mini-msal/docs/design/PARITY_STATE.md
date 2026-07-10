@@ -145,7 +145,15 @@ Entries (append as you go):
   20.1 → 18.7 KB min for free; core-only floor is 10.9 KB min / 4.2 KB gz
   (`mini-core` variant in `npm run measure`).
 
-- **A4 (2026-07-10)**: judgment call — "pass count went UP" validation is
+- **A7 (2026-07-10)**: interaction lock lives in core (`ctx.lock(type)/unlock()`)
+  writing real's exact entry (`msal.interaction.status` =
+  `{"clientId":…,"type":"signin"|"signout"}` — B4's signout entry now exists).
+  Judgment call: mini's processRedirect releases the lock UNCONDITIONALLY at
+  the top (real only clears own-clientId / signout locks in
+  handleRedirectPromise); observably identical for single-client apps and all
+  scenarios — revisit only if a multi-client scenario ever lands. loginPopup
+  still emits LOGIN_FAILURE on interaction_in_progress (real emits nothing
+  there) — events are B2's job. — "pass count went UP" validation is
   waived when a task's scenario ALSO depends on a later task (here B1's
   result-shape fields); the bar is then "task's expected diffs eliminated +
   zero regressions". Discovered: the conformance harness SORTS result.scopes
@@ -239,7 +247,8 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   (scopes|homeAccountId|authority|claims — real includes NO policy or
   forceRefresh; StandardController.acquireTokenSilentDeduped), map entry
   deleted on settle. Scenario: silent.concurrent-dedupe.
-- [ ] **A7** `pending` — Interaction lock + unique popup names: second
+- [x] **A7** `done 2026-07-10 — pass 13/75, mini-stack 20.0 KB min / 7.4 gz` —
+  Interaction lock + unique popup names: second
   interactive call while one is pending → BrowserAuthError
   `interaction_in_progress`; popup window names unique per request
   (`msal.<guid>`-style) so popups never clobber; first call completes.
@@ -390,3 +399,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | A4 | done 2026-07-10 | 10/75 | 19.4 KB min / 7.2 gz | +0 pass by design: all 8 scope diffs on params.scopes-normalization gone (18→10 diffs), remainder is B1 result-shape. normScopes = real addScopes ([...req, ...defaults] → Set → join, exact-case dedupe) on authorize+token; result scopes keep granted casing (dropped toLowerCase). No regressions (same 10 pass, 591 total diffs); e2e 25/25; mini-core 11.5 min / 4.5 gz |
 | A5 | done 2026-07-10 | 11/75 | 19.5 KB min / 7.3 gz | +1 pass (silent.policy-access-token-expired). Policy ladder gates AT/RT/iframe rungs; forceRefresh skips AT; AT-only miss → token_refresh_required ClientAuthError. Discovery cache moved to per-instance memory (msal.meta.* key dropped — B4 item front-ran): networkCalls now match on ALL silent.* scenarios; remaining policy-scenario diffs are pure B1 result-shape (authority/correlationId/tokenType/fromPlatformBroker), force-refresh remainder is B2 events. Total diffs 591→568; e2e 25/25; mini-core 11.7 min / 4.6 gz |
 | A6 | done 2026-07-10 | 12/75 | 19.7 KB min / 7.3 gz | +1 pass (silent.concurrent-dedupe): inFlight Map keyed like real's thumbprint (scopes/homeAccountId/authority/claims, no policy/forceRefresh), entry deleted on settle; silent ladder hoisted to silentLadder() closure. Total diffs 568→566; e2e 25/25; mini-core 11.8 min / 4.7 gz |
+| A7 | done 2026-07-10 | 13/75 | 20.0 KB min / 7.4 gz | +1 pass (errors.interaction-in-progress): core lock()/unlock() on `msal.interaction.status` (real's entry shape `{clientId,type}`, type signin/signout); popup + redirect + logout take the lock, popup/logoutPopup release in finally, processRedirect releases on return (covers redirect + signout return legs); popup window names now `msal.<uuid>` (real names are per-request unique via correlationId). Total diffs 566→561; e2e 25/25; mini-core 12.1 min / 4.8 gz |

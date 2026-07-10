@@ -23,7 +23,9 @@ export interface PopupClient {
 const FEATURES = "width=483,height=600,popup=yes";
 
 function openPopup(url: string): Window {
-    const win = open(url, "msal.popup", FEATURES);
+    // unique per request, like real's generatePopupName — concurrent
+    // popups must never clobber each other's window
+    const win = open(url, `msal.${crypto.randomUUID()}`, FEATURES);
     if (!win) {
         throw new BrowserAuthError("popup_window_error");
     }
@@ -37,24 +39,28 @@ export function popup(ctx: ClientContext): void {
         req: TokenRequest
     ): Promise<AuthenticationResult> => {
         ctx.preflight();
-        const { url, verifier, state, redirectUri } = await ctx.authorizeUrl(
-            req
-        );
-        const win = openPopup(url);
+        ctx.lock();
         try {
-            const code = await ctx.pollForCode(
-                win,
-                state,
-                ctx.config.system?.popupBridgeTimeout ?? 60_000
-            );
-            return await ctx.redeem({
-                code,
-                verifier,
-                scopes: req.scopes,
-                redirectUri,
-            });
+            const { url, verifier, state, redirectUri } =
+                await ctx.authorizeUrl(req);
+            const win = openPopup(url);
+            try {
+                const code = await ctx.pollForCode(
+                    win,
+                    state,
+                    ctx.config.system?.popupBridgeTimeout ?? 60_000
+                );
+                return await ctx.redeem({
+                    code,
+                    verifier,
+                    scopes: req.scopes,
+                    redirectUri,
+                });
+            } finally {
+                win.close();
+            }
         } finally {
-            win.close();
+            ctx.unlock();
         }
     };
 
@@ -75,26 +81,31 @@ export function popup(ctx: ClientContext): void {
         account?: AccountInfo | null;
     }): Promise<void> => {
         ctx.preflight();
-        const win = openPopup(ctx.logoutUrl());
-        // wait for the popup to land back on the post-logout page (server
-        // session cleared), then close; events fire only after completion,
-        // matching real MSAL's ordering
-        const started = Date.now();
-        await new Promise<void>((resolve) => {
-            const timer = setInterval(() => {
-                let done = win.closed || Date.now() - started > 5000;
-                try {
-                    done ||= win.location.origin === location.origin;
-                } catch {
-                    /* still on the IdP: keep waiting */
-                }
-                if (done) {
-                    clearInterval(timer);
-                    resolve();
-                }
-            }, 50);
-        });
-        win.close();
-        ctx.clearAccount(req?.account);
+        ctx.lock("signout");
+        try {
+            const win = openPopup(ctx.logoutUrl());
+            // wait for the popup to land back on the post-logout page (server
+            // session cleared), then close; events fire only after completion,
+            // matching real MSAL's ordering
+            const started = Date.now();
+            await new Promise<void>((resolve) => {
+                const timer = setInterval(() => {
+                    let done = win.closed || Date.now() - started > 5000;
+                    try {
+                        done ||= win.location.origin === location.origin;
+                    } catch {
+                        /* still on the IdP: keep waiting */
+                    }
+                    if (done) {
+                        clearInterval(timer);
+                        resolve();
+                    }
+                }, 50);
+            });
+            win.close();
+            ctx.clearAccount(req?.account);
+        } finally {
+            ctx.unlock();
+        }
     };
 }
