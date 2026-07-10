@@ -17,13 +17,13 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 2. Silent acquisition | 12 | 12 | 0 | 0 | 0 |
 | 3. Accounts & cache | 7 | 5 | 0 | 2 | 0 |
 | 4. Errors & guards | 10 | 10 | 0 | 0 | 0 |
-| 5. Platform broker / WAM | 7 | 0 | 0 | 7 | 0 |
-| 6. Nested app auth (NAA) | 6 | 0 | 0 | 6 | 0 |
+| 5. Platform broker / WAM | 7 | 1 | 0 | 6 | 0 |
+| 6. Nested app auth (NAA) | 6 | 1 | 0 | 5 | 0 |
 | 7. Telemetry | 5 | 5 | 0 | 0 | 0 |
 | 8. Request passthrough | 9 | 9 | 0 | 0 | 0 |
 | 9. Resilience | 4 | 4 | 0 | 0 | 0 |
-| 10. Init & misc | 6 | 2 | 1 | 3 | 0 |
-| **Total** | **75** | **56** | **1** | **18** | **0** |
+| 10. Init & misc | 6 | 6 | 0 | 0 | 0 |
+| **Total** | **75** | **62** | **0** | **13** | **0** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -286,7 +286,7 @@ here instead of being repeated per scenario:
 - **real**: Full extension protocol works against a fake: HandshakeResponse over the transferred port, GetToken request {accountId, scope, tokenType, windowTitleSubstring, extraParameters:{telemetry:MATS}}, Response/Success/result → AuthenticationResult with fromPlatformBroker=true.
 - **mini**: n/a.
 
-#### `broker.is-platform-broker-available` — 🚫 missing-feature
+#### `broker.is-platform-broker-available` — ✅ pass
 
 - **real**: isPlatformBrokerAvailable() exported; returns false in this environment either way (needs full extension handshake, not just the DOM object).
 - **mini**: Not exported.
@@ -302,6 +302,9 @@ here instead of being repeated per scenario:
 
 - **real**: acquireTokenPopup → bridge GetTokenPopup (tokenParams: clientId, scope 'openid profile offline_access User.Read', authenticationScheme Bearer, correlationId); token+account response mapped into AuthenticationResult.
 - **mini**: n/a.
+- ⚠️ scenario errored on mini: Error: scenario timeout after 60000ms
+    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27
+    at
 
 #### `naa.silent-cache-then-bridge` — 🚫 missing-feature
 
@@ -312,13 +315,16 @@ here instead of being repeated per scenario:
 
 - **real**: USER_INTERACTION_REQUIRED→IRAE(code); USER_CANCEL→ClientAuthError user_canceled; PERSISTENT_ERROR→ServerError(code); NO_NETWORK→ClientAuthError no_network_connectivity.
 - **mini**: n/a.
+- ⚠️ scenario errored on mini: Error: scenario timeout after 60000ms
+    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27
+    at
 
 #### `naa.unsupported-apis` — 🚫 missing-feature
 
 - **real**: loginRedirect/logoutRedirect/logoutPopup/acquireTokenByCode/addPerformanceCallback → NestedAppAuthError unsupported_method; handleRedirectPromise → null.
 - **mini**: n/a.
 
-#### `naa.no-bridge-fallback` — 🚫 missing-feature
+#### `naa.no-bridge-fallback` — ✅ pass
 
 - **real**: No bridge present → silently falls back to a standard PCA (perf API works, web popup login succeeds).
 - **mini**: n/a.
@@ -426,17 +432,17 @@ here instead of being repeated per scenario:
 - **real**: Second initialize() is a no-op; initializeStart/End emitted once.
 - **mini**: Also a no-op; no initialize events exist.
 
-#### `init.get-configuration` — 🚫 missing-feature · est. 0.2 KB to close
+#### `init.get-configuration` — ✅ pass · est. 0.2 KB to close
 
 - **real**: getConfiguration() returns fully-resolved defaults (iframeHashTimeout 10000/6000, windowHashTimeout 60000, tokenRenewalOffsetSeconds 300, allowPlatformBroker false, redirectNavigationTimeout 30000 …).
 - **mini**: No getConfiguration.
 
-#### `init.logger-callback` — 🚫 missing-feature · est. 0.4 KB to close
+#### `init.logger-callback` — ✅ pass · est. 0.4 KB to close
 
 - **real**: loggerCallback receives verbose pipeline logs (levels Info+Verbose seen, >10 entries for one popup login).
 - **mini**: No logger at all.
 
-#### `init.exported-surface` — 🚫 missing-feature · est. 1 KB to close
+#### `init.exported-surface` — ✅ pass · est. 1 KB to close
 
 - **real**: Exports version, createStandard/NestablePublicClientApplication, isPlatformBrokerAvailable, ClientAuthError/ServerError classes, 52 BrowserAuthErrorCodes, full EventType (incl. broker events), PromptValue/ProtocolMode/BrowserCacheLocation enums, OIDC_DEFAULT_SCOPES.
 - **mini**: Small subset: PublicClientApplication, 8 EventTypes, 3 error classes, CacheLookupPolicy, InteractionType.
@@ -446,7 +452,7 @@ here instead of being repeated per scenario:
 - **real**: Bare initialize() writes only msal.version.
 - **mini**: Writes its msal.meta.<authority> discovery cache instead (this is also how mini avoids re-fetching discovery).
 
-#### `init.popup-without-bridge` — ↔️ behavioral-diff
+#### `init.popup-without-bridge` — ✅ pass
 
 - **real**: HARD dependency on the redirect-bridge page: a popup landing on a blank (bridge-less) page never resolves → timed_out/redirect_bridge_timeout. Apps MUST serve the bridge at every popup redirectUri.
 - **mini**: URL-polls the popup — works fine with a blank page (that is mini's normal mode).

@@ -12,8 +12,8 @@ const app = readFileSync(appsDir + "app.tsx", "utf8");
 const mini = app
     .replace(/"@azure\/msal-browser"/g, '"@mini-msal/compat"')
     .replace(/"@azure\/msal-react"/g, '"@mini-msal/react"')
-    // mini polls the window URL; it needs a blank page, not the v5 bridge
-    .replace(/"\/popup\.html"/g, '"/blank.html"');
+    // mini completes popup/silent via its own redirect-bridge page
+    .replace(/"\/popup\.html"/g, '"/mini-popup.html"');
 writeFileSync(
     appsDir + "mini-app.tsx",
     "// GENERATED from app.tsx by sync-variants.mjs — do not edit\n" + mini

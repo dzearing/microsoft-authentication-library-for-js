@@ -118,6 +118,10 @@ export default [
     // redirect + silent flows) — no popup feature, no React, no compat.
     makeConfig("mini-core", "./test/apps/mini-core.ts"),
 
+    // mini's redirect-bridge page bundle (popup/silent completion is
+    // bridge-based like real v5); counterpart of msal-redirect-bridge.
+    makeConfig("mini-redirect-bridge", "./test/apps/mini-redirect-bridge.ts"),
+
     // E2E test builds pointed at the local mock IdP (test/infra/mock-idp.mjs);
     // bundle React so they run standalone. Not size-measurement targets.
     makeConfig("mini-mock-app", "./test/apps/mini-app-mock.tsx"),

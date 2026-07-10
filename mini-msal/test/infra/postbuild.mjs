@@ -11,6 +11,8 @@ const appHtml = (title) =>
 
 const BRIDGE_HTML =
     '<!doctype html><title>auth</title><script type="module" src="/msal-redirect-bridge/bundle.js"></script>';
+const MINI_BRIDGE_HTML =
+    '<!doctype html><title>auth</title><script type="module" src="/mini-redirect-bridge/bundle.js"></script>';
 const BLANK_HTML = "<!doctype html><title>auth</title>";
 
 for (const app of [
@@ -21,19 +23,23 @@ for (const app of [
 ]) {
     writeFileSync(`dist/${app}/index.html`, appHtml(app));
 }
-// per-harness popup redirect pages (real needs the v5 redirect-bridge);
-// popup2 is a second registered redirect page for per-request redirectUri tests
+// per-harness popup redirect pages (both stacks complete popup/silent via
+// their redirect-bridge page); popup2 is a second registered redirect page
+// for per-request redirectUri tests
 writeFileSync("dist/conformance-real/popup.html", BRIDGE_HTML);
-writeFileSync("dist/conformance-mini/popup.html", BLANK_HTML);
+writeFileSync("dist/conformance-mini/popup.html", MINI_BRIDGE_HTML);
 writeFileSync("dist/conformance-real/popup2.html", BRIDGE_HTML);
-writeFileSync("dist/conformance-mini/popup2.html", BLANK_HTML);
+writeFileSync("dist/conformance-mini/popup2.html", MINI_BRIDGE_HTML);
 // popup redirect pages used by the e2e's explicit per-app override
 writeFileSync("dist/real-mock-app/popup.html", BRIDGE_HTML);
-writeFileSync("dist/mini-mock-app/popup.html", BLANK_HTML);
+writeFileSync("dist/mini-mock-app/popup.html", MINI_BRIDGE_HTML);
 
 // root-level pages: the apps' internal popup/silent flows redirect here
-// (/popup.html = v5 redirect-bridge for real msal, /blank.html for mini)
+// (/popup.html = v5 redirect-bridge for real msal, /mini-popup.html = mini's
+// bridge; for real AAD register both as SPA redirect URIs). /blank.html has
+// NO bridge on purpose — init.popup-without-bridge depends on it.
 writeFileSync("dist/popup.html", BRIDGE_HTML);
+writeFileSync("dist/mini-popup.html", MINI_BRIDGE_HTML);
 writeFileSync("dist/blank.html", BLANK_HTML);
 
 // real Entra ID test page at the site root (matches the registered SPA

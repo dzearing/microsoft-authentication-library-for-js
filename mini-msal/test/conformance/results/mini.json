@@ -3113,107 +3113,65 @@
   {
     "id": "init.get-configuration",
     "area": "init",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "config.ok",
-        "real": "{\"auth\":{\"authority\":\"https://localhost:4599/tenant\",\"clientId\":\"<guid>\",\"cloudDiscoveryMetadata\":\"\",\"navigateToLoginRequestUrl\":null},\"cache\":{\"cacheLocation\":\"sessionStorage\",\"storeAuthStateInCookie\":null},\"system\":{\"allowPlatformBroker\":false,\"iframeHashTimeout\":null,\"loadFrameTimeout\":null,\"nati…",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "config": {
-        "ok": null
+        "ok": {
+          "auth": {
+            "authority": "https://localhost:4599/tenant",
+            "clientId": "<guid>",
+            "cloudDiscoveryMetadata": "",
+            "navigateToLoginRequestUrl": null
+          },
+          "cache": {
+            "cacheLocation": "sessionStorage",
+            "storeAuthStateInCookie": null
+          },
+          "system": {
+            "allowPlatformBroker": false,
+            "iframeHashTimeout": null,
+            "loadFrameTimeout": null,
+            "nativeBrokerHandshakeTimeout": 2000,
+            "redirectNavigationTimeout": 30000,
+            "tokenRenewalOffsetSeconds": 300,
+            "windowHashTimeout": null
+          },
+          "topLevelKeys": [
+            "auth",
+            "cache",
+            "experimental",
+            "system",
+            "telemetry"
+          ]
+        }
       }
     }
   },
   {
     "id": "init.logger-callback",
     "area": "init",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "levelsSeen[0]",
-        "real": "2",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "levelsSeen[1]",
-        "real": "3",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "logCountOver10",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "logged",
-        "real": "true",
-        "mini": "false"
-      }
-    ],
+    "status": "pass",
     "observed": {
-      "levelsSeen": [],
-      "logCountOver10": false,
-      "logged": false
+      "levelsSeen": [
+        2,
+        3
+      ],
+      "logCountOver10": true,
+      "logged": true
     }
   },
   {
     "id": "init.exported-surface",
     "area": "init",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "ok.browserAuthErrorCodesCount",
-        "real": "52",
-        "mini": "null"
-      },
-      {
-        "path": "ok.browserCacheLocation",
-        "real": "{\"LocalStorage\":\"localStorage\",\"MemoryStorage\":\"memoryStorage\",\"SessionStorage\":\"sessionStorage\"}",
-        "mini": "null"
-      },
-      {
-        "path": "ok.hasCreateNestablePCA",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "ok.hasCreateStandardPCA",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "ok.hasIsPlatformBrokerAvailable",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "ok.oidcDefaultScopes",
-        "real": "[\"openid\",\"profile\",\"offline_access\"]",
-        "mini": "null"
-      },
-      {
-        "path": "ok.promptValue",
-        "real": "{\"CONSENT\":\"consent\",\"CREATE\":\"create\",\"LOGIN\":\"login\",\"NONE\":\"none\",\"NO_SESSION\":\"no_session\",\"SELECT_ACCOUNT\":\"select_account\"}",
-        "mini": "null"
-      },
-      {
-        "path": "ok.protocolMode",
-        "real": "{\"AAD\":\"AAD\",\"EAR\":\"EAR\",\"OIDC\":\"OIDC\"}",
-        "mini": "null"
-      },
-      {
-        "path": "ok.version",
-        "real": "\"5.16.0\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "ok": {
-        "browserAuthErrorCodesCount": null,
-        "browserCacheLocation": null,
+        "browserAuthErrorCodesCount": 52,
+        "browserCacheLocation": {
+          "LocalStorage": "localStorage",
+          "MemoryStorage": "memoryStorage",
+          "SessionStorage": "sessionStorage"
+        },
         "cacheLookupPolicy": {
           "AccessToken": 1,
           "AccessTokenAndRefreshToken": 2,
@@ -3251,19 +3209,34 @@
           "POPUP_OPENED": "msal:popupOpened",
           "RESTORE_FROM_BFCACHE": "msal:restoreFromBFCache"
         },
-        "hasCreateNestablePCA": false,
-        "hasCreateStandardPCA": false,
-        "hasIsPlatformBrokerAvailable": false,
+        "hasCreateNestablePCA": true,
+        "hasCreateStandardPCA": true,
+        "hasIsPlatformBrokerAvailable": true,
         "interactionType": {
           "None": "none",
           "Popup": "popup",
           "Redirect": "redirect",
           "Silent": "silent"
         },
-        "oidcDefaultScopes": null,
-        "promptValue": null,
-        "protocolMode": null,
-        "version": null
+        "oidcDefaultScopes": [
+          "openid",
+          "profile",
+          "offline_access"
+        ],
+        "promptValue": {
+          "CONSENT": "consent",
+          "CREATE": "create",
+          "LOGIN": "login",
+          "NONE": "none",
+          "NO_SESSION": "no_session",
+          "SELECT_ACCOUNT": "select_account"
+        },
+        "protocolMode": {
+          "AAD": "AAD",
+          "EAR": "EAR",
+          "OIDC": "OIDC"
+        },
+        "version": "5.16.0"
       }
     }
   },
@@ -3283,42 +3256,14 @@
   {
     "id": "init.popup-without-bridge",
     "area": "init",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "result.err",
-        "real": "{\"errorCode\":\"timed_out\",\"message\":\"See https://aka.ms/msal.js.errors#timed_out for details\",\"name\":\"BrowserAuthError\",\"subError\":\"redirect_bridge_timeout\"}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.ok",
-        "real": "\"<missing>\"",
-        "mini": "{\"accessToken\":\"mock-access-token-0\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":\"https://localhost:4599/tenant/\",\"correlationIdPresent\":true,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":fal…"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "result": {
-        "ok": {
-          "accessToken": "mock-access-token-0",
-          "account": {
-            "homeAccountId": "oid-123.tenant-123",
-            "tenantId": "tenant-123",
-            "username": "ada@contoso.com"
-          },
-          "authority": "https://localhost:4599/tenant/",
-          "correlationIdPresent": true,
-          "expiresInFuture": true,
-          "expiresOnType": "Date",
-          "fromCache": false,
-          "fromPlatformBroker": false,
-          "idToken": "<jwt>",
-          "scopes": [
-            "User.Read",
-            "openid",
-            "profile"
-          ],
-          "state": "<dynamic>",
-          "tokenType": "Bearer"
+        "err": {
+          "errorCode": "timed_out",
+          "message": "See https://aka.ms/msal.js.errors#timed_out for details",
+          "name": "BrowserAuthError",
+          "subError": "redirect_bridge_timeout"
         }
       }
     }
@@ -3768,25 +3713,13 @@
   {
     "id": "broker.is-platform-broker-available",
     "area": "broker",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "withBroker.ok",
-        "real": "false",
-        "mini": "\"not-exported\""
-      },
-      {
-        "path": "without.ok",
-        "real": "false",
-        "mini": "\"not-exported\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "withBroker": {
-        "ok": "not-exported"
+        "ok": false
       },
       "without": {
-        "ok": "not-exported"
+        "ok": false
       }
     }
   },
@@ -3796,87 +3729,55 @@
     "status": "diff",
     "diffs": [
       {
-        "path": "created.ok",
-        "real": "\"created\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "created.err",
-        "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":null,\"message\":\"createNestablePublicClientApplication is not exported\",\"name\":\"Error\",\"subError\":null}"
-      },
-      {
         "path": "handshake[0]",
         "real": "{\"clientLibrary\":\"msal.js.browser\",\"clientLibraryVersion\":\"5.16.0\",\"hasRequestId\":true,\"hasSendTime\":true,\"messageType\":\"NestedAppAuthRequest\",\"method\":\"GetInitContext\",\"tokenParams\":null}",
         "mini": "\"<missing>\""
       },
       {
-        "path": "redirectApi.err.errorCode",
-        "real": "\"unsupported_method\"",
+        "path": "redirectApi.err",
+        "real": "{\"errorCode\":\"unsupported_method\",\"message\":\"See https://aka.ms/msal.js.errors#unsupported_method for details\",\"name\":\"NestedAppAuthError\",\"subError\":null}",
+        "mini": "\"<missing>\""
+      },
+      {
+        "path": "redirectApi.ok",
+        "real": "\"<missing>\"",
         "mini": "null"
-      },
-      {
-        "path": "redirectApi.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#unsupported_method for details\"",
-        "mini": "\"Cannot read properties of undefined (reading 'acquireTokenRedirect')\""
-      },
-      {
-        "path": "redirectApi.err.name",
-        "real": "\"NestedAppAuthError\"",
-        "mini": "\"TypeError\""
       }
     ],
     "observed": {
       "created": {
-        "err": {
-          "errorCode": null,
-          "message": "createNestablePublicClientApplication is not exported",
-          "name": "Error",
-          "subError": null
-        }
+        "ok": "created"
       },
       "handshake": [],
       "redirectApi": {
-        "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'acquireTokenRedirect')",
-          "name": "TypeError",
-          "subError": null
-        }
+        "ok": null
       }
     }
   },
   {
     "id": "naa.get-token-popup",
     "area": "naa",
-    "status": "diff",
+    "status": "error",
     "diffs": [
       {
-        "path": "bridgeRequests[0]",
-        "real": "{\"clientLibrary\":\"msal.js.browser\",\"clientLibraryVersion\":\"5.16.0\",\"hasRequestId\":true,\"hasSendTime\":true,\"messageType\":\"NestedAppAuthRequest\",\"method\":\"GetTokenPopup\",\"tokenParams\":{\"authenticationScheme\":\"Bearer\",\"clientId\":\"<guid>\",\"forceRefresh\":null,\"hasCorrelationId\":true,\"keys\":[\"authenticati…",
+        "path": "bridgeRequests",
+        "real": "[{\"clientLibrary\":\"msal.js.browser\",\"clientLibraryVersion\":\"5.16.0\",\"hasRequestId\":true,\"hasSendTime\":true,\"messageType\":\"NestedAppAuthRequest\",\"method\":\"GetTokenPopup\",\"tokenParams\":{\"authenticationScheme\":\"Bearer\",\"clientId\":\"<guid>\",\"forceRefresh\":null,\"hasCorrelationId\":true,\"keys\":[\"authenticat…",
         "mini": "\"<missing>\""
       },
       {
-        "path": "result.ok",
-        "real": "{\"accessToken\":\"naa-access-token\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":\"https://localhost:4599/tenant/\",\"correlationIdPresent\":true,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":null,\"…",
+        "path": "result",
+        "real": "{\"ok\":{\"accessToken\":\"naa-access-token\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":\"https://localhost:4599/tenant/\",\"correlationIdPresent\":true,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":…",
         "mini": "\"<missing>\""
       },
       {
-        "path": "result.err",
+        "path": "fatal",
         "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":null,\"message\":\"Cannot read properties of undefined (reading 'acquireTokenPopup')\",\"name\":\"TypeError\",\"subError\":null}"
+        "mini": "\"Error: scenario timeout after 60000ms\\n    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27\\n    at async file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:117:27\""
       }
     ],
+    "fatal": "Error: scenario timeout after 60000ms\n    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27\n    at async file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:117:27",
     "observed": {
-      "bridgeRequests": [],
-      "result": {
-        "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'acquireTokenPopup')",
-          "name": "TypeError",
-          "subError": null
-        }
-      }
+      "fatal": "Error: scenario timeout after 60000ms\n    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27\n    at async file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:117:27"
     }
   },
   {
@@ -3902,7 +3803,7 @@
       {
         "path": "first.err",
         "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":null,\"message\":\"Cannot read properties of undefined (reading 'acquireTokenSilent')\",\"name\":\"TypeError\",\"subError\":null}"
+        "mini": "{\"errorCode\":\"authority_mismatch\",\"message\":\"See https://aka.ms/msal.js.errors#authority_mismatch for details\",\"name\":\"ClientConfigurationError\",\"subError\":null}"
       },
       {
         "path": "second.ok",
@@ -3912,7 +3813,7 @@
       {
         "path": "second.err",
         "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":null,\"message\":\"Cannot read properties of undefined (reading 'getAllAccounts')\",\"name\":\"TypeError\",\"subError\":null}"
+        "mini": "{\"errorCode\":\"no_account_error\",\"message\":\"See https://aka.ms/msal.js.errors#no_account_error for details\",\"name\":\"BrowserAuthError\",\"subError\":null}"
       }
     ],
     "observed": {
@@ -3920,17 +3821,17 @@
       "callsAfterSecond": 0,
       "first": {
         "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'acquireTokenSilent')",
-          "name": "TypeError",
+          "errorCode": "authority_mismatch",
+          "message": "See https://aka.ms/msal.js.errors#authority_mismatch for details",
+          "name": "ClientConfigurationError",
           "subError": null
         }
       },
       "second": {
         "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'getAllAccounts')",
-          "name": "TypeError",
+          "errorCode": "no_account_error",
+          "message": "See https://aka.ms/msal.js.errors#no_account_error for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       }
@@ -3939,102 +3840,37 @@
   {
     "id": "naa.error-mapping",
     "area": "naa",
-    "status": "diff",
+    "status": "error",
     "diffs": [
       {
-        "path": "NO_NETWORK.err.errorCode",
-        "real": "\"no_network_connectivity\"",
-        "mini": "null"
+        "path": "NO_NETWORK",
+        "real": "{\"err\":{\"errorCode\":\"no_network_connectivity\",\"message\":\"See https://aka.ms/msal.js.errors#no_network_connectivity for details\",\"name\":\"ClientAuthError\",\"subError\":null}}",
+        "mini": "\"<missing>\""
       },
       {
-        "path": "NO_NETWORK.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#no_network_connectivity for details\"",
-        "mini": "\"Cannot read properties of undefined (reading 'acquireTokenPopup')\""
+        "path": "PERSISTENT_ERROR",
+        "real": "{\"err\":{\"errorCode\":\"fake_code\",\"message\":\"fake PERSISTENT_ERROR\",\"name\":\"ServerError\",\"subError\":null}}",
+        "mini": "\"<missing>\""
       },
       {
-        "path": "NO_NETWORK.err.name",
-        "real": "\"ClientAuthError\"",
-        "mini": "\"TypeError\""
+        "path": "USER_CANCEL",
+        "real": "{\"err\":{\"errorCode\":\"user_canceled\",\"message\":\"See https://aka.ms/msal.js.errors#user_canceled for details\",\"name\":\"ClientAuthError\",\"subError\":null}}",
+        "mini": "\"<missing>\""
       },
       {
-        "path": "PERSISTENT_ERROR.err.errorCode",
-        "real": "\"fake_code\"",
-        "mini": "null"
+        "path": "USER_INTERACTION_REQUIRED",
+        "real": "{\"err\":{\"errorCode\":\"fake_code\",\"message\":\"fake USER_INTERACTION_REQUIRED\",\"name\":\"InteractionRequiredAuthError\",\"subError\":null}}",
+        "mini": "\"<missing>\""
       },
       {
-        "path": "PERSISTENT_ERROR.err.message",
-        "real": "\"fake PERSISTENT_ERROR\"",
-        "mini": "\"Cannot read properties of undefined (reading 'acquireTokenPopup')\""
-      },
-      {
-        "path": "PERSISTENT_ERROR.err.name",
-        "real": "\"ServerError\"",
-        "mini": "\"TypeError\""
-      },
-      {
-        "path": "USER_CANCEL.err.errorCode",
-        "real": "\"user_canceled\"",
-        "mini": "null"
-      },
-      {
-        "path": "USER_CANCEL.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#user_canceled for details\"",
-        "mini": "\"Cannot read properties of undefined (reading 'acquireTokenPopup')\""
-      },
-      {
-        "path": "USER_CANCEL.err.name",
-        "real": "\"ClientAuthError\"",
-        "mini": "\"TypeError\""
-      },
-      {
-        "path": "USER_INTERACTION_REQUIRED.err.errorCode",
-        "real": "\"fake_code\"",
-        "mini": "null"
-      },
-      {
-        "path": "USER_INTERACTION_REQUIRED.err.message",
-        "real": "\"fake USER_INTERACTION_REQUIRED\"",
-        "mini": "\"Cannot read properties of undefined (reading 'acquireTokenPopup')\""
-      },
-      {
-        "path": "USER_INTERACTION_REQUIRED.err.name",
-        "real": "\"InteractionRequiredAuthError\"",
-        "mini": "\"TypeError\""
+        "path": "fatal",
+        "real": "\"<missing>\"",
+        "mini": "\"Error: scenario timeout after 60000ms\\n    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27\\n    at async file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:117:27\""
       }
     ],
+    "fatal": "Error: scenario timeout after 60000ms\n    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27\n    at async file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:117:27",
     "observed": {
-      "NO_NETWORK": {
-        "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'acquireTokenPopup')",
-          "name": "TypeError",
-          "subError": null
-        }
-      },
-      "PERSISTENT_ERROR": {
-        "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'acquireTokenPopup')",
-          "name": "TypeError",
-          "subError": null
-        }
-      },
-      "USER_CANCEL": {
-        "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'acquireTokenPopup')",
-          "name": "TypeError",
-          "subError": null
-        }
-      },
-      "USER_INTERACTION_REQUIRED": {
-        "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'acquireTokenPopup')",
-          "name": "TypeError",
-          "subError": null
-        }
-      }
+      "fatal": "Error: scenario timeout after 60000ms\n    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27\n    at async file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:117:27"
     }
   },
   {
@@ -4050,7 +3886,7 @@
       {
         "path": "acquireTokenByCode.err.message",
         "real": "\"See https://aka.ms/msal.js.errors#unsupported_method for details\"",
-        "mini": "\"Cannot read properties of undefined (reading 'acquireTokenByCode')\""
+        "mini": "\"globalThis.__msal[name] is not a function\""
       },
       {
         "path": "acquireTokenByCode.err.name",
@@ -4058,29 +3894,14 @@
         "mini": "\"TypeError\""
       },
       {
-        "path": "addPerformanceCallback.err.errorCode",
-        "real": "\"unsupported_method\"",
-        "mini": "null"
-      },
-      {
-        "path": "addPerformanceCallback.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#unsupported_method for details\"",
-        "mini": "\"Cannot read properties of undefined (reading 'addPerformanceCallback')\""
-      },
-      {
-        "path": "addPerformanceCallback.err.name",
-        "real": "\"NestedAppAuthError\"",
-        "mini": "\"TypeError\""
-      },
-      {
-        "path": "handleRedirectPromise.ok",
-        "real": "\"null\"",
+        "path": "addPerformanceCallback.err",
+        "real": "{\"errorCode\":\"unsupported_method\",\"message\":\"See https://aka.ms/msal.js.errors#unsupported_method for details\",\"name\":\"NestedAppAuthError\",\"subError\":null}",
         "mini": "\"<missing>\""
       },
       {
-        "path": "handleRedirectPromise.err",
+        "path": "addPerformanceCallback.ok",
         "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":null,\"message\":\"Cannot read properties of undefined (reading 'handleRedirectPromise')\",\"name\":\"TypeError\",\"subError\":null}"
+        "mini": "\"resolved\""
       },
       {
         "path": "loginRedirect.err.errorCode",
@@ -4090,7 +3911,7 @@
       {
         "path": "loginRedirect.err.message",
         "real": "\"See https://aka.ms/msal.js.errors#unsupported_method for details\"",
-        "mini": "\"Cannot read properties of undefined (reading 'loginRedirect')\""
+        "mini": "\"e is not iterable\""
       },
       {
         "path": "loginRedirect.err.name",
@@ -4100,80 +3921,70 @@
       {
         "path": "logoutPopup.err.errorCode",
         "real": "\"unsupported_method\"",
-        "mini": "null"
+        "mini": "\"interaction_in_progress\""
       },
       {
         "path": "logoutPopup.err.message",
         "real": "\"See https://aka.ms/msal.js.errors#unsupported_method for details\"",
-        "mini": "\"Cannot read properties of undefined (reading 'logoutPopup')\""
+        "mini": "\"See https://aka.ms/msal.js.errors#interaction_in_progress for details\""
       },
       {
         "path": "logoutPopup.err.name",
         "real": "\"NestedAppAuthError\"",
-        "mini": "\"TypeError\""
+        "mini": "\"BrowserAuthError\""
       },
       {
         "path": "logoutRedirect.err.errorCode",
         "real": "\"unsupported_method\"",
-        "mini": "null"
+        "mini": "\"interaction_in_progress\""
       },
       {
         "path": "logoutRedirect.err.message",
         "real": "\"See https://aka.ms/msal.js.errors#unsupported_method for details\"",
-        "mini": "\"Cannot read properties of undefined (reading 'logoutRedirect')\""
+        "mini": "\"See https://aka.ms/msal.js.errors#interaction_in_progress for details\""
       },
       {
         "path": "logoutRedirect.err.name",
         "real": "\"NestedAppAuthError\"",
-        "mini": "\"TypeError\""
+        "mini": "\"BrowserAuthError\""
       }
     ],
     "observed": {
       "acquireTokenByCode": {
         "err": {
           "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'acquireTokenByCode')",
+          "message": "globalThis.__msal[name] is not a function",
           "name": "TypeError",
           "subError": null
         }
       },
       "addPerformanceCallback": {
-        "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'addPerformanceCallback')",
-          "name": "TypeError",
-          "subError": null
-        }
+        "ok": "resolved"
       },
       "handleRedirectPromise": {
-        "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'handleRedirectPromise')",
-          "name": "TypeError",
-          "subError": null
-        }
+        "ok": "null"
       },
       "loginRedirect": {
         "err": {
           "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'loginRedirect')",
+          "message": "e is not iterable",
           "name": "TypeError",
           "subError": null
         }
       },
       "logoutPopup": {
         "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'logoutPopup')",
-          "name": "TypeError",
+          "errorCode": "interaction_in_progress",
+          "message": "See https://aka.ms/msal.js.errors#interaction_in_progress for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       },
       "logoutRedirect": {
         "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'logoutRedirect')",
-          "name": "TypeError",
+          "errorCode": "interaction_in_progress",
+          "message": "See https://aka.ms/msal.js.errors#interaction_in_progress for details",
+          "name": "BrowserAuthError",
           "subError": null
         }
       }
@@ -4182,64 +3993,17 @@
   {
     "id": "naa.no-bridge-fallback",
     "area": "naa",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "created.ok",
-        "real": "\"created\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "created.err",
-        "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":null,\"message\":\"createNestablePublicClientApplication is not exported\",\"name\":\"Error\",\"subError\":null}"
-      },
-      {
-        "path": "perfApi.ok",
-        "real": "\"works\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "perfApi.err",
-        "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":null,\"message\":\"Cannot read properties of undefined (reading 'addPerformanceCallback')\",\"name\":\"TypeError\",\"subError\":null}"
-      },
-      {
-        "path": "webLogin.err",
-        "real": "null",
-        "mini": "{\"errorCode\":null,\"message\":\"Cannot read properties of undefined (reading 'loginPopup')\",\"name\":\"TypeError\",\"subError\":null}"
-      },
-      {
-        "path": "webLogin.ok",
-        "real": "true",
-        "mini": "false"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "created": {
-        "err": {
-          "errorCode": null,
-          "message": "createNestablePublicClientApplication is not exported",
-          "name": "Error",
-          "subError": null
-        }
+        "ok": "created"
       },
       "perfApi": {
-        "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'addPerformanceCallback')",
-          "name": "TypeError",
-          "subError": null
-        }
+        "ok": "works"
       },
       "webLogin": {
-        "err": {
-          "errorCode": null,
-          "message": "Cannot read properties of undefined (reading 'loginPopup')",
-          "name": "TypeError",
-          "subError": null
-        },
-        "ok": false
+        "err": null,
+        "ok": true
       }
     }
   }

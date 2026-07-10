@@ -42,9 +42,9 @@ const msalInstance = new PublicClientApplication(msalConfig);
 /**
  * v5 guidance: popup and hidden-iframe flows redirect to a dedicated page
  * (served at /popup.html, running the msal redirect-bridge) rather than the
- * app itself. For real AAD, register http://localhost:4173/popup.html as an
- * additional SPA redirect URI. sync-variants rewrites this to /blank.html for
- * the mini stack (which polls the window URL instead of using a bridge).
+ * app itself. For real AAD, register http://localhost:4173/popup.html (and
+ * /mini-popup.html) as additional SPA redirect URIs. sync-variants rewrites
+ * this to /mini-popup.html (mini's own bridge page) for the mini stack.
  */
 const popupRequest = { ...loginRequest, redirectUri: "/popup.html" };
 

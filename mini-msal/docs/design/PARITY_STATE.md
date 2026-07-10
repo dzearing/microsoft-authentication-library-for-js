@@ -329,6 +329,37 @@ Entries (append as you go):
   Core paid zero runtime bytes (only a `PerfClient` type + `telemetry?`
   config key; mini-core size unchanged at 17.4 KB min).
 
+- **C5 (2026-07-10)**: init & surface + THE BRIDGE MIGRATION. Mini's popup and
+  hidden-iframe flows now complete via the redirect-bridge (BroadcastChannel
+  keyed by the lib-state id, `{v:1,payload}` message), NOT URL polling — real
+  v5's actual mechanism. Wire state is now real's full lib-state
+  `btoa({id,meta:{interactionType}})` (+`|custom`). New subpath
+  `@mini-msal/browser/redirect-bridge` (`broadcastResponseToMainFrame()`);
+  new rspack variant `mini-redirect-bridge` (0.6 KB min vs real's 6.5 KB);
+  postbuild serves it at `/mini-popup.html`, `dist/{conformance-mini,
+  mini-mock-app}/popup{,2}.html`; sync-variants rewrites mini apps'
+  `/popup.html` → `/mini-popup.html`; `/blank.html` stays bridge-less ON
+  PURPOSE (init.popup-without-bridge depends on it). A redirect page without
+  the bridge (or a closed popup) now just times out
+  (`timed_out`/`redirect_bridge_timeout`). Logger: implemented IN CORE, not
+  as the planned `/logger` feature module — the call sites must live in core
+  anyway, and the sink is ~10 lines (`log(level,msg)` gated by
+  `system.loggerOptions.logLevel`, default Info(2)); real logs obfuscated
+  short codes, message text is free-form. getConfiguration(): only
+  snapshot-observed defaults + user passthrough; unset optionals stay
+  undefined (real's 5.16 defaults have NO navigateToLoginRequestUrl/
+  storeAuthStateInCookie/hash-timeout keys). Surface: version +
+  BrowserCacheLocation/ProtocolMode/PromptValue/OIDC_DEFAULT_SCOPES/
+  BrowserAuthErrorCodes (52 keys, packed as a split-string in compat) +
+  createStandardPublicClientApplication (= createAuth) +
+  createNestablePublicClientApplication (= createAuth until C9) +
+  isPlatformBrokerAvailable (async false until C7). Free extra passes:
+  broker.is-platform-broker-available, naa.no-bridge-fallback. KNOWN COST:
+  naa.get-token-popup + naa.error-mapping now ERR at ~60s each (scenario
+  installs a fake NAA bridge; the nestable factory returns a standard PCA
+  whose popup waits out the 60s bridge timeout) — full runs pay +2 min until
+  C9 lands; not a pass regression.
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -486,7 +517,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   name/success/durationMs/correlationId. Harness passes perfClient:true only
   when lib.BrowserPerformanceClient exists — export a compatible class.
   Scenarios: telemetry.perf-events-*.
-- [ ] **C5** `pending` — Init & surface: `getConfiguration()` returning
+- [x] **C5** `done 2026-07-10 — pass 62/75, mini-stack 29.3 KB min / 10.4 gz` — Init & surface: `getConfiguration()` returning
   real-default-shaped config (values per init.get-configuration snapshot);
   logger (`system.loggerOptions.loggerCallback`, Info+Verbose volume);
   initializeStart/End already from B2; export surface per
@@ -565,3 +596,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | C2 | done 2026-07-10 | 52/75 | 26.2 KB min / 9.3 gz | +2 pass (resilience.throttle-429-retry-after, proactive-refresh — all 4 resilience.* green). Throttle cache in post() keyed by real-shaped thumbprint; blocked retry re-throws stored ServerError w/ errorCode "" + raw error_description, zero network; refresh_in → refreshOn on AT entity + result. Total diffs 132→127; remaining 23 diff scenarios all C3–C9 areas. e2e 25/25; mini-core 17.2 min / 6.3 gz |
 | C3 | done 2026-07-10 | 53/75 | 26.4 KB min / 9.3 gz | +1 pass (telemetry.last-telemetry-after-failure). Iframe fallback eligibility = real's checkIfRefreshTokenErrorCanBeResolvedSilently: invalid_grant/token_refresh_required non-IRAE (or IRAE w/ subError bad_token) + no_tokens_found/refresh_token_expired — RT invalid_grant now recovers via iframe (tokenCalls 2); plain IRAE no longer falls back. Total diffs 127→124; remaining telemetry diffs are C4 perf events. e2e 25/25; mini-core 17.4 min / 6.4 gz |
 | C4 | done 2026-07-10 | 56/75 | 27.1 KB min / 9.6 gz | +3 pass (telemetry.perf-events-popup-login, perf-events-silent, correlation-id-propagation — ALL telemetry.* green). New `@mini-msal/browser/telemetry` feature: BrowserPerformanceClient (opt-in via config.telemetry.client) + method-wrapping telemetry(ctx) composed last in compat. Total diffs 124→118; remaining 19 scenarios all C5–C9 (init/localStorage/broker/naa). GAP_REPORT: 0 bugs, 1 behavioral-diff (init.popup-without-bridge, a C5 item). e2e 25/25; mini-core 17.4 min / 6.4 gz (core unchanged — types only) |
+| C5 | done 2026-07-10 | 62/75 | 29.3 KB min / 10.4 gz | +6 pass (init.get-configuration, logger-callback, exported-surface, popup-without-bridge + free: broker.is-platform-broker-available, naa.no-bridge-fallback — ALL init.* green). Popup/iframe completion migrated to real's redirect-bridge (BroadcastChannel, see Decision Log) — mini bridge page bundle 0.6 KB min (real's: 6.5 KB); logger in core; getConfiguration; full export surface incl. 52 BrowserAuthErrorCodes. GAP_REPORT: 0 bugs, 0 behavioral-diffs, 13 missing-feature (C6–C9 only). NOTE: naa.get-token-popup/error-mapping now ERR at 60s each (+2 min per full run until C9 — see Decision Log). e2e 25/25; mini-core 18.2 min / 6.7 gz |

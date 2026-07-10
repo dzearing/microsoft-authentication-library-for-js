@@ -103,7 +103,20 @@ export interface Config {
     system?: {
         popupBridgeTimeout?: number;
         iframeBridgeTimeout?: number;
+        loggerOptions?: {
+            loggerCallback?: (
+                level: number,
+                message: string,
+                containsPii: boolean
+            ) => void;
+            /** real's LogLevel: Error 0, Warning 1, Info 2 (default), Verbose 3, Trace 4 */
+            logLevel?: number;
+            piiLoggingEnabled?: boolean;
+        };
     };
+    /** sessionStorage is the only implemented location (localStorage: C6) */
+    cache?: { cacheLocation?: string };
+    experimental?: Record<string, unknown>;
     /** perf events opt-in: `client: new BrowserPerformanceClient()` (./telemetry) */
     telemetry?: {
         client?: PerfClient;
@@ -138,6 +151,9 @@ const TOKEN_TELEMETRY = {
     "x-client-last-telemetry": "",
     "x-ms-lib-capability": "retry-after, h429",
 } as const;
+
+/** exported version string = real's (Decision Log: impersonation) */
+export const version = WIRE_ID["x-client-VER"];
 
 export class AuthError extends Error {
     name = "AuthError";
@@ -413,6 +429,8 @@ export interface AuthClient {
     removeEventCallback(id: string): void;
     getAllAccounts(filter?: AccountFilter): AccountInfo[];
     getAccount(filter: AccountFilter): AccountInfo | null;
+    /** resolved config incl. real's observable defaults */
+    getConfiguration(): any;
     getActiveAccount(): AccountInfo | null;
     setActiveAccount(account: AccountInfo | null): void;
     loginRedirect(req: TokenRequest): Promise<void>;
@@ -441,7 +459,10 @@ export interface ClientContext {
     /** take the interaction lock; throws interaction_in_progress if held */
     lock(type?: string): void;
     unlock(): void;
-    authorizeUrl(req: TokenRequest): Promise<{
+    authorizeUrl(
+        req: TokenRequest,
+        interactionType?: string
+    ): Promise<{
         url: string;
         verifier: string;
         state: string;
@@ -450,11 +471,8 @@ export interface ClientContext {
         nonce: string;
         ccs?: string;
     }>;
-    pollForCode(
-        win: { location: Location; closed?: boolean },
-        state: string,
-        timeoutMs: number
-    ): Promise<string>;
+    /** await the response the redirect-bridge page broadcasts for this state */
+    waitForCode(state: string, timeoutMs: number): Promise<string>;
     redeem(res: AuthCodeResponse): Promise<AuthenticationResult>;
     clearAccount(account?: AccountInfo | null): void;
     logoutUrl(
@@ -491,6 +509,14 @@ export function createClient(
     const uninitialized = () =>
         new BrowserAuthError("uninitialized_public_client_application");
 
+    // ---- logger (real's Logger gate: default volume Info(2)) ----
+    const lo = config.system?.loggerOptions;
+    const log = (level: number, msg: string) => {
+        if (level <= (lo?.logLevel ?? 2)) {
+            lo?.loggerCallback?.(level, msg, false);
+        }
+    };
+
     // ---- interaction lock (same storage entry as real MSAL) ----
     const lockKey = "msal.interaction.status";
     const lock = (type = "signin") => {
@@ -508,6 +534,7 @@ export function createClient(
         payload?: unknown,
         error?: unknown
     ) => {
+        log(3, `emitting event ${eventType}`);
         const m: EventMessage = {
             eventType,
             interactionType: interactionType ?? null,
@@ -670,7 +697,8 @@ export function createClient(
 
     // ---- authorize-request plumbing ----
     const authorizeUrl = async (
-        req: TokenRequest
+        req: TokenRequest,
+        interactionType = "redirect"
     ): Promise<{
         url: string;
         verifier: string;
@@ -681,11 +709,17 @@ export function createClient(
         ccs?: string;
     }> => {
         const { verifier, challenge } = await pkce();
-        // real's wire state: base64 lib state, "|<custom>" appended when the
-        // request carries one (result.state echoes only the custom part)
+        // real's wire state: base64 lib state {id, meta}, "|<custom>" appended
+        // when the request carries one (result.state echoes only the custom
+        // part). The redirect-bridge page broadcasts on the lib-state id.
         const state =
-            btoa(JSON.stringify({ id: crypto.randomUUID() })) +
-            (req.state ? `|${req.state}` : "");
+            btoa(
+                JSON.stringify({
+                    id: crypto.randomUUID(),
+                    meta: { interactionType },
+                })
+            ) + (req.state ? `|${req.state}` : "");
+        log(2, "building authorize url");
         const correlationId = req.correlationId ?? crypto.randomUUID();
         const nonce = crypto.randomUUID();
         // real's hint ladder: sid only on prompt=none (and it suppresses
@@ -741,47 +775,58 @@ export function createClient(
         };
     };
 
-    /** poll a window/iframe we opened until it lands back on redirectUri with a code */
-    const pollForCode = (
-        win: { location: Location; closed?: boolean },
-        state: string,
-        timeoutMs: number
-    ): Promise<string> =>
+    /**
+     * Await the auth response the redirect-bridge page broadcasts on the
+     * lib-state id, like real v5's waitForBridgeResponse: no URL polling and
+     * no popup-close detection — a redirect page without the bridge (or a
+     * closed popup) simply times out.
+     */
+    const waitForCode = (state: string, timeoutMs: number): Promise<string> =>
         new Promise((resolve, reject) => {
-            const started = Date.now();
-            const timer = setInterval(() => {
-                // no popup-close detection, like real 5.16: a closed window
-                // simply never delivers a response and the bridge times out
-                if (Date.now() - started > timeoutMs) {
-                    clearInterval(timer);
-                    return reject(
-                        new BrowserAuthError(
-                            "timed_out",
-                            "redirect_bridge_timeout"
+            log(3, "waiting for bridge response");
+            const { id } = JSON.parse(atob(state.split("|")[0]));
+            const channel = new BroadcastChannel(id);
+            const settle = (fn: () => void) => {
+                clearTimeout(timer);
+                channel.close();
+                fn();
+            };
+            const timer = setTimeout(
+                () =>
+                    settle(() =>
+                        reject(
+                            new BrowserAuthError(
+                                "timed_out",
+                                "redirect_bridge_timeout"
+                            )
                         )
-                    );
-                }
-                let hash = "";
-                try {
-                    hash = win.location.hash;
-                } catch {
-                    return; // still cross-origin: keep waiting
-                }
-                const params = new URLSearchParams(hash.slice(1));
-                const err = params.get("error");
-                const code = params.get("code");
-                if (err) {
-                    clearInterval(timer);
-                    reject(
-                        classify(err, params.get("error_description") ?? "")
-                    );
-                } else if (code) {
-                    clearInterval(timer);
-                    params.get("state") === state
-                        ? resolve(code)
-                        : reject(new ClientAuthError("state_mismatch"));
-                }
-            }, 50);
+                    ),
+                timeoutMs
+            );
+            channel.onmessage = (ev) =>
+                settle(() => {
+                    const params = new URLSearchParams(ev.data.payload);
+                    const err = params.get("error");
+                    const code = params.get("code");
+                    if (err) {
+                        reject(
+                            classify(
+                                err,
+                                params.get("error_description") ?? ""
+                            )
+                        );
+                    } else if (params.get("state") !== state) {
+                        reject(new ClientAuthError("state_mismatch"));
+                    } else if (code) {
+                        resolve(code);
+                    } else {
+                        reject(
+                            new BrowserAuthError(
+                                "hash_does_not_contain_known_properties"
+                            )
+                        );
+                    }
+                });
         });
 
     // ---- token redemption ----
@@ -818,6 +863,7 @@ export function createClient(
         // QUERY string (real 5.16's createTokenQueryParameters)
         const q = new URLSearchParams(meta?.eqp);
         q.set("client-request-id", correlationId);
+        log(2, "sending token request");
         const json = await post(
             `${metadata!.token_endpoint.replace(authority, reqAuthority)}?${q}`,
             {
@@ -832,6 +878,7 @@ export function createClient(
             },
             throttleKey
         );
+        log(3, "token response received");
         const claims = decodeJwt(json.id_token);
         if (meta?.nonce && claims.nonce !== meta.nonce) {
             throw new ClientAuthError("nonce_mismatch");
@@ -1102,14 +1149,16 @@ export function createClient(
             correlationId,
             nonce,
             ccs,
-        } = await authorizeUrl({ ...req, prompt: req.prompt ?? "none" });
+        } = await authorizeUrl(
+            { ...req, prompt: req.prompt ?? "none" },
+            "silent"
+        );
         const frame = document.createElement("iframe");
         frame.style.display = "none";
         document.body.append(frame);
         try {
             frame.src = url;
-            const code = await pollForCode(
-                frame.contentWindow! as Window,
+            const code = await waitForCode(
                 state,
                 config.system?.iframeBridgeTimeout ?? 10_000
             );
@@ -1341,6 +1390,7 @@ export function createClient(
         async initialize() {
             // second initialize is a silent no-op (no events), like real
             if (initialized) return;
+            log(2, "initializing");
             emit(EventType.INITIALIZE_START);
             // per-instance memory only: real MSAL re-fetches discovery for
             // every new instance and leaves no such key in storage
@@ -1374,6 +1424,35 @@ export function createClient(
         getAllAccounts,
         getAccount,
         getActiveAccount,
+
+        // resolved config: user input over real's observable defaults (only
+        // keys snapshots compare; unset optionals stay undefined like real)
+        getConfiguration: () => ({
+            auth: {
+                clientId,
+                authority:
+                    config.auth.authority ??
+                    "https://login.microsoftonline.com/common",
+                cloudDiscoveryMetadata: "",
+                ...config.auth,
+            },
+            cache: { cacheLocation: "sessionStorage", ...config.cache },
+            system: {
+                allowPlatformBroker: false,
+                nativeBrokerHandshakeTimeout: 2000,
+                redirectNavigationTimeout: 30_000,
+                tokenRenewalOffsetSeconds: 300,
+                popupBridgeTimeout: 60_000,
+                iframeBridgeTimeout: 10_000,
+                ...config.system,
+            },
+            experimental: {
+                iframeTimeoutTelemetry: false,
+                allowPlatformBrokerWithDOM: false,
+                ...config.experimental,
+            },
+            telemetry: { ...config.telemetry },
+        }),
 
         setActiveAccount(account: AccountInfo | null) {
             if (account) {
@@ -1502,7 +1581,7 @@ export function createClient(
         lock,
         unlock,
         authorizeUrl,
-        pollForCode,
+        waitForCode,
         redeem,
         clearAccount,
         logoutUrl,

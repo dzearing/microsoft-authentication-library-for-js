@@ -1,6 +1,7 @@
 /**
  * Popup feature: loginPopup / acquireTokenPopup / logoutPopup, built on the
- * core's authorize-URL plumbing and window polling. Compose via
+ * core's authorize-URL plumbing and redirect-bridge wait (the popup must land
+ * on a page running ./redirect-bridge, like real v5). Compose via
  * createClient(config, [popup]) — apps that never open popups don't pay for
  * this module.
  */
@@ -49,12 +50,11 @@ export function popup(ctx: ClientContext): void {
         ctx.emit(EventType.ACQUIRE_TOKEN_START, "popup", req);
         try {
             const { url, verifier, state, redirectUri, correlationId, nonce, ccs } =
-                await ctx.authorizeUrl(req);
+                await ctx.authorizeUrl(req, "popup");
             const win = openPopup(url);
             ctx.emit(EventType.POPUP_OPENED, "popup", { popupWindow: win });
             try {
-                const code = await ctx.pollForCode(
-                    win,
+                const code = await ctx.waitForCode(
                     state,
                     ctx.config.system?.popupBridgeTimeout ?? 60_000
                 );
