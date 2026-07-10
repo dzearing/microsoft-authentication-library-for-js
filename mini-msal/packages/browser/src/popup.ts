@@ -17,7 +17,11 @@ import {
 export interface PopupClient {
     loginPopup(req: TokenRequest): Promise<AuthenticationResult>;
     acquireTokenPopup(req: TokenRequest): Promise<AuthenticationResult>;
-    logoutPopup(req?: { account?: AccountInfo | null }): Promise<void>;
+    logoutPopup(req?: {
+        account?: AccountInfo | null;
+        postLogoutRedirectUri?: string;
+        correlationId?: string;
+    }): Promise<void>;
 }
 
 const FEATURES = "width=483,height=600,popup=yes";
@@ -38,56 +42,75 @@ export function popup(ctx: ClientContext): void {
     c.acquireTokenPopup = async (
         req: TokenRequest
     ): Promise<AuthenticationResult> => {
+        // like real: preflight/lock failures reject BEFORE any event fires
         ctx.preflight();
         ctx.lock();
+        const had = c.getAllAccounts().length;
+        ctx.emit(EventType.ACQUIRE_TOKEN_START, "popup", req);
         try {
             const { url, verifier, state, redirectUri } =
                 await ctx.authorizeUrl(req);
             const win = openPopup(url);
+            ctx.emit(EventType.POPUP_OPENED, "popup", { popupWindow: win });
             try {
                 const code = await ctx.pollForCode(
                     win,
                     state,
                     ctx.config.system?.popupBridgeTimeout ?? 60_000
                 );
-                return await ctx.redeem({
+                const result = await ctx.redeem({
                     code,
                     verifier,
                     scopes: req.scopes,
                     redirectUri,
                     correlationId: req.correlationId,
                 });
+                ctx.emit(EventType.ACQUIRE_TOKEN_SUCCESS, "popup", result);
+                if (had < c.getAllAccounts().length) {
+                    // loginSuccess carries the account, not the result
+                    ctx.emit(EventType.LOGIN_SUCCESS, "popup", result.account);
+                }
+                return result;
             } finally {
                 win.close();
             }
+        } catch (e) {
+            ctx.emit(EventType.ACQUIRE_TOKEN_FAILURE, "popup", undefined, e);
+            throw e;
         } finally {
             ctx.unlock();
         }
     };
 
-    c.loginPopup = async (
-        req: TokenRequest
-    ): Promise<AuthenticationResult> => {
-        try {
-            const result = await c.acquireTokenPopup(req);
-            ctx.emit(EventType.LOGIN_SUCCESS, result);
-            return result;
-        } catch (e) {
-            ctx.emit(EventType.LOGIN_FAILURE, undefined, e);
-            throw e;
-        }
-    };
+    // real's loginPopup is just acquireTokenPopup with a correlationId
+    // stamped on the request (visible in the acquireTokenStart payload);
+    // the login vs acquire event split happens on account-count change
+    c.loginPopup = (req: TokenRequest): Promise<AuthenticationResult> =>
+        c.acquireTokenPopup({ correlationId: crypto.randomUUID(), ...req });
 
     c.logoutPopup = async (req?: {
         account?: AccountInfo | null;
+        postLogoutRedirectUri?: string;
+        correlationId?: string;
     }): Promise<void> => {
         ctx.preflight();
         ctx.lock("signout");
+        const validRequest = {
+            correlationId: crypto.randomUUID(),
+            postLogoutRedirectUri: ctx.config.auth.postLogoutRedirectUri,
+            ...req,
+        } as Record<string, unknown>;
+        ctx.emit(EventType.LOGOUT_START, "popup", validRequest);
         try {
+            // real clears the cache and emits logoutSuccess BEFORE the popup
+            // opens; the popup roundtrip only clears the server session
+            ctx.clearAccount(req?.account);
+            validRequest.state = crypto.randomUUID();
+            ctx.emit(EventType.LOGOUT_SUCCESS, "popup", validRequest);
             const win = openPopup(ctx.logoutUrl());
+            ctx.emit(EventType.POPUP_OPENED, "popup", { popupWindow: win });
             // wait for the popup to land back on the post-logout page (server
-            // session cleared), then close; events fire only after completion,
-            // matching real MSAL's ordering
+            // session cleared), then close
             const started = Date.now();
             await new Promise<void>((resolve) => {
                 const timer = setInterval(() => {
@@ -104,8 +127,11 @@ export function popup(ctx: ClientContext): void {
                 }, 50);
             });
             win.close();
-            ctx.clearAccount(req?.account);
+        } catch (e) {
+            ctx.emit(EventType.LOGOUT_FAILURE, "popup", undefined, e);
+            throw e;
         } finally {
+            ctx.emit(EventType.LOGOUT_END, "popup");
             ctx.unlock();
         }
     };

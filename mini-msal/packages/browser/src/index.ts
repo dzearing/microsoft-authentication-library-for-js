@@ -21,6 +21,10 @@
  * PublicClientApplication drop-in.
  */
 
+/**
+ * Key set (including undefined-valued keys) matches real MSAL's AccountInfo —
+ * event payloads expose Object.keys, so presence matters, not just values.
+ */
 export interface AccountInfo {
     homeAccountId: string;
     environment: string;
@@ -29,20 +33,39 @@ export interface AccountInfo {
     tenantId: string;
     name?: string;
     idTokenClaims: Record<string, unknown>;
+    idToken?: string;
+    authorityType?: string;
+    tenantProfiles?: unknown[];
+    nativeAccountId?: string;
+    dataBoundary?: string;
+    kmsi?: boolean;
+    loginHint?: string;
+    upn?: string;
 }
 
+/** Same key set as real MSAL's AuthenticationResult (see AccountInfo note). */
 export interface AuthenticationResult {
     authority: string;
-    accessToken: string;
-    idToken: string;
+    uniqueId: string;
+    tenantId: string;
     scopes: string[];
-    expiresOn: Date;
     account: AccountInfo;
+    idToken: string;
+    idTokenClaims: Record<string, unknown>;
+    accessToken: string;
     fromCache: boolean;
+    expiresOn: Date;
+    extExpiresOn?: Date;
+    refreshOn?: Date;
     correlationId: string;
+    requestId: string;
+    familyId: string;
     tokenType: string;
-    /** custom request state (or "") on interactive flows; absent on silent */
+    /** custom request state (or "") on interactive flows; undefined on silent */
     state?: string;
+    cloudGraphHostName?: string;
+    msGraphHost?: string;
+    code?: string;
     fromPlatformBroker: boolean;
 }
 
@@ -121,21 +144,36 @@ function classify(code: string, desc = "", sub = ""): AuthError {
         : new ServerError(code, desc || undefined, sub);
 }
 
+// exactly real msal-browser 5.16's EventType map (no accountAdded/
+// accountRemoved/loginFailure — those left real's surface)
 export const EventType = {
-    LOGIN_SUCCESS: "msal:loginSuccess",
-    LOGIN_FAILURE: "msal:loginFailure",
-    LOGOUT_SUCCESS: "msal:logoutSuccess",
-    HANDLE_REDIRECT_END: "msal:handleRedirectEnd",
-    ACQUIRE_TOKEN_SUCCESS: "msal:acquireTokenSuccess",
-    ACCOUNT_ADDED: "msal:accountAdded",
-    ACCOUNT_REMOVED: "msal:accountRemoved",
+    INITIALIZE_START: "msal:initializeStart",
+    INITIALIZE_END: "msal:initializeEnd",
     ACTIVE_ACCOUNT_CHANGED: "msal:activeAccountChanged",
+    LOGIN_SUCCESS: "msal:loginSuccess",
+    ACQUIRE_TOKEN_START: "msal:acquireTokenStart",
+    BROKERED_REQUEST_START: "msal:brokeredRequestStart",
+    ACQUIRE_TOKEN_SUCCESS: "msal:acquireTokenSuccess",
+    BROKERED_REQUEST_SUCCESS: "msal:brokeredRequestSuccess",
+    ACQUIRE_TOKEN_FAILURE: "msal:acquireTokenFailure",
+    BROKERED_REQUEST_FAILURE: "msal:brokeredRequestFailure",
+    ACQUIRE_TOKEN_NETWORK_START: "msal:acquireTokenFromNetworkStart",
+    HANDLE_REDIRECT_START: "msal:handleRedirectStart",
+    HANDLE_REDIRECT_END: "msal:handleRedirectEnd",
+    POPUP_OPENED: "msal:popupOpened",
+    LOGOUT_START: "msal:logoutStart",
+    LOGOUT_SUCCESS: "msal:logoutSuccess",
+    LOGOUT_FAILURE: "msal:logoutFailure",
+    LOGOUT_END: "msal:logoutEnd",
+    RESTORE_FROM_BFCACHE: "msal:restoreFromBFCache",
+    BROKER_CONNECTION_ESTABLISHED: "msal:brokerConnectionEstablished",
 } as const;
 
 export const InteractionType = {
     Redirect: "redirect",
     Popup: "popup",
     Silent: "silent",
+    None: "none",
 } as const;
 export type InteractionKind =
     (typeof InteractionType)[keyof typeof InteractionType];
@@ -151,8 +189,10 @@ export const CacheLookupPolicy = {
 
 export interface EventMessage {
     eventType: string;
-    payload?: unknown;
-    error?: unknown;
+    interactionType: string | null;
+    payload: unknown;
+    error: unknown;
+    timestamp: number;
 }
 
 type EventCallback = (message: EventMessage) => void;
@@ -285,7 +325,12 @@ export interface AuthClient {
 export interface ClientContext {
     config: Config;
     client: AuthClient & Record<string, any>;
-    emit(eventType: string, payload?: unknown, error?: unknown): void;
+    emit(
+        eventType: string,
+        interactionType?: string,
+        payload?: unknown,
+        error?: unknown
+    ): void;
     preflight(): void;
     /** take the interaction lock; throws interaction_in_progress if held */
     lock(type?: string): void;
@@ -347,9 +392,21 @@ export function createClient(
     };
     const unlock = () => sessionStorage.removeItem(lockKey);
 
-    // ---- events ----
-    const emit = (eventType: string, payload?: unknown, error?: unknown) => {
-        listeners.forEach((l) => l({ eventType, payload, error }));
+    // ---- events (EventMessage-shaped like real's EventHandler.emitEvent) ----
+    const emit = (
+        eventType: string,
+        interactionType?: string,
+        payload?: unknown,
+        error?: unknown
+    ) => {
+        const m: EventMessage = {
+            eventType,
+            interactionType: interactionType ?? null,
+            payload: payload ?? null,
+            error: error ?? null,
+            timestamp: Date.now(),
+        };
+        listeners.forEach((l) => l(m));
     };
 
     // ---- cache (real-MSAL v5 schema) ----
@@ -403,13 +460,21 @@ export function createClient(
             (t) => t.homeAccountId === e.homeAccountId
         );
         return {
-            homeAccountId: e.homeAccountId,
+            authorityType: e.authorityType,
+            dataBoundary: undefined,
             environment: e.environment,
-            username: e.username,
-            localAccountId: e.localAccountId,
-            tenantId: e.realm,
-            name: e.name,
+            homeAccountId: e.homeAccountId,
+            idToken: id?.secret,
             idTokenClaims: id ? decodeJwt(id.secret) : {},
+            kmsi: undefined,
+            localAccountId: e.localAccountId,
+            loginHint: undefined,
+            name: e.name,
+            nativeAccountId: undefined,
+            tenantId: e.realm,
+            tenantProfiles: e.tenantProfiles,
+            upn: undefined,
+            username: e.username,
         };
     };
 
@@ -571,20 +636,13 @@ export function createClient(
             }
         }
         const homeAccountId = `${uid}.${utid}`;
-        const account: AccountInfo = {
-            homeAccountId,
-            environment: env(),
-            username: claims.preferred_username ?? claims.email ?? "",
-            localAccountId: claims.oid ?? claims.sub,
-            tenantId: claims.tid ?? "",
-            name: claims.name,
-            idTokenClaims: claims,
-        };
+        const localAccountId = claims.oid ?? claims.sub;
+        const username = claims.preferred_username ?? claims.email ?? "";
         const grantedStr: string = json.scope ?? scopes.join(" ");
         const now = Math.floor(Date.now() / 1000);
         const expiresOn = now + json.expires_in;
         const environment = env();
-        const realm = account.tenantId;
+        const realm = claims.tid ?? "";
         const base = `${P}|${homeAccountId}|${environment}`;
 
         const accountKey = `${base}|${realm}`;
@@ -592,25 +650,26 @@ export function createClient(
         const atKey = `${base}|accesstoken|${clientId}|${realm}|${grantedStr.toLowerCase()}|`;
         const rtKey = `${base}|refreshtoken|${clientId}|||`;
 
-        writeJSON(accountKey, {
+        const entity: AccountEntity = {
             homeAccountId,
             environment,
             realm,
-            localAccountId: account.localAccountId,
-            username: account.username,
+            localAccountId,
+            username,
             authorityType: "MSSTS",
-            name: account.name,
+            name: claims.name,
             clientInfo: json.client_info,
             tenantProfiles: [
                 {
                     tenantId: realm,
-                    localAccountId: account.localAccountId,
-                    name: account.name,
-                    username: account.username,
+                    localAccountId,
+                    name: claims.name,
+                    username,
                     isHomeTenant: true,
                 },
             ],
-        } satisfies AccountEntity);
+        };
+        writeJSON(accountKey, entity);
         writeJSON(idKey, {
             credentialType: "IdToken",
             homeAccountId,
@@ -653,24 +712,34 @@ export function createClient(
                 : keys.refreshToken,
         });
         const acctKeys = accountKeys();
-        const isNewAccount = !acctKeys.includes(accountKey);
-        if (isNewAccount) {
+        if (!acctKeys.includes(accountKey)) {
             writeJSON(`${P}.account.keys`, [...acctKeys, accountKey]);
         }
-        if (isNewAccount) {
-            emit(EventType.ACCOUNT_ADDED, account);
-        }
+        // real emits no same-tab accountAdded event; cross-tab propagation
+        // is the localStorage/BroadcastChannel feature's job
         return {
             authority: `${authority}/`,
-            accessToken: json.access_token,
-            idToken: json.id_token,
+            uniqueId: localAccountId,
+            tenantId: realm,
             scopes: [...new Set(grantedStr.split(" "))],
-            expiresOn: new Date(expiresOn * 1000),
-            account,
+            account: toAccountInfo(entity),
+            idToken: json.id_token,
+            idTokenClaims: claims,
+            accessToken: json.access_token,
             fromCache: false,
+            expiresOn: new Date(expiresOn * 1000),
+            extExpiresOn: new Date(
+                (now + (json.ext_expires_in ?? json.expires_in)) * 1000
+            ),
+            refreshOn: undefined,
             correlationId: meta?.correlationId ?? crypto.randomUUID(),
+            requestId: "",
+            familyId: json.foci ?? "",
             tokenType: "Bearer",
             state: meta?.state,
+            cloudGraphHostName: "",
+            msGraphHost: "",
+            code: undefined,
             fromPlatformBroker: false,
         };
     };
@@ -715,13 +784,17 @@ export function createClient(
         const code = params.get("code");
         const err = params.get("error");
         const stored = sessionStorage.getItem("msal.request");
+        // clean load: real resolves null silently, no handleRedirect events
+        if ((!code && !err) || !stored) return null;
+        sessionStorage.removeItem("msal.request");
+        const { verifier, state, scopes, correlationId } = JSON.parse(stored);
+        const had = accountKeys().length;
+        emit(EventType.HANDLE_REDIRECT_START, "redirect");
         try {
-            if ((!code && !err) || !stored) return null;
-            sessionStorage.removeItem("msal.request");
-            const { verifier, state, scopes, correlationId } =
-                JSON.parse(stored);
             if (params.get("state") !== state) {
-                throw new ClientAuthError("state_mismatch");
+                // forged/unknown state: real treats the response as not ours
+                // and resolves null (no failure event, no throw)
+                return null;
             }
             history.replaceState(null, "", location.pathname + location.search);
             if (err) {
@@ -734,21 +807,24 @@ export function createClient(
                 scopes,
                 correlationId,
             });
-            emit(EventType.LOGIN_SUCCESS, result);
+            emit(EventType.ACQUIRE_TOKEN_SUCCESS, "redirect", result);
+            if (had < accountKeys().length) {
+                emit(EventType.LOGIN_SUCCESS, "redirect", result.account);
+            }
             return result;
         } catch (e) {
-            emit(EventType.LOGIN_FAILURE, undefined, e);
+            emit(EventType.ACQUIRE_TOKEN_FAILURE, "redirect", undefined, e);
             throw e;
         } finally {
-            emit(EventType.HANDLE_REDIRECT_END);
+            emit(EventType.HANDLE_REDIRECT_END, "redirect");
         }
     };
 
     // ---- silent ----
-    const ssoSilent = async (
+    /** hidden-iframe prompt=none flow, no events (shared by ssoSilent + ladder) */
+    const silentFrame = async (
         req: TokenRequest
     ): Promise<AuthenticationResult> => {
-        preflight();
         const { url, verifier, state, redirectUri: ru } = await authorizeUrl(
             req,
             { prompt: "none" }
@@ -772,6 +848,28 @@ export function createClient(
             });
         } finally {
             frame.remove();
+        }
+    };
+
+    const ssoSilent = async (
+        req: TokenRequest
+    ): Promise<AuthenticationResult> => {
+        preflight();
+        // real emits acquireToken* with the validated request (correlationId
+        // added), and loginSuccess(account) when the account count grew
+        const validRequest = { correlationId: crypto.randomUUID(), ...req };
+        const had = accountKeys().length;
+        emit(EventType.ACQUIRE_TOKEN_START, "silent", validRequest);
+        try {
+            const result = await silentFrame(validRequest);
+            emit(EventType.ACQUIRE_TOKEN_SUCCESS, "silent", result);
+            if (had < accountKeys().length) {
+                emit(EventType.LOGIN_SUCCESS, "silent", result.account);
+            }
+            return result;
+        } catch (e) {
+            emit(EventType.ACQUIRE_TOKEN_FAILURE, "silent", undefined, e);
+            throw e;
         }
     };
 
@@ -809,25 +907,45 @@ export function createClient(
                 keys.idToken,
                 (t) => t.homeAccountId === account.homeAccountId
             );
-            const result: AuthenticationResult = {
+            return {
                 authority: `${authority}/`,
-                accessToken: at.secret,
-                idToken: id?.secret ?? "",
+                uniqueId: account.localAccountId,
+                tenantId: account.tenantId,
                 scopes: (at.target ?? "").split(" "),
-                expiresOn: new Date(Number(at.expiresOn) * 1000),
                 account,
+                idToken: id?.secret ?? "",
+                idTokenClaims: account.idTokenClaims,
+                accessToken: at.secret,
                 fromCache: true,
+                expiresOn: new Date(Number(at.expiresOn) * 1000),
+                extExpiresOn: new Date(Number(at.extendedExpiresOn) * 1000),
+                refreshOn: undefined,
                 correlationId: req.correlationId ?? crypto.randomUUID(),
+                requestId: "",
+                familyId: "",
                 tokenType: "Bearer",
+                state: undefined,
+                cloudGraphHostName: "",
+                msGraphHost: "",
+                code: undefined,
                 fromPlatformBroker: false,
             };
-            emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
-            return result;
         }
         if (pol === CacheLookupPolicy.AccessToken) {
             // AT-only policy: expired/missing AT is a hard error
             throw new ClientAuthError("token_refresh_required");
         }
+        // real emits this once, before the RT/iframe network leg, with the
+        // fully-initialized silent request as payload
+        emit(EventType.ACQUIRE_TOKEN_NETWORK_START, "silent", {
+            account,
+            authenticationScheme: "Bearer",
+            authority: `${authority}/`,
+            correlationId: req.correlationId,
+            forceRefresh: !!req.forceRefresh,
+            redirectUri: req.redirectUri,
+            scopes: req.scopes,
+        });
         if (useRT) {
             const rt = findCred(
                 keys.refreshToken,
@@ -835,13 +953,11 @@ export function createClient(
             );
             if (rt) {
                 try {
-                    const result = await redeemRefresh(
+                    return await redeemRefresh(
                         req.scopes,
                         rt.secret,
                         req.correlationId
                     );
-                    emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
-                    return result;
                 } catch (e) {
                     if (
                         !useFrame ||
@@ -855,14 +971,14 @@ export function createClient(
             }
         }
         // last resort: hidden iframe with prompt=none
-        const result = await ssoSilent({
+        const result = await silentFrame({
             ...req,
             loginHint: account.username,
         });
-        // real's acquireTokenSilent results carry no state (only
-        // interactive flows and ssoSilent do)
-        delete result.state;
-        emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
+        // real's acquireTokenSilent results carry state: undefined (the key
+        // exists — event payloads expose it — but interactive/ssoSilent
+        // results are the only ones with a value)
+        result.state = undefined;
         return result;
     };
 
@@ -909,13 +1025,13 @@ export function createClient(
             sessionStorage.removeItem(`${P}.account.keys`);
             sessionStorage.removeItem(activeKey);
         }
-        emit(EventType.ACCOUNT_REMOVED, account);
-        emit(EventType.LOGOUT_SUCCESS);
     };
 
     const client: AuthClient = {
         async initialize() {
-            initialized = true;
+            // second initialize is a silent no-op (no events), like real
+            if (initialized) return;
+            emit(EventType.INITIALIZE_START);
             // per-instance memory only: real MSAL re-fetches discovery for
             // every new instance and leaves no such key in storage
             metadata ??= await (
@@ -923,6 +1039,8 @@ export function createClient(
                     `${authority}/v2.0/.well-known/openid-configuration`
                 )
             ).json();
+            initialized = true;
+            emit(EventType.INITIALIZE_END);
         },
 
         handleRedirectPromise(): Promise<AuthenticationResult | null> {
@@ -955,7 +1073,7 @@ export function createClient(
             } else {
                 sessionStorage.removeItem(activeKey);
             }
-            emit(EventType.ACTIVE_ACCOUNT_CHANGED, account);
+            emit(EventType.ACTIVE_ACCOUNT_CHANGED, undefined, account);
         },
 
         async loginRedirect(req: TokenRequest): Promise<void> {
@@ -1006,9 +1124,30 @@ export function createClient(
             ]);
             let shared = inFlight.get(key);
             if (!shared) {
-                shared = silentLadder(req, account).finally(() =>
-                    inFlight.delete(key)
-                );
+                // events fire once per deduped request, inside the shared
+                // promise, like real's acquireTokenSilentAsync
+                const validRequest = {
+                    ...req,
+                    correlationId: req.correlationId ?? crypto.randomUUID(),
+                };
+                emit(EventType.ACQUIRE_TOKEN_START, "silent", validRequest);
+                shared = silentLadder(validRequest, account)
+                    .then(
+                        (r) => {
+                            emit(EventType.ACQUIRE_TOKEN_SUCCESS, "silent", r);
+                            return r;
+                        },
+                        (e) => {
+                            emit(
+                                EventType.ACQUIRE_TOKEN_FAILURE,
+                                "silent",
+                                undefined,
+                                e
+                            );
+                            throw e;
+                        }
+                    )
+                    .finally(() => inFlight.delete(key));
                 inFlight.set(key, shared);
             }
             return shared;
@@ -1019,6 +1158,13 @@ export function createClient(
         }): Promise<void> {
             preflight();
             lock("signout");
+            // the page navigates away, so logoutStart is the only event a
+            // same-page listener can see (like real's RedirectClient.logout)
+            emit(EventType.LOGOUT_START, "redirect", {
+                correlationId: crypto.randomUUID(),
+                postLogoutRedirectUri: config.auth.postLogoutRedirectUri,
+                ...req,
+            });
             clearAccount(req?.account);
             location.assign(logoutUrl());
         },

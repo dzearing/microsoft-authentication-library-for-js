@@ -75,8 +75,6 @@ export function MsalProvider(props: {
                 eventType === EventType.LOGIN_SUCCESS ||
                 eventType === EventType.LOGOUT_SUCCESS ||
                 eventType === EventType.ACQUIRE_TOKEN_SUCCESS ||
-                eventType === EventType.ACCOUNT_ADDED ||
-                eventType === EventType.ACCOUNT_REMOVED ||
                 eventType === EventType.ACTIVE_ACCOUNT_CHANGED
             ) {
                 update("none");
@@ -156,13 +154,20 @@ export function useMsalAuthentication(
 
     React.useEffect(() => {
         // a failed redirect roundtrip (e.g. user cancelled at the IdP) is
-        // this hook's error — captured via the synchronous LOGIN_FAILURE
-        // event (like real msal-react) so it is guaranteed to land before
+        // this hook's error — captured via the synchronous redirect-flow
+        // acquireToken events (loginSuccess now carries the account, and
+        // loginFailure no longer exists) so it is guaranteed to land before
         // inProgress flips to "none" and the auto-login effect runs
         const id = instance.addEventCallback((m) => {
-            if (m.eventType === EventType.LOGIN_FAILURE) {
+            if (m.interactionType !== InteractionType.Redirect) {
+                return;
+            }
+            if (m.eventType === EventType.ACQUIRE_TOKEN_FAILURE) {
                 setError(m.error);
-            } else if (m.eventType === EventType.LOGIN_SUCCESS && m.payload) {
+            } else if (
+                m.eventType === EventType.ACQUIRE_TOKEN_SUCCESS &&
+                m.payload
+            ) {
                 setResult(m.payload as AuthenticationResult);
             }
         });

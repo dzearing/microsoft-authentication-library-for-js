@@ -5,61 +5,6 @@
     "status": "diff",
     "diffs": [
       {
-        "path": "events[0].eventType",
-        "real": "\"msal:initializeStart\"",
-        "mini": "\"msal:accountAdded\""
-      },
-      {
-        "path": "events[0].payloadAccount",
-        "real": "null",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
-        "path": "events[0].payloadKeys",
-        "real": "null",
-        "mini": "[\"environment\",\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
-      },
-      {
-        "path": "events[1].eventType",
-        "real": "\"msal:initializeEnd\"",
-        "mini": "\"msal:loginSuccess\""
-      },
-      {
-        "path": "events[1].payloadAccount",
-        "real": "null",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
-        "path": "events[1].payloadKeys",
-        "real": "null",
-        "mini": "[\"accessToken\",\"account\",\"authority\",\"correlationId\",\"expiresOn\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"scopes\",\"state\",\"tokenType\"]"
-      },
-      {
-        "path": "events[2].eventType",
-        "real": "\"msal:handleRedirectStart\"",
-        "mini": "\"msal:handleRedirectEnd\""
-      },
-      {
-        "path": "events[2].interactionType",
-        "real": "\"redirect\"",
-        "mini": "null"
-      },
-      {
-        "path": "events[3]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenSuccess\",\"interactionType\":\"redirect\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"accessToken\",\"account\",\"authority\",\"cloudGraphHostName\",\"code\",\"correlationId\",\"expiresOn\",\"extExpiresOn\",\"familyId\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"idToke…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[4]",
-        "real": "{\"error\":null,\"eventType\":\"msal:loginSuccess\",\"interactionType\":\"redirect\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"authorityType\",\"dataBoundary\",\"environment\",\"homeAccountId\",\"idToken\",\"idTokenClaims\",\"kmsi\",\"localAccountId\",\"loginHint\",\"name\",\"nativeAccountId\",\"tenantId\",\"tenantProfiles\"…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[5]",
-        "real": "{\"error\":null,\"eventType\":\"msal:handleRedirectEnd\",\"interactionType\":\"redirect\",\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":5}",
-        "mini": "\"<missing>\""
-      },
-      {
         "path": "idp[1].query.claims",
         "real": "\"{\\\"id_token\\\":{\\\"signin_state\\\":{\\\"essential\\\":false},\\\"login_hint\\\":{\\\"essential\\\":false}}}\"",
         "mini": "\"<missing>\""
@@ -149,47 +94,89 @@
       "events": [
         {
           "error": null,
-          "eventType": "msal:accountAdded",
+          "eventType": "msal:initializeStart",
           "interactionType": null,
-          "payloadAccount": "ada@contoso.com",
-          "payloadKeys": [
-            "environment",
-            "homeAccountId",
-            "idTokenClaims",
-            "localAccountId",
-            "name",
-            "tenantId",
-            "username"
-          ],
+          "payloadAccount": null,
+          "payloadKeys": null,
           "seq": 0
         },
         {
           "error": null,
-          "eventType": "msal:loginSuccess",
+          "eventType": "msal:initializeEnd",
           "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:handleRedirectStart",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "redirect",
           "payloadAccount": "ada@contoso.com",
           "payloadKeys": [
             "accessToken",
             "account",
             "authority",
+            "cloudGraphHostName",
+            "code",
             "correlationId",
             "expiresOn",
+            "extExpiresOn",
+            "familyId",
             "fromCache",
             "fromPlatformBroker",
             "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
             "scopes",
             "state",
-            "tokenType"
+            "tenantId",
+            "tokenType",
+            "uniqueId"
           ],
-          "seq": 1
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:loginSuccess",
+          "interactionType": "redirect",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
+            "environment",
+            "homeAccountId",
+            "idToken",
+            "idTokenClaims",
+            "kmsi",
+            "localAccountId",
+            "loginHint",
+            "name",
+            "nativeAccountId",
+            "tenantId",
+            "tenantProfiles",
+            "upn",
+            "username"
+          ],
+          "seq": 4
         },
         {
           "error": null,
           "eventType": "msal:handleRedirectEnd",
-          "interactionType": null,
+          "interactionType": "redirect",
           "payloadAccount": null,
           "payloadKeys": null,
-          "seq": 2
+          "seq": 5
         }
       ],
       "hashAfterProcessing": "",
@@ -290,28 +277,24 @@
   {
     "id": "core.handle-redirect-clean-load",
     "area": "core",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "events[0].eventType",
-        "real": "\"msal:initializeStart\"",
-        "mini": "\"msal:handleRedirectEnd\""
-      },
-      {
-        "path": "events[1]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeEnd\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":1}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "events": [
         {
           "error": null,
-          "eventType": "msal:handleRedirectEnd",
+          "eventType": "msal:initializeStart",
           "interactionType": null,
           "payloadAccount": null,
           "payloadKeys": null,
           "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
         }
       ],
       "result": {
@@ -324,56 +307,6 @@
     "area": "core",
     "status": "diff",
     "diffs": [
-      {
-        "path": "events[0].eventType",
-        "real": "\"msal:initializeStart\"",
-        "mini": "\"msal:accountAdded\""
-      },
-      {
-        "path": "events[0].payloadAccount",
-        "real": "null",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
-        "path": "events[0].payloadKeys",
-        "real": "null",
-        "mini": "[\"environment\",\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
-      },
-      {
-        "path": "events[1].eventType",
-        "real": "\"msal:initializeEnd\"",
-        "mini": "\"msal:loginSuccess\""
-      },
-      {
-        "path": "events[1].payloadAccount",
-        "real": "null",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
-        "path": "events[1].payloadKeys",
-        "real": "null",
-        "mini": "[\"accessToken\",\"account\",\"authority\",\"correlationId\",\"expiresOn\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"scopes\",\"state\",\"tokenType\"]"
-      },
-      {
-        "path": "events[2]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenStart\",\"interactionType\":\"popup\",\"payloadAccount\":null,\"payloadKeys\":[\"correlationId\",\"redirectUri\",\"scopes\"],\"seq\":2}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[3]",
-        "real": "{\"error\":null,\"eventType\":\"msal:popupOpened\",\"interactionType\":\"popup\",\"payloadAccount\":null,\"payloadKeys\":[\"popupWindow\"],\"seq\":3}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[4]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"accessToken\",\"account\",\"authority\",\"cloudGraphHostName\",\"code\",\"correlationId\",\"expiresOn\",\"extExpiresOn\",\"familyId\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"idTokenCl…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[5]",
-        "real": "{\"error\":null,\"eventType\":\"msal:loginSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"authorityType\",\"dataBoundary\",\"environment\",\"homeAccountId\",\"idToken\",\"idTokenClaims\",\"kmsi\",\"localAccountId\",\"loginHint\",\"name\",\"nativeAccountId\",\"tenantId\",\"tenantProfiles\",\"u…",
-        "mini": "\"<missing>\""
-      },
       {
         "path": "idp[1].query.claims",
         "real": "\"{\\\"id_token\\\":{\\\"signin_state\\\":{\\\"essential\\\":false},\\\"login_hint\\\":{\\\"essential\\\":false}}}\"",
@@ -459,39 +392,95 @@
       "events": [
         {
           "error": null,
-          "eventType": "msal:accountAdded",
+          "eventType": "msal:initializeStart",
           "interactionType": null,
-          "payloadAccount": "ada@contoso.com",
-          "payloadKeys": [
-            "environment",
-            "homeAccountId",
-            "idTokenClaims",
-            "localAccountId",
-            "name",
-            "tenantId",
-            "username"
-          ],
+          "payloadAccount": null,
+          "payloadKeys": null,
           "seq": 0
         },
         {
           "error": null,
-          "eventType": "msal:loginSuccess",
+          "eventType": "msal:initializeEnd",
           "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:popupOpened",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "popupWindow"
+          ],
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "popup",
           "payloadAccount": "ada@contoso.com",
           "payloadKeys": [
             "accessToken",
             "account",
             "authority",
+            "cloudGraphHostName",
+            "code",
             "correlationId",
             "expiresOn",
+            "extExpiresOn",
+            "familyId",
             "fromCache",
             "fromPlatformBroker",
             "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
             "scopes",
             "state",
-            "tokenType"
+            "tenantId",
+            "tokenType",
+            "uniqueId"
           ],
-          "seq": 1
+          "seq": 4
+        },
+        {
+          "error": null,
+          "eventType": "msal:loginSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
+            "environment",
+            "homeAccountId",
+            "idToken",
+            "idTokenClaims",
+            "kmsi",
+            "localAccountId",
+            "loginHint",
+            "name",
+            "nativeAccountId",
+            "tenantId",
+            "tenantProfiles",
+            "upn",
+            "username"
+          ],
+          "seq": 5
         }
       ],
       "idp": [
@@ -561,111 +550,151 @@
   {
     "id": "core.acquire-token-popup",
     "area": "core",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "events[0].eventType",
-        "real": "\"msal:initializeStart\"",
-        "mini": "\"msal:accountAdded\""
-      },
-      {
-        "path": "events[0].payloadAccount",
-        "real": "null",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
-        "path": "events[0].payloadKeys",
-        "real": "null",
-        "mini": "[\"environment\",\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
-      },
-      {
-        "path": "events[1].eventType",
-        "real": "\"msal:initializeEnd\"",
-        "mini": "\"msal:loginSuccess\""
-      },
-      {
-        "path": "events[1].payloadAccount",
-        "real": "null",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
-        "path": "events[1].payloadKeys",
-        "real": "null",
-        "mini": "[\"accessToken\",\"account\",\"authority\",\"correlationId\",\"expiresOn\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"scopes\",\"state\",\"tokenType\"]"
-      },
-      {
-        "path": "events[2]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenStart\",\"interactionType\":\"popup\",\"payloadAccount\":null,\"payloadKeys\":[\"correlationId\",\"redirectUri\",\"scopes\"],\"seq\":2}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[3]",
-        "real": "{\"error\":null,\"eventType\":\"msal:popupOpened\",\"interactionType\":\"popup\",\"payloadAccount\":null,\"payloadKeys\":[\"popupWindow\"],\"seq\":3}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[4]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"accessToken\",\"account\",\"authority\",\"cloudGraphHostName\",\"code\",\"correlationId\",\"expiresOn\",\"extExpiresOn\",\"familyId\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"idTokenCl…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[5]",
-        "real": "{\"error\":null,\"eventType\":\"msal:loginSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"authorityType\",\"dataBoundary\",\"environment\",\"homeAccountId\",\"idToken\",\"idTokenClaims\",\"kmsi\",\"localAccountId\",\"loginHint\",\"name\",\"nativeAccountId\",\"tenantId\",\"tenantProfiles\",\"u…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[6]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenStart\",\"interactionType\":\"popup\",\"payloadAccount\":null,\"payloadKeys\":[\"redirectUri\",\"scopes\"],\"seq\":6}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[7]",
-        "real": "{\"error\":null,\"eventType\":\"msal:popupOpened\",\"interactionType\":\"popup\",\"payloadAccount\":null,\"payloadKeys\":[\"popupWindow\"],\"seq\":7}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[8]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"accessToken\",\"account\",\"authority\",\"cloudGraphHostName\",\"code\",\"correlationId\",\"expiresOn\",\"extExpiresOn\",\"familyId\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"idTokenCl…",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "events": [
         {
           "error": null,
-          "eventType": "msal:accountAdded",
+          "eventType": "msal:initializeStart",
           "interactionType": null,
-          "payloadAccount": "ada@contoso.com",
-          "payloadKeys": [
-            "environment",
-            "homeAccountId",
-            "idTokenClaims",
-            "localAccountId",
-            "name",
-            "tenantId",
-            "username"
-          ],
+          "payloadAccount": null,
+          "payloadKeys": null,
           "seq": 0
         },
         {
           "error": null,
-          "eventType": "msal:loginSuccess",
+          "eventType": "msal:initializeEnd",
           "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:popupOpened",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "popupWindow"
+          ],
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "popup",
           "payloadAccount": "ada@contoso.com",
           "payloadKeys": [
             "accessToken",
             "account",
             "authority",
+            "cloudGraphHostName",
+            "code",
             "correlationId",
             "expiresOn",
+            "extExpiresOn",
+            "familyId",
             "fromCache",
             "fromPlatformBroker",
             "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
             "scopes",
             "state",
-            "tokenType"
+            "tenantId",
+            "tokenType",
+            "uniqueId"
           ],
-          "seq": 1
+          "seq": 4
+        },
+        {
+          "error": null,
+          "eventType": "msal:loginSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
+            "environment",
+            "homeAccountId",
+            "idToken",
+            "idTokenClaims",
+            "kmsi",
+            "localAccountId",
+            "loginHint",
+            "name",
+            "nativeAccountId",
+            "tenantId",
+            "tenantProfiles",
+            "upn",
+            "username"
+          ],
+          "seq": 5
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 6
+        },
+        {
+          "error": null,
+          "eventType": "msal:popupOpened",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "popupWindow"
+          ],
+          "seq": 7
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "cloudGraphHostName",
+            "code",
+            "correlationId",
+            "expiresOn",
+            "extExpiresOn",
+            "familyId",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 8
         }
       ],
       "result": {
@@ -699,26 +728,6 @@
     "area": "core",
     "status": "diff",
     "diffs": [
-      {
-        "path": "events[0]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeStart\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":0}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[1]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeEnd\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":1}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[2]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenStart\",\"interactionType\":\"silent\",\"payloadAccount\":null,\"payloadKeys\":[\"correlationId\",\"loginHint\",\"redirectUri\",\"scopes\"],\"seq\":2}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[3]",
-        "real": "{\"error\":{\"errorCode\":\"login_required\",\"message\":\"no session\",\"name\":\"InteractionRequiredAuthError\",\"subError\":null},\"eventType\":\"msal:acquireTokenFailure\",\"interactionType\":\"silent\",\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":3}",
-        "mini": "\"<missing>\""
-      },
       {
         "path": "idp[1].query.X-AnchorMailbox",
         "real": "\"UPN:ada@contoso.com\"",
@@ -761,7 +770,50 @@
       }
     ],
     "observed": {
-      "events": [],
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "silent",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "loginHint",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 2
+        },
+        {
+          "error": {
+            "errorCode": "login_required",
+            "message": "no session",
+            "name": "InteractionRequiredAuthError",
+            "subError": null
+          },
+          "eventType": "msal:acquireTokenFailure",
+          "interactionType": "silent",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 3
+        }
+      ],
       "idp": [
         {
           "endpoint": "discovery",
@@ -801,41 +853,6 @@
     "area": "core",
     "status": "diff",
     "diffs": [
-      {
-        "path": "events[0].eventType",
-        "real": "\"msal:initializeStart\"",
-        "mini": "\"msal:accountAdded\""
-      },
-      {
-        "path": "events[0].payloadAccount",
-        "real": "null",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
-        "path": "events[0].payloadKeys",
-        "real": "null",
-        "mini": "[\"environment\",\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
-      },
-      {
-        "path": "events[1]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeEnd\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":1}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[2]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenStart\",\"interactionType\":\"silent\",\"payloadAccount\":null,\"payloadKeys\":[\"correlationId\",\"loginHint\",\"redirectUri\",\"scopes\"],\"seq\":2}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[3]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenSuccess\",\"interactionType\":\"silent\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"accessToken\",\"account\",\"authority\",\"cloudGraphHostName\",\"code\",\"correlationId\",\"expiresOn\",\"extExpiresOn\",\"familyId\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"idTokenC…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[4]",
-        "real": "{\"error\":null,\"eventType\":\"msal:loginSuccess\",\"interactionType\":\"silent\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"authorityType\",\"dataBoundary\",\"environment\",\"homeAccountId\",\"idToken\",\"idTokenClaims\",\"kmsi\",\"localAccountId\",\"loginHint\",\"name\",\"nativeAccountId\",\"tenantId\",\"tenantProfiles\",\"…",
-        "mini": "\"<missing>\""
-      },
       {
         "path": "idp[1].query.X-AnchorMailbox",
         "real": "\"UPN:ada@contoso.com\"",
@@ -931,19 +948,86 @@
       "events": [
         {
           "error": null,
-          "eventType": "msal:accountAdded",
+          "eventType": "msal:initializeStart",
           "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "silent",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "loginHint",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "silent",
           "payloadAccount": "ada@contoso.com",
           "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "cloudGraphHostName",
+            "code",
+            "correlationId",
+            "expiresOn",
+            "extExpiresOn",
+            "familyId",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:loginSuccess",
+          "interactionType": "silent",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
             "environment",
             "homeAccountId",
+            "idToken",
             "idTokenClaims",
+            "kmsi",
             "localAccountId",
+            "loginHint",
             "name",
+            "nativeAccountId",
             "tenantId",
+            "tenantProfiles",
+            "upn",
             "username"
           ],
-          "seq": 0
+          "seq": 4
         }
       ],
       "idp": [
@@ -1181,54 +1265,12 @@
   {
     "id": "core.redirect-state-tampered",
     "area": "core",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "events[0].error",
-        "real": "null",
-        "mini": "{\"errorCode\":\"state_mismatch\",\"message\":\"See https://aka.ms/msal.js.errors#state_mismatch for details\",\"name\":\"ClientAuthError\",\"subError\":null}"
-      },
-      {
-        "path": "events[0].eventType",
-        "real": "\"msal:initializeStart\"",
-        "mini": "\"msal:loginFailure\""
-      },
-      {
-        "path": "events[1].eventType",
-        "real": "\"msal:initializeEnd\"",
-        "mini": "\"msal:handleRedirectEnd\""
-      },
-      {
-        "path": "events[2]",
-        "real": "{\"error\":null,\"eventType\":\"msal:handleRedirectStart\",\"interactionType\":\"redirect\",\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":2}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[3]",
-        "real": "{\"error\":null,\"eventType\":\"msal:handleRedirectEnd\",\"interactionType\":\"redirect\",\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":3}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.ok",
-        "real": "null",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.err",
-        "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":\"state_mismatch\",\"message\":\"See https://aka.ms/msal.js.errors#state_mismatch for details\",\"name\":\"ClientAuthError\",\"subError\":null}"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "events": [
         {
-          "error": {
-            "errorCode": "state_mismatch",
-            "message": "See https://aka.ms/msal.js.errors#state_mismatch for details",
-            "name": "ClientAuthError",
-            "subError": null
-          },
-          "eventType": "msal:loginFailure",
+          "error": null,
+          "eventType": "msal:initializeStart",
           "interactionType": null,
           "payloadAccount": null,
           "payloadKeys": null,
@@ -1236,21 +1278,32 @@
         },
         {
           "error": null,
-          "eventType": "msal:handleRedirectEnd",
+          "eventType": "msal:initializeEnd",
           "interactionType": null,
           "payloadAccount": null,
           "payloadKeys": null,
           "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:handleRedirectStart",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:handleRedirectEnd",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 3
         }
       ],
       "hashAfter": "#code=mock-code-0&state=<forged>",
       "result": {
-        "err": {
-          "errorCode": "state_mismatch",
-          "message": "See https://aka.ms/msal.js.errors#state_mismatch for details",
-          "name": "ClientAuthError",
-          "subError": null
-        }
+        "ok": null
       }
     }
   },
@@ -1852,206 +1905,176 @@
   {
     "id": "silent.force-refresh",
     "area": "silent",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "events[0].eventType",
-        "real": "\"msal:initializeStart\"",
-        "mini": "\"msal:accountAdded\""
-      },
-      {
-        "path": "events[0].payloadAccount",
-        "real": "null",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
-        "path": "events[0].payloadKeys",
-        "real": "null",
-        "mini": "[\"environment\",\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
-      },
-      {
-        "path": "events[1].eventType",
-        "real": "\"msal:initializeEnd\"",
-        "mini": "\"msal:loginSuccess\""
-      },
-      {
-        "path": "events[1].payloadAccount",
-        "real": "null",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
-        "path": "events[1].payloadKeys",
-        "real": "null",
-        "mini": "[\"accessToken\",\"account\",\"authority\",\"correlationId\",\"expiresOn\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"scopes\",\"state\",\"tokenType\"]"
-      },
-      {
-        "path": "events[2].eventType",
-        "real": "\"msal:acquireTokenStart\"",
-        "mini": "\"msal:acquireTokenSuccess\""
-      },
-      {
-        "path": "events[2].interactionType",
-        "real": "\"popup\"",
-        "mini": "null"
-      },
-      {
-        "path": "events[2].payloadAccount",
-        "real": "null",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
-        "path": "events[2].payloadKeys[0]",
-        "real": "\"correlationId\"",
-        "mini": "\"accessToken\""
-      },
-      {
-        "path": "events[2].payloadKeys[1]",
-        "real": "\"redirectUri\"",
-        "mini": "\"account\""
-      },
-      {
-        "path": "events[2].payloadKeys[2]",
-        "real": "\"scopes\"",
-        "mini": "\"authority\""
-      },
-      {
-        "path": "events[2].payloadKeys[3]",
-        "real": "\"<missing>\"",
-        "mini": "\"correlationId\""
-      },
-      {
-        "path": "events[2].payloadKeys[4]",
-        "real": "\"<missing>\"",
-        "mini": "\"expiresOn\""
-      },
-      {
-        "path": "events[2].payloadKeys[5]",
-        "real": "\"<missing>\"",
-        "mini": "\"fromCache\""
-      },
-      {
-        "path": "events[2].payloadKeys[6]",
-        "real": "\"<missing>\"",
-        "mini": "\"fromPlatformBroker\""
-      },
-      {
-        "path": "events[2].payloadKeys[7]",
-        "real": "\"<missing>\"",
-        "mini": "\"idToken\""
-      },
-      {
-        "path": "events[2].payloadKeys[8]",
-        "real": "\"<missing>\"",
-        "mini": "\"scopes\""
-      },
-      {
-        "path": "events[2].payloadKeys[9]",
-        "real": "\"<missing>\"",
-        "mini": "\"state\""
-      },
-      {
-        "path": "events[2].payloadKeys[10]",
-        "real": "\"<missing>\"",
-        "mini": "\"tokenType\""
-      },
-      {
-        "path": "events[3]",
-        "real": "{\"error\":null,\"eventType\":\"msal:popupOpened\",\"interactionType\":\"popup\",\"payloadAccount\":null,\"payloadKeys\":[\"popupWindow\"],\"seq\":3}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[4]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"accessToken\",\"account\",\"authority\",\"cloudGraphHostName\",\"code\",\"correlationId\",\"expiresOn\",\"extExpiresOn\",\"familyId\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"idTokenCl…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[5]",
-        "real": "{\"error\":null,\"eventType\":\"msal:loginSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"authorityType\",\"dataBoundary\",\"environment\",\"homeAccountId\",\"idToken\",\"idTokenClaims\",\"kmsi\",\"localAccountId\",\"loginHint\",\"name\",\"nativeAccountId\",\"tenantId\",\"tenantProfiles\",\"u…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[6]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeStart\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":6}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[7]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeEnd\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":7}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[8]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenStart\",\"interactionType\":\"silent\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"account\",\"correlationId\",\"forceRefresh\",\"redirectUri\",\"scopes\"],\"seq\":8}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[9]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenFromNetworkStart\",\"interactionType\":\"silent\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"account\",\"authenticationScheme\",\"authority\",\"correlationId\",\"forceRefresh\",\"redirectUri\",\"scopes\"],\"seq\":9}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[10]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenSuccess\",\"interactionType\":\"silent\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"accessToken\",\"account\",\"authority\",\"cloudGraphHostName\",\"code\",\"correlationId\",\"expiresOn\",\"extExpiresOn\",\"familyId\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"idTokenC…",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "events": [
         {
           "error": null,
-          "eventType": "msal:accountAdded",
+          "eventType": "msal:initializeStart",
           "interactionType": null,
-          "payloadAccount": "ada@contoso.com",
-          "payloadKeys": [
-            "environment",
-            "homeAccountId",
-            "idTokenClaims",
-            "localAccountId",
-            "name",
-            "tenantId",
-            "username"
-          ],
+          "payloadAccount": null,
+          "payloadKeys": null,
           "seq": 0
         },
         {
           "error": null,
-          "eventType": "msal:loginSuccess",
+          "eventType": "msal:initializeEnd",
           "interactionType": null,
-          "payloadAccount": "ada@contoso.com",
-          "payloadKeys": [
-            "accessToken",
-            "account",
-            "authority",
-            "correlationId",
-            "expiresOn",
-            "fromCache",
-            "fromPlatformBroker",
-            "idToken",
-            "scopes",
-            "state",
-            "tokenType"
-          ],
+          "payloadAccount": null,
+          "payloadKeys": null,
           "seq": 1
         },
         {
           "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:popupOpened",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "popupWindow"
+          ],
+          "seq": 3
+        },
+        {
+          "error": null,
           "eventType": "msal:acquireTokenSuccess",
-          "interactionType": null,
+          "interactionType": "popup",
           "payloadAccount": "ada@contoso.com",
           "payloadKeys": [
             "accessToken",
             "account",
             "authority",
+            "cloudGraphHostName",
+            "code",
             "correlationId",
             "expiresOn",
+            "extExpiresOn",
+            "familyId",
             "fromCache",
             "fromPlatformBroker",
             "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
             "scopes",
             "state",
-            "tokenType"
+            "tenantId",
+            "tokenType",
+            "uniqueId"
           ],
-          "seq": 2
+          "seq": 4
+        },
+        {
+          "error": null,
+          "eventType": "msal:loginSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
+            "environment",
+            "homeAccountId",
+            "idToken",
+            "idTokenClaims",
+            "kmsi",
+            "localAccountId",
+            "loginHint",
+            "name",
+            "nativeAccountId",
+            "tenantId",
+            "tenantProfiles",
+            "upn",
+            "username"
+          ],
+          "seq": 5
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 6
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 7
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "silent",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "account",
+            "correlationId",
+            "forceRefresh",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 8
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenFromNetworkStart",
+          "interactionType": "silent",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "account",
+            "authenticationScheme",
+            "authority",
+            "correlationId",
+            "forceRefresh",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 9
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "silent",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "cloudGraphHostName",
+            "code",
+            "correlationId",
+            "expiresOn",
+            "extExpiresOn",
+            "familyId",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 10
         }
       ],
       "networkCalls": [
@@ -2087,199 +2110,7 @@
   {
     "id": "accounts.multi-account",
     "area": "accounts",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "events[0].eventType",
-        "real": "\"msal:initializeStart\"",
-        "mini": "\"msal:accountAdded\""
-      },
-      {
-        "path": "events[0].payloadAccount",
-        "real": "null",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
-        "path": "events[0].payloadKeys",
-        "real": "null",
-        "mini": "[\"environment\",\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
-      },
-      {
-        "path": "events[1].eventType",
-        "real": "\"msal:initializeEnd\"",
-        "mini": "\"msal:loginSuccess\""
-      },
-      {
-        "path": "events[1].payloadAccount",
-        "real": "null",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
-        "path": "events[1].payloadKeys",
-        "real": "null",
-        "mini": "[\"accessToken\",\"account\",\"authority\",\"correlationId\",\"expiresOn\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"scopes\",\"state\",\"tokenType\"]"
-      },
-      {
-        "path": "events[2].eventType",
-        "real": "\"msal:acquireTokenStart\"",
-        "mini": "\"msal:accountAdded\""
-      },
-      {
-        "path": "events[2].interactionType",
-        "real": "\"popup\"",
-        "mini": "null"
-      },
-      {
-        "path": "events[2].payloadAccount",
-        "real": "null",
-        "mini": "\"grace@contoso.com\""
-      },
-      {
-        "path": "events[2].payloadKeys[0]",
-        "real": "\"correlationId\"",
-        "mini": "\"environment\""
-      },
-      {
-        "path": "events[2].payloadKeys[1]",
-        "real": "\"redirectUri\"",
-        "mini": "\"homeAccountId\""
-      },
-      {
-        "path": "events[2].payloadKeys[2]",
-        "real": "\"scopes\"",
-        "mini": "\"idTokenClaims\""
-      },
-      {
-        "path": "events[2].payloadKeys[3]",
-        "real": "\"<missing>\"",
-        "mini": "\"localAccountId\""
-      },
-      {
-        "path": "events[2].payloadKeys[4]",
-        "real": "\"<missing>\"",
-        "mini": "\"name\""
-      },
-      {
-        "path": "events[2].payloadKeys[5]",
-        "real": "\"<missing>\"",
-        "mini": "\"tenantId\""
-      },
-      {
-        "path": "events[2].payloadKeys[6]",
-        "real": "\"<missing>\"",
-        "mini": "\"username\""
-      },
-      {
-        "path": "events[3].eventType",
-        "real": "\"msal:popupOpened\"",
-        "mini": "\"msal:loginSuccess\""
-      },
-      {
-        "path": "events[3].interactionType",
-        "real": "\"popup\"",
-        "mini": "null"
-      },
-      {
-        "path": "events[3].payloadAccount",
-        "real": "null",
-        "mini": "\"grace@contoso.com\""
-      },
-      {
-        "path": "events[3].payloadKeys[0]",
-        "real": "\"popupWindow\"",
-        "mini": "\"accessToken\""
-      },
-      {
-        "path": "events[3].payloadKeys[1]",
-        "real": "\"<missing>\"",
-        "mini": "\"account\""
-      },
-      {
-        "path": "events[3].payloadKeys[2]",
-        "real": "\"<missing>\"",
-        "mini": "\"authority\""
-      },
-      {
-        "path": "events[3].payloadKeys[3]",
-        "real": "\"<missing>\"",
-        "mini": "\"correlationId\""
-      },
-      {
-        "path": "events[3].payloadKeys[4]",
-        "real": "\"<missing>\"",
-        "mini": "\"expiresOn\""
-      },
-      {
-        "path": "events[3].payloadKeys[5]",
-        "real": "\"<missing>\"",
-        "mini": "\"fromCache\""
-      },
-      {
-        "path": "events[3].payloadKeys[6]",
-        "real": "\"<missing>\"",
-        "mini": "\"fromPlatformBroker\""
-      },
-      {
-        "path": "events[3].payloadKeys[7]",
-        "real": "\"<missing>\"",
-        "mini": "\"idToken\""
-      },
-      {
-        "path": "events[3].payloadKeys[8]",
-        "real": "\"<missing>\"",
-        "mini": "\"scopes\""
-      },
-      {
-        "path": "events[3].payloadKeys[9]",
-        "real": "\"<missing>\"",
-        "mini": "\"state\""
-      },
-      {
-        "path": "events[3].payloadKeys[10]",
-        "real": "\"<missing>\"",
-        "mini": "\"tokenType\""
-      },
-      {
-        "path": "events[4]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"accessToken\",\"account\",\"authority\",\"cloudGraphHostName\",\"code\",\"correlationId\",\"expiresOn\",\"extExpiresOn\",\"familyId\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"idTokenCl…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[5]",
-        "real": "{\"error\":null,\"eventType\":\"msal:loginSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"authorityType\",\"dataBoundary\",\"environment\",\"homeAccountId\",\"idToken\",\"idTokenClaims\",\"kmsi\",\"localAccountId\",\"loginHint\",\"name\",\"nativeAccountId\",\"tenantId\",\"tenantProfiles\",\"u…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[6]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeStart\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":6}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[7]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeEnd\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":7}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[8]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenStart\",\"interactionType\":\"popup\",\"payloadAccount\":null,\"payloadKeys\":[\"correlationId\",\"prompt\",\"redirectUri\",\"scopes\"],\"seq\":8}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[9]",
-        "real": "{\"error\":null,\"eventType\":\"msal:popupOpened\",\"interactionType\":\"popup\",\"payloadAccount\":null,\"payloadKeys\":[\"popupWindow\"],\"seq\":9}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[10]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"grace@contoso.com\",\"payloadKeys\":[\"accessToken\",\"account\",\"authority\",\"cloudGraphHostName\",\"code\",\"correlationId\",\"expiresOn\",\"extExpiresOn\",\"familyId\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"idToken…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[11]",
-        "real": "{\"error\":null,\"eventType\":\"msal:loginSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"grace@contoso.com\",\"payloadKeys\":[\"authorityType\",\"dataBoundary\",\"environment\",\"homeAccountId\",\"idToken\",\"idTokenClaims\",\"kmsi\",\"localAccountId\",\"loginHint\",\"name\",\"nativeAccountId\",\"tenantId\",\"tenantProfiles\",…",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "accounts": {
         "ok": [
@@ -2309,75 +2140,188 @@
       "events": [
         {
           "error": null,
-          "eventType": "msal:accountAdded",
+          "eventType": "msal:initializeStart",
           "interactionType": null,
-          "payloadAccount": "ada@contoso.com",
-          "payloadKeys": [
-            "environment",
-            "homeAccountId",
-            "idTokenClaims",
-            "localAccountId",
-            "name",
-            "tenantId",
-            "username"
-          ],
+          "payloadAccount": null,
+          "payloadKeys": null,
           "seq": 0
         },
         {
           "error": null,
-          "eventType": "msal:loginSuccess",
+          "eventType": "msal:initializeEnd",
           "interactionType": null,
-          "payloadAccount": "ada@contoso.com",
-          "payloadKeys": [
-            "accessToken",
-            "account",
-            "authority",
-            "correlationId",
-            "expiresOn",
-            "fromCache",
-            "fromPlatformBroker",
-            "idToken",
-            "scopes",
-            "state",
-            "tokenType"
-          ],
+          "payloadAccount": null,
+          "payloadKeys": null,
           "seq": 1
         },
         {
           "error": null,
-          "eventType": "msal:accountAdded",
-          "interactionType": null,
-          "payloadAccount": "grace@contoso.com",
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "popup",
+          "payloadAccount": null,
           "payloadKeys": [
-            "environment",
-            "homeAccountId",
-            "idTokenClaims",
-            "localAccountId",
-            "name",
-            "tenantId",
-            "username"
+            "correlationId",
+            "redirectUri",
+            "scopes"
           ],
           "seq": 2
         },
         {
           "error": null,
+          "eventType": "msal:popupOpened",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "popupWindow"
+          ],
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "cloudGraphHostName",
+            "code",
+            "correlationId",
+            "expiresOn",
+            "extExpiresOn",
+            "familyId",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 4
+        },
+        {
+          "error": null,
           "eventType": "msal:loginSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
+            "environment",
+            "homeAccountId",
+            "idToken",
+            "idTokenClaims",
+            "kmsi",
+            "localAccountId",
+            "loginHint",
+            "name",
+            "nativeAccountId",
+            "tenantId",
+            "tenantProfiles",
+            "upn",
+            "username"
+          ],
+          "seq": 5
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
           "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 6
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 7
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "prompt",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 8
+        },
+        {
+          "error": null,
+          "eventType": "msal:popupOpened",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "popupWindow"
+          ],
+          "seq": 9
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "popup",
           "payloadAccount": "grace@contoso.com",
           "payloadKeys": [
             "accessToken",
             "account",
             "authority",
+            "cloudGraphHostName",
+            "code",
             "correlationId",
             "expiresOn",
+            "extExpiresOn",
+            "familyId",
             "fromCache",
             "fromPlatformBroker",
             "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
             "scopes",
             "state",
-            "tokenType"
+            "tenantId",
+            "tokenType",
+            "uniqueId"
           ],
-          "seq": 3
+          "seq": 10
+        },
+        {
+          "error": null,
+          "eventType": "msal:loginSuccess",
+          "interactionType": "popup",
+          "payloadAccount": "grace@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
+            "environment",
+            "homeAccountId",
+            "idToken",
+            "idTokenClaims",
+            "kmsi",
+            "localAccountId",
+            "loginHint",
+            "name",
+            "nativeAccountId",
+            "tenantId",
+            "tenantProfiles",
+            "upn",
+            "username"
+          ],
+          "seq": 11
         }
       ],
       "logins": {
@@ -2458,19 +2402,7 @@
   {
     "id": "accounts.active-account-persistence",
     "area": "accounts",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "eventsAfterReload[0]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeStart\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":0}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "eventsAfterReload[1]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeEnd\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":1}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "activeFilterEntry": {
         "key": "msal.<guid>.active-account-filters",
@@ -2492,7 +2424,24 @@
       "clearActive": {
         "ok": null
       },
-      "eventsAfterReload": []
+      "eventsAfterReload": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        }
+      ]
     }
   },
   {
@@ -2500,141 +2449,6 @@
     "area": "accounts",
     "status": "diff",
     "diffs": [
-      {
-        "path": "events[0].eventType",
-        "real": "\"msal:logoutStart\"",
-        "mini": "\"msal:accountAdded\""
-      },
-      {
-        "path": "events[0].interactionType",
-        "real": "\"popup\"",
-        "mini": "null"
-      },
-      {
-        "path": "events[0].payloadAccount",
-        "real": "\"grace@contoso.com\"",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
-        "path": "events[0].payloadKeys[0]",
-        "real": "\"account\"",
-        "mini": "\"environment\""
-      },
-      {
-        "path": "events[0].payloadKeys[1]",
-        "real": "\"correlationId\"",
-        "mini": "\"homeAccountId\""
-      },
-      {
-        "path": "events[0].payloadKeys[2]",
-        "real": "\"postLogoutRedirectUri\"",
-        "mini": "\"idTokenClaims\""
-      },
-      {
-        "path": "events[0].payloadKeys[3]",
-        "real": "\"<missing>\"",
-        "mini": "\"localAccountId\""
-      },
-      {
-        "path": "events[0].payloadKeys[4]",
-        "real": "\"<missing>\"",
-        "mini": "\"name\""
-      },
-      {
-        "path": "events[0].payloadKeys[5]",
-        "real": "\"<missing>\"",
-        "mini": "\"tenantId\""
-      },
-      {
-        "path": "events[0].payloadKeys[6]",
-        "real": "\"<missing>\"",
-        "mini": "\"username\""
-      },
-      {
-        "path": "events[0].seq",
-        "real": "12",
-        "mini": "0"
-      },
-      {
-        "path": "events[1].eventType",
-        "real": "\"msal:logoutSuccess\"",
-        "mini": "\"msal:accountAdded\""
-      },
-      {
-        "path": "events[1].interactionType",
-        "real": "\"popup\"",
-        "mini": "null"
-      },
-      {
-        "path": "events[1].payloadKeys[0]",
-        "real": "\"account\"",
-        "mini": "\"environment\""
-      },
-      {
-        "path": "events[1].payloadKeys[1]",
-        "real": "\"correlationId\"",
-        "mini": "\"homeAccountId\""
-      },
-      {
-        "path": "events[1].payloadKeys[2]",
-        "real": "\"postLogoutRedirectUri\"",
-        "mini": "\"idTokenClaims\""
-      },
-      {
-        "path": "events[1].payloadKeys[3]",
-        "real": "\"state\"",
-        "mini": "\"localAccountId\""
-      },
-      {
-        "path": "events[1].payloadKeys[4]",
-        "real": "\"<missing>\"",
-        "mini": "\"name\""
-      },
-      {
-        "path": "events[1].payloadKeys[5]",
-        "real": "\"<missing>\"",
-        "mini": "\"tenantId\""
-      },
-      {
-        "path": "events[1].payloadKeys[6]",
-        "real": "\"<missing>\"",
-        "mini": "\"username\""
-      },
-      {
-        "path": "events[1].seq",
-        "real": "13",
-        "mini": "2"
-      },
-      {
-        "path": "events[2].eventType",
-        "real": "\"msal:logoutEnd\"",
-        "mini": "\"msal:accountRemoved\""
-      },
-      {
-        "path": "events[2].interactionType",
-        "real": "\"popup\"",
-        "mini": "null"
-      },
-      {
-        "path": "events[2].payloadAccount",
-        "real": "null",
-        "mini": "\"grace@contoso.com\""
-      },
-      {
-        "path": "events[2].payloadKeys",
-        "real": "null",
-        "mini": "[\"environment\",\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
-      },
-      {
-        "path": "events[2].seq",
-        "real": "15",
-        "mini": "4"
-      },
-      {
-        "path": "events[3]",
-        "real": "\"<missing>\"",
-        "mini": "{\"error\":null,\"eventType\":\"msal:logoutSuccess\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":5}"
-      },
       {
         "path": "logoutRequest[0].query.client-request-id",
         "real": "\"<dynamic>\"",
@@ -2685,59 +2499,36 @@
       "events": [
         {
           "error": null,
-          "eventType": "msal:accountAdded",
-          "interactionType": null,
-          "payloadAccount": "ada@contoso.com",
-          "payloadKeys": [
-            "environment",
-            "homeAccountId",
-            "idTokenClaims",
-            "localAccountId",
-            "name",
-            "tenantId",
-            "username"
-          ],
-          "seq": 0
-        },
-        {
-          "error": null,
-          "eventType": "msal:accountAdded",
-          "interactionType": null,
+          "eventType": "msal:logoutStart",
+          "interactionType": "popup",
           "payloadAccount": "grace@contoso.com",
           "payloadKeys": [
-            "environment",
-            "homeAccountId",
-            "idTokenClaims",
-            "localAccountId",
-            "name",
-            "tenantId",
-            "username"
+            "account",
+            "correlationId",
+            "postLogoutRedirectUri"
           ],
-          "seq": 2
-        },
-        {
-          "error": null,
-          "eventType": "msal:accountRemoved",
-          "interactionType": null,
-          "payloadAccount": "grace@contoso.com",
-          "payloadKeys": [
-            "environment",
-            "homeAccountId",
-            "idTokenClaims",
-            "localAccountId",
-            "name",
-            "tenantId",
-            "username"
-          ],
-          "seq": 4
+          "seq": 12
         },
         {
           "error": null,
           "eventType": "msal:logoutSuccess",
-          "interactionType": null,
+          "interactionType": "popup",
+          "payloadAccount": "grace@contoso.com",
+          "payloadKeys": [
+            "account",
+            "correlationId",
+            "postLogoutRedirectUri",
+            "state"
+          ],
+          "seq": 13
+        },
+        {
+          "error": null,
+          "eventType": "msal:logoutEnd",
+          "interactionType": "popup",
           "payloadAccount": null,
           "payloadKeys": null,
-          "seq": 5
+          "seq": 15
         }
       ],
       "logout": {
@@ -3066,16 +2857,6 @@
     "status": "diff",
     "diffs": [
       {
-        "path": "tab2After.events[0]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeStart\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":0}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "tab2After.events[1]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeEnd\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":1}",
-        "mini": "\"<missing>\""
-      },
-      {
         "path": "tab2After.events[2]",
         "real": "{\"error\":null,\"eventType\":\"msal:logoutSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"account\",\"correlationId\",\"postLogoutRedirectUri\",\"state\"],\"seq\":2}",
         "mini": "\"<missing>\""
@@ -3089,7 +2870,24 @@
     "observed": {
       "tab2After": {
         "accounts": [],
-        "events": []
+        "events": [
+          {
+            "error": null,
+            "eventType": "msal:initializeStart",
+            "interactionType": null,
+            "payloadAccount": null,
+            "payloadKeys": null,
+            "seq": 0
+          },
+          {
+            "error": null,
+            "eventType": "msal:initializeEnd",
+            "interactionType": null,
+            "payloadAccount": null,
+            "payloadKeys": null,
+            "seq": 1
+          }
+        ]
       },
       "tab2Initial": []
     }
@@ -3097,49 +2895,12 @@
   {
     "id": "errors.cancelled-login-redirect",
     "area": "errors",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "events[0].error",
-        "real": "null",
-        "mini": "{\"errorCode\":\"access_denied\",\"message\":\"AADSTS65004: User declined to consent.\",\"name\":\"ServerError\",\"subError\":null}"
-      },
-      {
-        "path": "events[0].eventType",
-        "real": "\"msal:initializeStart\"",
-        "mini": "\"msal:loginFailure\""
-      },
-      {
-        "path": "events[1].eventType",
-        "real": "\"msal:initializeEnd\"",
-        "mini": "\"msal:handleRedirectEnd\""
-      },
-      {
-        "path": "events[2]",
-        "real": "{\"error\":null,\"eventType\":\"msal:handleRedirectStart\",\"interactionType\":\"redirect\",\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":2}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[3]",
-        "real": "{\"error\":{\"errorCode\":\"access_denied\",\"message\":\"AADSTS65004: User declined to consent.\",\"name\":\"ServerError\",\"subError\":null},\"eventType\":\"msal:acquireTokenFailure\",\"interactionType\":\"redirect\",\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":3}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[4]",
-        "real": "{\"error\":null,\"eventType\":\"msal:handleRedirectEnd\",\"interactionType\":\"redirect\",\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":4}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "events": [
         {
-          "error": {
-            "errorCode": "access_denied",
-            "message": "AADSTS65004: User declined to consent.",
-            "name": "ServerError",
-            "subError": null
-          },
-          "eventType": "msal:loginFailure",
+          "error": null,
+          "eventType": "msal:initializeStart",
           "interactionType": null,
           "payloadAccount": null,
           "payloadKeys": null,
@@ -3147,11 +2908,40 @@
         },
         {
           "error": null,
-          "eventType": "msal:handleRedirectEnd",
+          "eventType": "msal:initializeEnd",
           "interactionType": null,
           "payloadAccount": null,
           "payloadKeys": null,
           "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:handleRedirectStart",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 2
+        },
+        {
+          "error": {
+            "errorCode": "access_denied",
+            "message": "AADSTS65004: User declined to consent.",
+            "name": "ServerError",
+            "subError": null
+          },
+          "eventType": "msal:acquireTokenFailure",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:handleRedirectEnd",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 4
         }
       ],
       "hashAfter": "",
@@ -3168,36 +2958,37 @@
   {
     "id": "errors.popup-blocked",
     "area": "errors",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "events[0].error",
-        "real": "null",
-        "mini": "{\"errorCode\":\"popup_window_error\",\"message\":\"See https://aka.ms/msal.js.errors#popup_window_error for details\",\"name\":\"BrowserAuthError\",\"subError\":null}"
-      },
-      {
-        "path": "events[0].eventType",
-        "real": "\"msal:initializeStart\"",
-        "mini": "\"msal:loginFailure\""
-      },
-      {
-        "path": "events[1]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeEnd\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":1}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[2]",
-        "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenStart\",\"interactionType\":\"popup\",\"payloadAccount\":null,\"payloadKeys\":[\"correlationId\",\"redirectUri\",\"scopes\"],\"seq\":2}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[3]",
-        "real": "{\"error\":{\"errorCode\":\"popup_window_error\",\"message\":\"See https://aka.ms/msal.js.errors#popup_window_error for details\",\"name\":\"BrowserAuthError\",\"subError\":null},\"eventType\":\"msal:acquireTokenFailure\",\"interactionType\":\"popup\",\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":3}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenStart",
+          "interactionType": "popup",
+          "payloadAccount": null,
+          "payloadKeys": [
+            "correlationId",
+            "redirectUri",
+            "scopes"
+          ],
+          "seq": 2
+        },
         {
           "error": {
             "errorCode": "popup_window_error",
@@ -3205,11 +2996,11 @@
             "name": "BrowserAuthError",
             "subError": null
           },
-          "eventType": "msal:loginFailure",
-          "interactionType": null,
+          "eventType": "msal:acquireTokenFailure",
+          "interactionType": "popup",
           "payloadAccount": null,
           "payloadKeys": null,
-          "seq": 0
+          "seq": 3
         }
       ],
       "result": {
@@ -3827,21 +3618,26 @@
   {
     "id": "init.double-initialize",
     "area": "init",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "events[0]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeStart\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":0}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "events[1]",
-        "real": "{\"error\":null,\"eventType\":\"msal:initializeEnd\",\"interactionType\":null,\"payloadAccount\":null,\"payloadKeys\":null,\"seq\":1}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
-      "events": [],
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        }
+      ],
       "second": {
         "ok": "resolved"
       }
@@ -3912,96 +3708,6 @@
         "mini": "null"
       },
       {
-        "path": "ok.eventType.ACQUIRE_TOKEN_FAILURE",
-        "real": "\"msal:acquireTokenFailure\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.ACQUIRE_TOKEN_NETWORK_START",
-        "real": "\"msal:acquireTokenFromNetworkStart\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.ACQUIRE_TOKEN_START",
-        "real": "\"msal:acquireTokenStart\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.BROKERED_REQUEST_FAILURE",
-        "real": "\"msal:brokeredRequestFailure\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.BROKERED_REQUEST_START",
-        "real": "\"msal:brokeredRequestStart\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.BROKERED_REQUEST_SUCCESS",
-        "real": "\"msal:brokeredRequestSuccess\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.BROKER_CONNECTION_ESTABLISHED",
-        "real": "\"msal:brokerConnectionEstablished\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.HANDLE_REDIRECT_START",
-        "real": "\"msal:handleRedirectStart\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.INITIALIZE_END",
-        "real": "\"msal:initializeEnd\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.INITIALIZE_START",
-        "real": "\"msal:initializeStart\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.LOGOUT_END",
-        "real": "\"msal:logoutEnd\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.LOGOUT_FAILURE",
-        "real": "\"msal:logoutFailure\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.LOGOUT_START",
-        "real": "\"msal:logoutStart\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.POPUP_OPENED",
-        "real": "\"msal:popupOpened\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.RESTORE_FROM_BFCACHE",
-        "real": "\"msal:restoreFromBFCache\"",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "ok.eventType.ACCOUNT_ADDED",
-        "real": "\"<missing>\"",
-        "mini": "\"msal:accountAdded\""
-      },
-      {
-        "path": "ok.eventType.ACCOUNT_REMOVED",
-        "real": "\"<missing>\"",
-        "mini": "\"msal:accountRemoved\""
-      },
-      {
-        "path": "ok.eventType.LOGIN_FAILURE",
-        "real": "\"<missing>\"",
-        "mini": "\"msal:loginFailure\""
-      },
-      {
         "path": "ok.hasCreateNestablePCA",
         "real": "true",
         "mini": "false"
@@ -4015,11 +3721,6 @@
         "path": "ok.hasIsPlatformBrokerAvailable",
         "real": "true",
         "mini": "false"
-      },
-      {
-        "path": "ok.interactionType.None",
-        "real": "\"none\"",
-        "mini": "\"<missing>\""
       },
       {
         "path": "ok.oidcDefaultScopes",
@@ -4062,19 +3763,32 @@
           "ServerError": true
         },
         "eventType": {
-          "ACCOUNT_ADDED": "msal:accountAdded",
-          "ACCOUNT_REMOVED": "msal:accountRemoved",
+          "ACQUIRE_TOKEN_FAILURE": "msal:acquireTokenFailure",
+          "ACQUIRE_TOKEN_NETWORK_START": "msal:acquireTokenFromNetworkStart",
+          "ACQUIRE_TOKEN_START": "msal:acquireTokenStart",
           "ACQUIRE_TOKEN_SUCCESS": "msal:acquireTokenSuccess",
           "ACTIVE_ACCOUNT_CHANGED": "msal:activeAccountChanged",
+          "BROKERED_REQUEST_FAILURE": "msal:brokeredRequestFailure",
+          "BROKERED_REQUEST_START": "msal:brokeredRequestStart",
+          "BROKERED_REQUEST_SUCCESS": "msal:brokeredRequestSuccess",
+          "BROKER_CONNECTION_ESTABLISHED": "msal:brokerConnectionEstablished",
           "HANDLE_REDIRECT_END": "msal:handleRedirectEnd",
-          "LOGIN_FAILURE": "msal:loginFailure",
+          "HANDLE_REDIRECT_START": "msal:handleRedirectStart",
+          "INITIALIZE_END": "msal:initializeEnd",
+          "INITIALIZE_START": "msal:initializeStart",
           "LOGIN_SUCCESS": "msal:loginSuccess",
-          "LOGOUT_SUCCESS": "msal:logoutSuccess"
+          "LOGOUT_END": "msal:logoutEnd",
+          "LOGOUT_FAILURE": "msal:logoutFailure",
+          "LOGOUT_START": "msal:logoutStart",
+          "LOGOUT_SUCCESS": "msal:logoutSuccess",
+          "POPUP_OPENED": "msal:popupOpened",
+          "RESTORE_FROM_BFCACHE": "msal:restoreFromBFCache"
         },
         "hasCreateNestablePCA": false,
         "hasCreateStandardPCA": false,
         "hasIsPlatformBrokerAvailable": false,
         "interactionType": {
+          "None": "none",
           "Popup": "popup",
           "Redirect": "redirect",
           "Silent": "silent"

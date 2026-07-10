@@ -13,17 +13,17 @@ exists but differs observably · **missing-feature** = absent by design ·
 
 | Area | Scenarios | Pass | Behavioral diff | Missing feature | Bug |
 |---|---|---|---|---|---|
-| 1. Core flows | 9 | 0 | 9 | 0 | 0 |
-| 2. Silent acquisition | 12 | 9 | 3 | 0 | 0 |
-| 3. Accounts & cache | 7 | 1 | 4 | 2 | 0 |
-| 4. Errors & guards | 10 | 8 | 2 | 0 | 0 |
+| 1. Core flows | 9 | 3 | 6 | 0 | 0 |
+| 2. Silent acquisition | 12 | 10 | 2 | 0 | 0 |
+| 3. Accounts & cache | 7 | 3 | 2 | 2 | 0 |
+| 4. Errors & guards | 10 | 10 | 0 | 0 | 0 |
 | 5. Platform broker / WAM | 7 | 0 | 0 | 7 | 0 |
 | 6. Nested app auth (NAA) | 6 | 0 | 0 | 6 | 0 |
 | 7. Telemetry | 5 | 0 | 0 | 5 | 0 |
 | 8. Request passthrough | 9 | 3 | 0 | 6 | 0 |
 | 9. Resilience | 4 | 2 | 0 | 2 | 0 |
-| 10. Init & misc | 6 | 0 | 3 | 3 | 0 |
-| **Total** | **75** | **23** | **21** | **31** | **0** |
+| 10. Init & misc | 6 | 1 | 2 | 3 | 0 |
+| **Total** | **75** | **32** | **12** | **31** | **0** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -63,7 +63,7 @@ here instead of being repeated per scenario:
 - **real**: Full event sequence (initializeStart/End, handleRedirectStart, acquireTokenSuccess, loginSuccess, handleRedirectEnd w/ interactionType); authorize carries nonce, client-request-id, client_info=1, claims(login_hint/signin_state), x-client-SKU/VER, X-AnchorMailbox; result has authority/correlationId/tokenType/state; scopes keep request casing.
 - **mini**: Only accountAdded+loginSuccess+handleRedirectEnd events; authorize lacks nonce (no id_token nonce validation — security-relevant), telemetry and routing params; result lacks authority/correlationId/tokenType/state; scopes lowercased, different order.
 
-#### `core.handle-redirect-clean-load` — ↔️ behavioral-diff · est. 0.1 KB to close
+#### `core.handle-redirect-clean-load` — ✅ pass · est. 0.1 KB to close
 
 - **real**: Clean load emits initializeStart/End only; handleRedirectPromise resolves null with NO handleRedirect events.
 - **mini**: No initialize events; emits handleRedirectEnd even on a clean load.
@@ -73,7 +73,7 @@ here instead of being repeated per scenario:
 - **real**: acquireTokenStart/popupOpened/acquireTokenSuccess/loginSuccess (interactionType=popup); token POST carries x-client-SKU/VER, telemetry params, x-ms-lib-capability, claims, client-request-id query.
 - **mini**: loginSuccess+accountAdded only; token POST carries only the OAuth basics; same PKCE correctness (S256 verified on both).
 
-#### `core.acquire-token-popup` — ↔️ behavioral-diff
+#### `core.acquire-token-popup` — ✅ pass
 
 - **real**: Popup acquisition for new scopes: full event stream, result metadata.
 - **mini**: Works (token acquired); shape/event gaps as above.
@@ -93,7 +93,7 @@ here instead of being repeated per scenario:
 - **real**: Derives login_hint + X-AnchorMailbox from the account on redirect acquisition (sticky account routing).
 - **mini**: No account-derived hints on the authorize request — on a shared IdP session the wrong user could be silently picked.
 
-#### `core.redirect-state-tampered` — ↔️ behavioral-diff · est. 0.2 KB to close
+#### `core.redirect-state-tampered` — ✅ pass · est. 0.2 KB to close
 
 - **real**: Forged state: handleRedirectPromise resolves NULL silently (response treated as not-ours; no failure event).
 - **mini**: Throws state_mismatch + emits loginFailure. Stricter than real; apps double-handling errors would behave differently.
@@ -160,14 +160,14 @@ here instead of being repeated per scenario:
 - **real**: Two parallel identical acquireTokenSilent calls → ONE token-endpoint request (in-flight dedupe), both callers get the same token.
 - **mini**: Two parallel calls → TWO refresh requests (no dedupe). Same tokens returned, but doubled IdP load and RT-rotation hazard against real AAD.
 
-#### `silent.force-refresh` — ↔️ behavioral-diff
+#### `silent.force-refresh` — ✅ pass
 
 - **real**: forceRefresh:true bypasses a valid cached AT and refreshes over the network; emits acquireTokenFromNetworkStart.
 - **mini**: forceRefresh honored (A5): same RT-grant network refresh; remaining diffs are event-stream (B2) + result shape (B1).
 
 ### 3. Accounts & cache
 
-#### `accounts.multi-account` — ↔️ behavioral-diff · est. 0.2 KB to close
+#### `accounts.multi-account` — ✅ pass · est. 0.2 KB to close
 
 - **real**: Two accounts listed with environment field; active account remains NULL until setActiveAccount is called.
 - **mini**: Accounts match (no environment field); auto-sets the FIRST logged-in account as active.
@@ -177,7 +177,7 @@ here instead of being repeated per scenario:
 - **real**: getAccount({}) → null; getAllAccounts(filter) filters (e.g. by username → 1 account). Case-insensitive username match.
 - **mini**: getAccount({}) returns the first account; getAllAccounts(filter) ignores the filter and returns everything.
 
-#### `accounts.active-account-persistence` — ↔️ behavioral-diff
+#### `accounts.active-account-persistence` — ✅ pass
 
 - **real**: Active account persists across reload + fresh client (identical in both); real also emits initialize events after reload.
 - **mini**: Persistence identical; only the initialize events are missing.
@@ -204,12 +204,12 @@ here instead of being repeated per scenario:
 
 ### 4. Errors & guards
 
-#### `errors.cancelled-login-redirect` — ↔️ behavioral-diff · est. 0.1 KB to close
+#### `errors.cancelled-login-redirect` — ✅ pass · est. 0.1 KB to close
 
 - **real**: access_denied → ServerError (named class), loginFailure + handleRedirectStart/End events.
 - **mini**: Same access_denied code; class name 'Error', fewer events.
 
-#### `errors.popup-blocked` — ↔️ behavioral-diff
+#### `errors.popup-blocked` — ✅ pass
 
 - **real**: BrowserAuthError popup_window_error + acquireTokenStart/Failure events.
 - **mini**: Same popup_window_error code; name/message/events differ.
@@ -421,7 +421,7 @@ here instead of being repeated per scenario:
 
 ### 10. Init & misc
 
-#### `init.double-initialize` — ↔️ behavioral-diff
+#### `init.double-initialize` — ✅ pass
 
 - **real**: Second initialize() is a no-op; initializeStart/End emitted once.
 - **mini**: Also a no-op; no initialize events exist.

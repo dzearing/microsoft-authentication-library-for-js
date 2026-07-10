@@ -181,6 +181,34 @@ Entries (append as you go):
   memory only. This is what eliminated the networkCalls diffs across all
   silent.* scenarios.
 
+- **B2 (2026-07-10)**: event streams mirror real 5.16's emit sites exactly.
+  Key discoveries locked in: (1) event payloadKeys expose Object.keys of real's
+  objects, so mini's AuthenticationResult now carries real's FULL 21-key shape
+  (incl. undefined-valued cloudGraphHostName/code/refreshOn/state-on-silent,
+  uniqueId/tenantId/idTokenClaims/extExpiresOn/familyId/requestId/msGraphHost)
+  and AccountInfo the full 15-key shape (authorityType/dataBoundary/idToken/
+  kmsi/loginHint/nativeAccountId/tenantProfiles/upn); silent results have
+  `state: undefined` (key PRESENT), not a deleted key. (2) real emits NO
+  same-tab accountAdded/accountRemoved, and its EventType map has NO
+  LOGIN_FAILURE/ACCOUNT_ADDED/ACCOUNT_REMOVED — mini's EventType now equals
+  real's 20-key map (also serves C5); loginSuccess payload is the ACCOUNT (not
+  the result) and fires only when the account count grew; failures emit only
+  acquireTokenFailure. (3) loginPopup = acquireTokenPopup with correlationId
+  stamped on the request; silent events fire once per deduped request;
+  acquireTokenFromNetworkStart fires after the AT rung misses (any non-
+  AccessToken policy) with the initialized request (account/
+  authenticationScheme/authority/correlationId/forceRefresh/redirectUri/
+  scopes). (4) logoutPopup order = logoutStart → clear cache → +state on
+  request → logoutSuccess → popupOpened → logoutEnd (cache now cleared BEFORE
+  the popup roundtrip, like real). (5) FRONT-RAN one B4 line: forged-state
+  redirect now resolves null silently (real emits only handleRedirectStart/
+  End) — core.redirect-state-tampered passes. (6) React bindings updated:
+  redirect-result/error capture now keys off acquireTokenSuccess/Failure with
+  interactionType redirect (LOGIN_FAILURE is gone; loginSuccess payload is an
+  account). EventMessage = {eventType, interactionType, payload, error,
+  timestamp} — no correlationId field yet (unobserved by harness; add if a
+  scenario ever compares it). InteractionType gained None:"none" (C5 item).
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -280,14 +308,13 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   `account.environment`; scopes keep REQUEST casing/order (real returns
   granted scopes minus offline_access, request-cased — study snapshots).
   Touches nearly every scenario's `result` block.
-- [ ] **B2** `pending` — Event stream parity: add initializeStart/End,
-  acquireTokenStart/Success/Failure (with interactionType + real's payload
-  keys), popupOpened, handleRedirectStart/End semantics (NO handleRedirect
-  events on clean load — real emits none; result null silently),
-  logoutStart/Success/End for logout flows, acquireTokenFromNetworkStart on
-  forced refresh, event ordering to match snapshots (acquireTokenSuccess
-  BEFORE loginSuccess, accountAdded placement, ACTIVE_ACCOUNT_CHANGED).
-  EventMessage gains interactionType field. Check react layer still re-renders.
+- [x] **B2** `done 2026-07-10 — pass 32/75, mini-stack 22.9 KB min / 8.2 gz` —
+  Event stream parity: initializeStart/End, acquireTokenStart/Success/Failure
+  (interactionType + real's payload keys), popupOpened, handleRedirectStart/
+  End semantics (NO handleRedirect events on clean load — result null
+  silently), logoutStart/Success/End for logout flows,
+  acquireTokenFromNetworkStart on forced refresh, ordering matches snapshots.
+  EventMessage gained interactionType. React layer updated (see Decision Log).
 - [ ] **B3** `pending` — Protocol params on authorize/token requests: `nonce`
   (send + VALIDATE id_token nonce claim on redemption), `client-request-id`
   (= correlationId) on authorize query AND token query string, `client_info=1`,
@@ -412,3 +439,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | A7 | done 2026-07-10 | 13/75 | 20.0 KB min / 7.4 gz | +1 pass (errors.interaction-in-progress): core lock()/unlock() on `msal.interaction.status` (real's entry shape `{clientId,type}`, type signin/signout); popup + redirect + logout take the lock, popup/logoutPopup release in finally, processRedirect releases on return (covers redirect + signout return legs); popup window names now `msal.<uuid>` (real names are per-request unique via correlationId). Total diffs 566→561; e2e 25/25; mini-core 12.1 min / 4.8 gz |
 | A8 | done 2026-07-10 | 13/75 | 19.9 KB min / 7.4 gz | +0 pass by design (scenarios also need B1/B2): removed the auto-write of `active-account-filters` on login — active account ONLY via setActiveAccount, logout still clears it when it matches. All active-account diffs gone (activeAfterSecondLogin, logout.ok.active, storage active-account-filters keys). e2e 25/25 unchanged — demo app already calls setActiveAccount explicitly. Total diffs 561→554; mini-core 12.0 min / 4.7 gz |
 | B1 | done 2026-07-10 | 23/75 | 20.4 KB min / 7.5 gz | +10 pass (silent.cache-hit-fresh, expiry-window-refresh, policy-access-token-valid/at-and-rt/refresh-token/rt-and-network/skip, params.per-request-redirect-uri, params.scopes-normalization, resilience.network-drop). Result gains authority (`<authority>/`), correlationId (request's or per-request uuid; threaded redirect via msal.request, popup/ssoSilent via AuthCodeResponse, RT via redeemRefresh arg), tokenType "Bearer", fromPlatformBroker false, state "" on interactive+ssoSilent ONLY (absent on acquireTokenSilent — snapshots show real silent results carry NO state; silentLadder deletes it from the iframe rung). AccountInfo gains environment (cache entity's). telemetry.correlation-id-propagation resultMatches now true (rest of that scenario is C3). Total diffs 554→448; e2e 25/25; mini-core 12.5 min / 4.9 gz |
+| B2 | done 2026-07-10 | 32/75 | 22.9 KB min / 8.2 gz | +9 pass (handle-redirect-clean-load, acquire-token-popup, redirect-state-tampered, force-refresh, multi-account, active-account-persistence, cancelled-login-redirect, popup-blocked, double-initialize). Full real event streams + full result/account key shapes (payloadKeys = Object.keys). Total diffs 448→265; remaining event diffs only in cross-tab (C6), perf (C4), broker (C7). e2e 25/25; mini-core 14.0 min / 5.2 gz |
