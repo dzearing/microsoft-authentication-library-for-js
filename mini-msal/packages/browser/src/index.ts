@@ -23,6 +23,7 @@
 
 export interface AccountInfo {
     homeAccountId: string;
+    environment: string;
     username: string;
     localAccountId: string;
     tenantId: string;
@@ -31,12 +32,18 @@ export interface AccountInfo {
 }
 
 export interface AuthenticationResult {
+    authority: string;
     accessToken: string;
     idToken: string;
     scopes: string[];
     expiresOn: Date;
     account: AccountInfo;
     fromCache: boolean;
+    correlationId: string;
+    tokenType: string;
+    /** custom request state (or "") on interactive flows; absent on silent */
+    state?: string;
+    fromPlatformBroker: boolean;
 }
 
 export interface TokenRequest {
@@ -47,6 +54,7 @@ export interface TokenRequest {
     redirectUri?: string;
     cacheLookupPolicy?: number;
     forceRefresh?: boolean;
+    correlationId?: string;
 }
 
 export interface Config {
@@ -249,6 +257,7 @@ export interface AuthCodeResponse {
     verifier: string;
     scopes: string[];
     redirectUri?: string;
+    correlationId?: string;
 }
 
 /** The core client surface returned by createClient. */
@@ -395,6 +404,7 @@ export function createClient(
         );
         return {
             homeAccountId: e.homeAccountId,
+            environment: e.environment,
             username: e.username,
             localAccountId: e.localAccountId,
             tenantId: e.realm,
@@ -532,7 +542,10 @@ export function createClient(
     // ---- token redemption ----
     const tokenRequest = async (
         scopes: string[],
-        grant: Record<string, string>
+        grant: Record<string, string>,
+        // state present (custom or "") only on interactive/ssoSilent results,
+        // like real; correlationId generated per request when not provided
+        meta?: { correlationId?: string; state?: string }
     ): Promise<AuthenticationResult> => {
         const json = await post(metadata!.token_endpoint, {
             redirect_uri: redirectUri,
@@ -560,6 +573,7 @@ export function createClient(
         const homeAccountId = `${uid}.${utid}`;
         const account: AccountInfo = {
             homeAccountId,
+            environment: env(),
             username: claims.preferred_username ?? claims.email ?? "",
             localAccountId: claims.oid ?? claims.sub,
             tenantId: claims.tid ?? "",
@@ -647,31 +661,45 @@ export function createClient(
             emit(EventType.ACCOUNT_ADDED, account);
         }
         return {
+            authority: `${authority}/`,
             accessToken: json.access_token,
             idToken: json.id_token,
             scopes: [...new Set(grantedStr.split(" "))],
             expiresOn: new Date(expiresOn * 1000),
             account,
             fromCache: false,
+            correlationId: meta?.correlationId ?? crypto.randomUUID(),
+            tokenType: "Bearer",
+            state: meta?.state,
+            fromPlatformBroker: false,
         };
     };
 
     const redeem = (res: AuthCodeResponse): Promise<AuthenticationResult> =>
-        tokenRequest(res.scopes, {
-            grant_type: "authorization_code",
-            code: res.code,
-            code_verifier: res.verifier,
-            ...(res.redirectUri && { redirect_uri: res.redirectUri }),
-        });
+        tokenRequest(
+            res.scopes,
+            {
+                grant_type: "authorization_code",
+                code: res.code,
+                code_verifier: res.verifier,
+                ...(res.redirectUri && { redirect_uri: res.redirectUri }),
+            },
+            { correlationId: res.correlationId, state: "" }
+        );
 
     const redeemRefresh = (
         scopes: string[],
-        refreshToken: string
+        refreshToken: string,
+        correlationId?: string
     ): Promise<AuthenticationResult> =>
-        tokenRequest(scopes, {
-            grant_type: "refresh_token",
-            refresh_token: refreshToken,
-        });
+        tokenRequest(
+            scopes,
+            {
+                grant_type: "refresh_token",
+                refresh_token: refreshToken,
+            },
+            { correlationId }
+        );
 
     // ---- interactive: redirect ----
     const processRedirect = async (): Promise<AuthenticationResult | null> => {
@@ -690,7 +718,8 @@ export function createClient(
         try {
             if ((!code && !err) || !stored) return null;
             sessionStorage.removeItem("msal.request");
-            const { verifier, state, scopes } = JSON.parse(stored);
+            const { verifier, state, scopes, correlationId } =
+                JSON.parse(stored);
             if (params.get("state") !== state) {
                 throw new ClientAuthError("state_mismatch");
             }
@@ -699,7 +728,12 @@ export function createClient(
                 // login was cancelled/denied at the IdP
                 throw classify(err, params.get("error_description") ?? "");
             }
-            const result = await redeem({ code: code!, verifier, scopes });
+            const result = await redeem({
+                code: code!,
+                verifier,
+                scopes,
+                correlationId,
+            });
             emit(EventType.LOGIN_SUCCESS, result);
             return result;
         } catch (e) {
@@ -734,6 +768,7 @@ export function createClient(
                 verifier,
                 scopes: req.scopes,
                 redirectUri: ru,
+                correlationId: req.correlationId,
             });
         } finally {
             frame.remove();
@@ -774,13 +809,17 @@ export function createClient(
                 keys.idToken,
                 (t) => t.homeAccountId === account.homeAccountId
             );
-            const result = {
+            const result: AuthenticationResult = {
+                authority: `${authority}/`,
                 accessToken: at.secret,
                 idToken: id?.secret ?? "",
                 scopes: (at.target ?? "").split(" "),
                 expiresOn: new Date(Number(at.expiresOn) * 1000),
                 account,
                 fromCache: true,
+                correlationId: req.correlationId ?? crypto.randomUUID(),
+                tokenType: "Bearer",
+                fromPlatformBroker: false,
             };
             emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
             return result;
@@ -796,7 +835,11 @@ export function createClient(
             );
             if (rt) {
                 try {
-                    const result = await redeemRefresh(req.scopes, rt.secret);
+                    const result = await redeemRefresh(
+                        req.scopes,
+                        rt.secret,
+                        req.correlationId
+                    );
                     emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
                     return result;
                 } catch (e) {
@@ -816,6 +859,9 @@ export function createClient(
             ...req,
             loginHint: account.username,
         });
+        // real's acquireTokenSilent results carry no state (only
+        // interactive flows and ssoSilent do)
+        delete result.state;
         emit(EventType.ACQUIRE_TOKEN_SUCCESS, result);
         return result;
     };
@@ -926,7 +972,12 @@ export function createClient(
             const { url, verifier, state } = await authorizeUrl(req);
             sessionStorage.setItem(
                 "msal.request",
-                JSON.stringify({ verifier, state, scopes: req.scopes })
+                JSON.stringify({
+                    verifier,
+                    state,
+                    scopes: req.scopes,
+                    correlationId: req.correlationId ?? crypto.randomUUID(),
+                })
             );
             location.assign(url);
         },

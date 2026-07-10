@@ -17,7 +17,7 @@
       {
         "path": "events[0].payloadKeys",
         "real": "null",
-        "mini": "[\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
+        "mini": "[\"environment\",\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
       },
       {
         "path": "events[1].eventType",
@@ -32,7 +32,7 @@
       {
         "path": "events[1].payloadKeys",
         "real": "null",
-        "mini": "[\"accessToken\",\"account\",\"expiresOn\",\"fromCache\",\"idToken\",\"scopes\"]"
+        "mini": "[\"accessToken\",\"account\",\"authority\",\"correlationId\",\"expiresOn\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"scopes\",\"state\",\"tokenType\"]"
       },
       {
         "path": "events[2].eventType",
@@ -138,56 +138,6 @@
         "path": "idp[3].query",
         "real": "{\"client-request-id\":\"<dynamic>\"}",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.state",
-        "real": "\"<dynamic>\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      },
-      {
-        "path": "secondHandleRedirectCall.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "secondHandleRedirectCall.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "secondHandleRedirectCall.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "secondHandleRedirectCall.ok.state",
-        "real": "\"<dynamic>\"",
-        "mini": "null"
-      },
-      {
-        "path": "secondHandleRedirectCall.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
       }
     ],
     "observed": {
@@ -203,6 +153,7 @@
           "interactionType": null,
           "payloadAccount": "ada@contoso.com",
           "payloadKeys": [
+            "environment",
             "homeAccountId",
             "idTokenClaims",
             "localAccountId",
@@ -220,10 +171,15 @@
           "payloadKeys": [
             "accessToken",
             "account",
+            "authority",
+            "correlationId",
             "expiresOn",
             "fromCache",
+            "fromPlatformBroker",
             "idToken",
-            "scopes"
+            "scopes",
+            "state",
+            "tokenType"
           ],
           "seq": 1
         },
@@ -289,20 +245,20 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
             "openid",
             "profile"
           ],
-          "state": null,
-          "tokenType": null
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
         }
       },
       "secondHandleRedirectCall": {
@@ -313,20 +269,20 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
             "openid",
             "profile"
           ],
-          "state": null,
-          "tokenType": null
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
         }
       }
     }
@@ -381,7 +337,7 @@
       {
         "path": "events[0].payloadKeys",
         "real": "null",
-        "mini": "[\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
+        "mini": "[\"environment\",\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
       },
       {
         "path": "events[1].eventType",
@@ -396,7 +352,7 @@
       {
         "path": "events[1].payloadKeys",
         "real": "null",
-        "mini": "[\"accessToken\",\"account\",\"expiresOn\",\"fromCache\",\"idToken\",\"scopes\"]"
+        "mini": "[\"accessToken\",\"account\",\"authority\",\"correlationId\",\"expiresOn\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"scopes\",\"state\",\"tokenType\"]"
       },
       {
         "path": "events[2]",
@@ -497,31 +453,6 @@
         "path": "idp[2].query",
         "real": "{\"client-request-id\":\"<dynamic>\"}",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.state",
-        "real": "\"<dynamic>\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
       }
     ],
     "observed": {
@@ -532,6 +463,7 @@
           "interactionType": null,
           "payloadAccount": "ada@contoso.com",
           "payloadKeys": [
+            "environment",
             "homeAccountId",
             "idTokenClaims",
             "localAccountId",
@@ -549,10 +481,15 @@
           "payloadKeys": [
             "accessToken",
             "account",
+            "authority",
+            "correlationId",
             "expiresOn",
             "fromCache",
+            "fromPlatformBroker",
             "idToken",
-            "scopes"
+            "scopes",
+            "state",
+            "tokenType"
           ],
           "seq": 1
         }
@@ -603,20 +540,20 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
             "openid",
             "profile"
           ],
-          "state": null,
-          "tokenType": null
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
         }
       }
     }
@@ -639,7 +576,7 @@
       {
         "path": "events[0].payloadKeys",
         "real": "null",
-        "mini": "[\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
+        "mini": "[\"environment\",\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
       },
       {
         "path": "events[1].eventType",
@@ -654,7 +591,7 @@
       {
         "path": "events[1].payloadKeys",
         "real": "null",
-        "mini": "[\"accessToken\",\"account\",\"expiresOn\",\"fromCache\",\"idToken\",\"scopes\"]"
+        "mini": "[\"accessToken\",\"account\",\"authority\",\"correlationId\",\"expiresOn\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"scopes\",\"state\",\"tokenType\"]"
       },
       {
         "path": "events[2]",
@@ -690,31 +627,6 @@
         "path": "events[8]",
         "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"accessToken\",\"account\",\"authority\",\"cloudGraphHostName\",\"code\",\"correlationId\",\"expiresOn\",\"extExpiresOn\",\"familyId\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"idTokenCl…",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.state",
-        "real": "\"<dynamic>\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
       }
     ],
     "observed": {
@@ -725,6 +637,7 @@
           "interactionType": null,
           "payloadAccount": "ada@contoso.com",
           "payloadKeys": [
+            "environment",
             "homeAccountId",
             "idTokenClaims",
             "localAccountId",
@@ -742,10 +655,15 @@
           "payloadKeys": [
             "accessToken",
             "account",
+            "authority",
+            "correlationId",
             "expiresOn",
             "fromCache",
+            "fromPlatformBroker",
             "idToken",
-            "scopes"
+            "scopes",
+            "state",
+            "tokenType"
           ],
           "seq": 1
         }
@@ -758,20 +676,20 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
             "openid",
             "profile"
           ],
-          "state": null,
-          "tokenType": null
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
         }
       }
     }
@@ -896,7 +814,7 @@
       {
         "path": "events[0].payloadKeys",
         "real": "null",
-        "mini": "[\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
+        "mini": "[\"environment\",\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
       },
       {
         "path": "events[1]",
@@ -1007,31 +925,6 @@
         "path": "idp[2].query",
         "real": "{\"client-request-id\":\"<dynamic>\"}",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.state",
-        "real": "\"<dynamic>\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
       }
     ],
     "observed": {
@@ -1042,6 +935,7 @@
           "interactionType": null,
           "payloadAccount": "ada@contoso.com",
           "payloadKeys": [
+            "environment",
             "homeAccountId",
             "idTokenClaims",
             "localAccountId",
@@ -1100,20 +994,20 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
             "openid",
             "profile"
           ],
-          "state": null,
-          "tokenType": null
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
         }
       }
     }
@@ -1217,31 +1111,6 @@
         "path": "idp[2].query",
         "real": "{\"client-request-id\":\"<dynamic>\"}",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.state",
-        "real": "\"<dynamic>\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
       }
     ],
     "observed": {
@@ -1291,20 +1160,20 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
             "openid",
             "profile"
           ],
-          "state": null,
-          "tokenType": null
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
         }
       }
     }
@@ -1493,29 +1362,7 @@
   {
     "id": "silent.cache-hit-fresh",
     "area": "silent",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "expiresRoughlyOneHour": {
         "ok": true
@@ -1531,12 +1378,12 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": true,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
@@ -1544,7 +1391,7 @@
             "profile"
           ],
           "state": null,
-          "tokenType": null
+          "tokenType": "Bearer"
         }
       }
     }
@@ -1552,29 +1399,7 @@
   {
     "id": "silent.expiry-window-refresh",
     "area": "silent",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "networkCalls": [
         "discovery",
@@ -1588,12 +1413,12 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
@@ -1601,7 +1426,7 @@
             "profile"
           ],
           "state": null,
-          "tokenType": null
+          "tokenType": "Bearer"
         }
       }
     }
@@ -1611,26 +1436,6 @@
     "area": "silent",
     "status": "diff",
     "diffs": [
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      },
       {
         "path": "tokenRequest[0].body.X-AnchorMailbox",
         "real": "\"Oid:oid-123@tenant-123\"",
@@ -1700,12 +1505,12 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
@@ -1713,7 +1518,7 @@
             "profile"
           ],
           "state": null,
-          "tokenType": null
+          "tokenType": "Bearer"
         }
       },
       "tokenRequest": [
@@ -1778,26 +1583,6 @@
         "path": "authorizeParams[0].query.x-client-VER",
         "real": "\"5.16.0\"",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
       }
     ],
     "observed": {
@@ -1832,12 +1617,12 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
@@ -1845,7 +1630,7 @@
             "profile"
           ],
           "state": null,
-          "tokenType": null
+          "tokenType": "Bearer"
         }
       }
     }
@@ -1853,29 +1638,7 @@
   {
     "id": "silent.policy-access-token-valid",
     "area": "silent",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "networkCalls": [
         "discovery"
@@ -1888,12 +1651,12 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": true,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
@@ -1901,7 +1664,7 @@
             "profile"
           ],
           "state": null,
-          "tokenType": null
+          "tokenType": "Bearer"
         }
       }
     }
@@ -1927,29 +1690,7 @@
   {
     "id": "silent.policy-at-and-rt",
     "area": "silent",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "networkCalls": [
         "discovery",
@@ -1963,12 +1704,12 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
@@ -1976,7 +1717,7 @@
             "profile"
           ],
           "state": null,
-          "tokenType": null
+          "tokenType": "Bearer"
         }
       }
     }
@@ -1984,29 +1725,7 @@
   {
     "id": "silent.policy-refresh-token",
     "area": "silent",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "networkCalls": [
         "discovery",
@@ -2020,12 +1739,12 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
@@ -2033,7 +1752,7 @@
             "profile"
           ],
           "state": null,
-          "tokenType": null
+          "tokenType": "Bearer"
         }
       }
     }
@@ -2041,29 +1760,7 @@
   {
     "id": "silent.policy-rt-and-network",
     "area": "silent",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "networkCalls": [
         "discovery",
@@ -2079,12 +1776,12 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
@@ -2092,7 +1789,7 @@
             "profile"
           ],
           "state": null,
-          "tokenType": null
+          "tokenType": "Bearer"
         }
       }
     }
@@ -2100,29 +1797,7 @@
   {
     "id": "silent.policy-skip",
     "area": "silent",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "networkCalls": [
         "discovery",
@@ -2137,12 +1812,12 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
@@ -2150,7 +1825,7 @@
             "profile"
           ],
           "state": null,
-          "tokenType": null
+          "tokenType": "Bearer"
         }
       }
     }
@@ -2192,7 +1867,7 @@
       {
         "path": "events[0].payloadKeys",
         "real": "null",
-        "mini": "[\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
+        "mini": "[\"environment\",\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
       },
       {
         "path": "events[1].eventType",
@@ -2207,7 +1882,7 @@
       {
         "path": "events[1].payloadKeys",
         "real": "null",
-        "mini": "[\"accessToken\",\"account\",\"expiresOn\",\"fromCache\",\"idToken\",\"scopes\"]"
+        "mini": "[\"accessToken\",\"account\",\"authority\",\"correlationId\",\"expiresOn\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"scopes\",\"state\",\"tokenType\"]"
       },
       {
         "path": "events[2].eventType",
@@ -2237,22 +1912,47 @@
       {
         "path": "events[2].payloadKeys[2]",
         "real": "\"scopes\"",
-        "mini": "\"expiresOn\""
+        "mini": "\"authority\""
       },
       {
         "path": "events[2].payloadKeys[3]",
         "real": "\"<missing>\"",
-        "mini": "\"fromCache\""
+        "mini": "\"correlationId\""
       },
       {
         "path": "events[2].payloadKeys[4]",
         "real": "\"<missing>\"",
-        "mini": "\"idToken\""
+        "mini": "\"expiresOn\""
       },
       {
         "path": "events[2].payloadKeys[5]",
         "real": "\"<missing>\"",
+        "mini": "\"fromCache\""
+      },
+      {
+        "path": "events[2].payloadKeys[6]",
+        "real": "\"<missing>\"",
+        "mini": "\"fromPlatformBroker\""
+      },
+      {
+        "path": "events[2].payloadKeys[7]",
+        "real": "\"<missing>\"",
+        "mini": "\"idToken\""
+      },
+      {
+        "path": "events[2].payloadKeys[8]",
+        "real": "\"<missing>\"",
         "mini": "\"scopes\""
+      },
+      {
+        "path": "events[2].payloadKeys[9]",
+        "real": "\"<missing>\"",
+        "mini": "\"state\""
+      },
+      {
+        "path": "events[2].payloadKeys[10]",
+        "real": "\"<missing>\"",
+        "mini": "\"tokenType\""
       },
       {
         "path": "events[3]",
@@ -2293,26 +1993,6 @@
         "path": "events[10]",
         "real": "{\"error\":null,\"eventType\":\"msal:acquireTokenSuccess\",\"interactionType\":\"silent\",\"payloadAccount\":\"ada@contoso.com\",\"payloadKeys\":[\"accessToken\",\"account\",\"authority\",\"cloudGraphHostName\",\"code\",\"correlationId\",\"expiresOn\",\"extExpiresOn\",\"familyId\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"idTokenC…",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
       }
     ],
     "observed": {
@@ -2323,6 +2003,7 @@
           "interactionType": null,
           "payloadAccount": "ada@contoso.com",
           "payloadKeys": [
+            "environment",
             "homeAccountId",
             "idTokenClaims",
             "localAccountId",
@@ -2340,10 +2021,15 @@
           "payloadKeys": [
             "accessToken",
             "account",
+            "authority",
+            "correlationId",
             "expiresOn",
             "fromCache",
+            "fromPlatformBroker",
             "idToken",
-            "scopes"
+            "scopes",
+            "state",
+            "tokenType"
           ],
           "seq": 1
         },
@@ -2355,10 +2041,15 @@
           "payloadKeys": [
             "accessToken",
             "account",
+            "authority",
+            "correlationId",
             "expiresOn",
             "fromCache",
+            "fromPlatformBroker",
             "idToken",
-            "scopes"
+            "scopes",
+            "state",
+            "tokenType"
           ],
           "seq": 2
         }
@@ -2375,12 +2066,12 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
@@ -2388,7 +2079,7 @@
             "profile"
           ],
           "state": null,
-          "tokenType": null
+          "tokenType": "Bearer"
         }
       }
     }
@@ -2398,16 +2089,6 @@
     "area": "accounts",
     "status": "diff",
     "diffs": [
-      {
-        "path": "accounts.ok[0].environment",
-        "real": "\"localhost:4599\"",
-        "mini": "null"
-      },
-      {
-        "path": "accounts.ok[1].environment",
-        "real": "\"localhost:4599\"",
-        "mini": "null"
-      },
       {
         "path": "events[0].eventType",
         "real": "\"msal:initializeStart\"",
@@ -2421,7 +2102,7 @@
       {
         "path": "events[0].payloadKeys",
         "real": "null",
-        "mini": "[\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
+        "mini": "[\"environment\",\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
       },
       {
         "path": "events[1].eventType",
@@ -2436,7 +2117,7 @@
       {
         "path": "events[1].payloadKeys",
         "real": "null",
-        "mini": "[\"accessToken\",\"account\",\"expiresOn\",\"fromCache\",\"idToken\",\"scopes\"]"
+        "mini": "[\"accessToken\",\"account\",\"authority\",\"correlationId\",\"expiresOn\",\"fromCache\",\"fromPlatformBroker\",\"idToken\",\"scopes\",\"state\",\"tokenType\"]"
       },
       {
         "path": "events[2].eventType",
@@ -2456,30 +2137,35 @@
       {
         "path": "events[2].payloadKeys[0]",
         "real": "\"correlationId\"",
-        "mini": "\"homeAccountId\""
+        "mini": "\"environment\""
       },
       {
         "path": "events[2].payloadKeys[1]",
         "real": "\"redirectUri\"",
-        "mini": "\"idTokenClaims\""
+        "mini": "\"homeAccountId\""
       },
       {
         "path": "events[2].payloadKeys[2]",
         "real": "\"scopes\"",
-        "mini": "\"localAccountId\""
+        "mini": "\"idTokenClaims\""
       },
       {
         "path": "events[2].payloadKeys[3]",
         "real": "\"<missing>\"",
-        "mini": "\"name\""
+        "mini": "\"localAccountId\""
       },
       {
         "path": "events[2].payloadKeys[4]",
         "real": "\"<missing>\"",
-        "mini": "\"tenantId\""
+        "mini": "\"name\""
       },
       {
         "path": "events[2].payloadKeys[5]",
+        "real": "\"<missing>\"",
+        "mini": "\"tenantId\""
+      },
+      {
+        "path": "events[2].payloadKeys[6]",
         "real": "\"<missing>\"",
         "mini": "\"username\""
       },
@@ -2511,22 +2197,47 @@
       {
         "path": "events[3].payloadKeys[2]",
         "real": "\"<missing>\"",
-        "mini": "\"expiresOn\""
+        "mini": "\"authority\""
       },
       {
         "path": "events[3].payloadKeys[3]",
         "real": "\"<missing>\"",
-        "mini": "\"fromCache\""
+        "mini": "\"correlationId\""
       },
       {
         "path": "events[3].payloadKeys[4]",
         "real": "\"<missing>\"",
-        "mini": "\"idToken\""
+        "mini": "\"expiresOn\""
       },
       {
         "path": "events[3].payloadKeys[5]",
         "real": "\"<missing>\"",
+        "mini": "\"fromCache\""
+      },
+      {
+        "path": "events[3].payloadKeys[6]",
+        "real": "\"<missing>\"",
+        "mini": "\"fromPlatformBroker\""
+      },
+      {
+        "path": "events[3].payloadKeys[7]",
+        "real": "\"<missing>\"",
+        "mini": "\"idToken\""
+      },
+      {
+        "path": "events[3].payloadKeys[8]",
+        "real": "\"<missing>\"",
         "mini": "\"scopes\""
+      },
+      {
+        "path": "events[3].payloadKeys[9]",
+        "real": "\"<missing>\"",
+        "mini": "\"state\""
+      },
+      {
+        "path": "events[3].payloadKeys[10]",
+        "real": "\"<missing>\"",
+        "mini": "\"tokenType\""
       },
       {
         "path": "events[4]",
@@ -2567,63 +2278,13 @@
         "path": "events[11]",
         "real": "{\"error\":null,\"eventType\":\"msal:loginSuccess\",\"interactionType\":\"popup\",\"payloadAccount\":\"grace@contoso.com\",\"payloadKeys\":[\"authorityType\",\"dataBoundary\",\"environment\",\"homeAccountId\",\"idToken\",\"idTokenClaims\",\"kmsi\",\"localAccountId\",\"loginHint\",\"name\",\"nativeAccountId\",\"tenantId\",\"tenantProfiles\",…",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "logins.first.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "logins.first.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "logins.first.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "logins.first.ok.state",
-        "real": "\"<dynamic>\"",
-        "mini": "null"
-      },
-      {
-        "path": "logins.first.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      },
-      {
-        "path": "logins.second.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "logins.second.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "logins.second.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "logins.second.ok.state",
-        "real": "\"<dynamic>\"",
-        "mini": "null"
-      },
-      {
-        "path": "logins.second.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
       }
     ],
     "observed": {
       "accounts": {
         "ok": [
           {
-            "environment": null,
+            "environment": "localhost:4599",
             "hasIdTokenClaims": true,
             "homeAccountId": "oid-123.tenant-123",
             "localAccountId": "oid-123",
@@ -2632,7 +2293,7 @@
             "username": "ada@contoso.com"
           },
           {
-            "environment": null,
+            "environment": "localhost:4599",
             "hasIdTokenClaims": true,
             "homeAccountId": "oid-456.tenant-123",
             "localAccountId": "oid-456",
@@ -2652,6 +2313,7 @@
           "interactionType": null,
           "payloadAccount": "ada@contoso.com",
           "payloadKeys": [
+            "environment",
             "homeAccountId",
             "idTokenClaims",
             "localAccountId",
@@ -2669,10 +2331,15 @@
           "payloadKeys": [
             "accessToken",
             "account",
+            "authority",
+            "correlationId",
             "expiresOn",
             "fromCache",
+            "fromPlatformBroker",
             "idToken",
-            "scopes"
+            "scopes",
+            "state",
+            "tokenType"
           ],
           "seq": 1
         },
@@ -2682,6 +2349,7 @@
           "interactionType": null,
           "payloadAccount": "grace@contoso.com",
           "payloadKeys": [
+            "environment",
             "homeAccountId",
             "idTokenClaims",
             "localAccountId",
@@ -2699,10 +2367,15 @@
           "payloadKeys": [
             "accessToken",
             "account",
+            "authority",
+            "correlationId",
             "expiresOn",
             "fromCache",
+            "fromPlatformBroker",
             "idToken",
-            "scopes"
+            "scopes",
+            "state",
+            "tokenType"
           ],
           "seq": 3
         }
@@ -2716,20 +2389,20 @@
               "tenantId": "tenant-123",
               "username": "ada@contoso.com"
             },
-            "authority": null,
-            "correlationIdPresent": false,
+            "authority": "https://localhost:4599/tenant/",
+            "correlationIdPresent": true,
             "expiresInFuture": true,
             "expiresOnType": "Date",
             "fromCache": false,
-            "fromPlatformBroker": null,
+            "fromPlatformBroker": false,
             "idToken": "<jwt>",
             "scopes": [
               "User.Read",
               "openid",
               "profile"
             ],
-            "state": null,
-            "tokenType": null
+            "state": "<dynamic>",
+            "tokenType": "Bearer"
           }
         },
         "second": {
@@ -2740,20 +2413,20 @@
               "tenantId": "tenant-123",
               "username": "grace@contoso.com"
             },
-            "authority": null,
-            "correlationIdPresent": false,
+            "authority": "https://localhost:4599/tenant/",
+            "correlationIdPresent": true,
             "expiresInFuture": true,
             "expiresOnType": "Date",
             "fromCache": false,
-            "fromPlatformBroker": null,
+            "fromPlatformBroker": false,
             "idToken": "<jwt>",
             "scopes": [
               "User.Read",
               "openid",
               "profile"
             ],
-            "state": null,
-            "tokenType": null
+            "state": "<dynamic>",
+            "tokenType": "Bearer"
           }
         }
       }
@@ -2845,30 +2518,35 @@
       {
         "path": "events[0].payloadKeys[0]",
         "real": "\"account\"",
-        "mini": "\"homeAccountId\""
+        "mini": "\"environment\""
       },
       {
         "path": "events[0].payloadKeys[1]",
         "real": "\"correlationId\"",
-        "mini": "\"idTokenClaims\""
+        "mini": "\"homeAccountId\""
       },
       {
         "path": "events[0].payloadKeys[2]",
         "real": "\"postLogoutRedirectUri\"",
-        "mini": "\"localAccountId\""
+        "mini": "\"idTokenClaims\""
       },
       {
         "path": "events[0].payloadKeys[3]",
         "real": "\"<missing>\"",
-        "mini": "\"name\""
+        "mini": "\"localAccountId\""
       },
       {
         "path": "events[0].payloadKeys[4]",
         "real": "\"<missing>\"",
-        "mini": "\"tenantId\""
+        "mini": "\"name\""
       },
       {
         "path": "events[0].payloadKeys[5]",
+        "real": "\"<missing>\"",
+        "mini": "\"tenantId\""
+      },
+      {
+        "path": "events[0].payloadKeys[6]",
         "real": "\"<missing>\"",
         "mini": "\"username\""
       },
@@ -2890,30 +2568,35 @@
       {
         "path": "events[1].payloadKeys[0]",
         "real": "\"account\"",
-        "mini": "\"homeAccountId\""
+        "mini": "\"environment\""
       },
       {
         "path": "events[1].payloadKeys[1]",
         "real": "\"correlationId\"",
-        "mini": "\"idTokenClaims\""
+        "mini": "\"homeAccountId\""
       },
       {
         "path": "events[1].payloadKeys[2]",
         "real": "\"postLogoutRedirectUri\"",
-        "mini": "\"localAccountId\""
+        "mini": "\"idTokenClaims\""
       },
       {
         "path": "events[1].payloadKeys[3]",
         "real": "\"state\"",
-        "mini": "\"name\""
+        "mini": "\"localAccountId\""
       },
       {
         "path": "events[1].payloadKeys[4]",
         "real": "\"<missing>\"",
-        "mini": "\"tenantId\""
+        "mini": "\"name\""
       },
       {
         "path": "events[1].payloadKeys[5]",
+        "real": "\"<missing>\"",
+        "mini": "\"tenantId\""
+      },
+      {
+        "path": "events[1].payloadKeys[6]",
         "real": "\"<missing>\"",
         "mini": "\"username\""
       },
@@ -2940,7 +2623,7 @@
       {
         "path": "events[2].payloadKeys",
         "real": "null",
-        "mini": "[\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
+        "mini": "[\"environment\",\"homeAccountId\",\"idTokenClaims\",\"localAccountId\",\"name\",\"tenantId\",\"username\"]"
       },
       {
         "path": "events[2].seq",
@@ -3006,6 +2689,7 @@
           "interactionType": null,
           "payloadAccount": "ada@contoso.com",
           "payloadKeys": [
+            "environment",
             "homeAccountId",
             "idTokenClaims",
             "localAccountId",
@@ -3021,6 +2705,7 @@
           "interactionType": null,
           "payloadAccount": "grace@contoso.com",
           "payloadKeys": [
+            "environment",
             "homeAccountId",
             "idTokenClaims",
             "localAccountId",
@@ -3036,6 +2721,7 @@
           "interactionType": null,
           "payloadAccount": "grace@contoso.com",
           "payloadKeys": [
+            "environment",
             "homeAccountId",
             "idTokenClaims",
             "localAccountId",
@@ -3210,31 +2896,6 @@
     "status": "diff",
     "diffs": [
       {
-        "path": "login.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "login.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "login.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "login.ok.state",
-        "real": "\"<dynamic>\"",
-        "mini": "null"
-      },
-      {
-        "path": "login.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      },
-      {
         "path": "storage.localStorage.msal.3.account.keys",
         "real": "[\"msal.3|oid-123.tenant-123|localhost:4599|tenant-123\"]",
         "mini": "\"<missing>\""
@@ -3309,20 +2970,20 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
             "openid",
             "profile"
           ],
-          "state": null,
-          "tokenType": null
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
         }
       },
       "silentAfter": {
@@ -3683,34 +3344,7 @@
   {
     "id": "errors.nested-popup-guard",
     "area": "errors",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "popupCall.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "popupCall.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "popupCall.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "popupCall.ok.state",
-        "real": "\"<dynamic>\"",
-        "mini": "null"
-      },
-      {
-        "path": "popupCall.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "popupCall": {
         "ok": {
@@ -3720,20 +3354,20 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
             "openid",
             "profile"
           ],
-          "state": null,
-          "tokenType": null
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
         }
       },
       "silentCall": {
@@ -3910,7 +3544,7 @@
       {
         "path": "customStateEcho",
         "real": "\"app-state-123\"",
-        "mini": "null"
+        "mini": "\"\""
       },
       {
         "path": "wireStateContainsCustom",
@@ -3919,7 +3553,7 @@
       }
     ],
     "observed": {
-      "customStateEcho": null,
+      "customStateEcho": "",
       "wireStateContainsCustom": false,
       "wireStateEqualsCustom": false
     }
@@ -3941,22 +3575,7 @@
       {
         "path": "result.ok.authority",
         "real": "\"https://localhost:4599/other-tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
+        "mini": "\"https://localhost:4599/tenant/\""
       }
     ],
     "observed": {
@@ -3972,12 +3591,12 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
@@ -3985,7 +3604,7 @@
             "profile"
           ],
           "state": null,
-          "tokenType": null
+          "tokenType": "Bearer"
         }
       }
     }
@@ -3993,59 +3612,7 @@
   {
     "id": "params.scopes-normalization",
     "area": "params",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "dupes.result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "dupes.result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "dupes.result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "dupes.result.ok.state",
-        "real": "\"<dynamic>\"",
-        "mini": "null"
-      },
-      {
-        "path": "dupes.result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      },
-      {
-        "path": "empty.result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "empty.result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "empty.result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "empty.result.ok.state",
-        "real": "\"<dynamic>\"",
-        "mini": "null"
-      },
-      {
-        "path": "empty.result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "dupes": {
         "result": {
@@ -4056,20 +3623,20 @@
               "tenantId": "tenant-123",
               "username": "ada@contoso.com"
             },
-            "authority": null,
-            "correlationIdPresent": false,
+            "authority": "https://localhost:4599/tenant/",
+            "correlationIdPresent": true,
             "expiresInFuture": true,
             "expiresOnType": "Date",
             "fromCache": false,
-            "fromPlatformBroker": null,
+            "fromPlatformBroker": false,
             "idToken": "<jwt>",
             "scopes": [
               "User.Read",
               "openid",
               "profile"
             ],
-            "state": null,
-            "tokenType": null
+            "state": "<dynamic>",
+            "tokenType": "Bearer"
           }
         },
         "scopeParam": "User.Read USER.READ openid profile offline_access"
@@ -4083,20 +3650,20 @@
               "tenantId": "tenant-123",
               "username": "ada@contoso.com"
             },
-            "authority": null,
-            "correlationIdPresent": false,
+            "authority": "https://localhost:4599/tenant/",
+            "correlationIdPresent": true,
             "expiresInFuture": true,
             "expiresOnType": "Date",
             "fromCache": false,
-            "fromPlatformBroker": null,
+            "fromPlatformBroker": false,
             "idToken": "<jwt>",
             "scopes": [
               "User.Read",
               "openid",
               "profile"
             ],
-            "state": null,
-            "tokenType": null
+            "state": "<dynamic>",
+            "tokenType": "Bearer"
           }
         },
         "scopeParam": "openid profile offline_access"
@@ -4116,7 +3683,7 @@
       {
         "path": "immediateRetry.ok",
         "real": "\"<missing>\"",
-        "mini": "{\"accessToken\":\"mock-access-token-0\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":null,\"correlationIdPresent\":false,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":null,\"idToken\":\"<jwt>\",\"scopes…"
+        "mini": "{\"accessToken\":\"mock-access-token-0\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":\"https://localhost:4599/tenant/\",\"correlationIdPresent\":true,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":fal…"
       },
       {
         "path": "throttleEntriesInStorage",
@@ -4146,12 +3713,12 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
@@ -4159,7 +3726,7 @@
             "profile"
           ],
           "state": null,
-          "tokenType": null
+          "tokenType": "Bearer"
         }
       },
       "throttleEntriesInStorage": 0,
@@ -4185,29 +3752,7 @@
   {
     "id": "resilience.network-drop",
     "area": "resilience",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "result": {
         "ok": {
@@ -4217,12 +3762,12 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
@@ -4230,7 +3775,7 @@
             "profile"
           ],
           "state": null,
-          "tokenType": null
+          "tokenType": "Bearer"
         }
       },
       "tokenEndpointHits": 2
@@ -4245,26 +3790,6 @@
         "path": "refreshOnStored",
         "real": "\"present\"",
         "mini": "\"absent\""
-      },
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
       }
     ],
     "observed": {
@@ -4281,12 +3806,12 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": true,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
@@ -4294,7 +3819,7 @@
             "profile"
           ],
           "state": null,
-          "tokenType": null
+          "tokenType": "Bearer"
         }
       }
     }
@@ -4592,7 +4117,7 @@
       {
         "path": "result.ok",
         "real": "\"<missing>\"",
-        "mini": "{\"accessToken\":\"mock-access-token-0\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":null,\"correlationIdPresent\":false,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":null,\"idToken\":\"<jwt>\",\"scopes…"
+        "mini": "{\"accessToken\":\"mock-access-token-0\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":\"https://localhost:4599/tenant/\",\"correlationIdPresent\":true,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":fal…"
       }
     ],
     "observed": {
@@ -4604,20 +4129,20 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
             "openid",
             "profile"
           ],
-          "state": null,
-          "tokenType": null
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
         }
       }
     }
@@ -4717,17 +4242,12 @@
         "path": "perfEventWithCid",
         "real": "true",
         "mini": "false"
-      },
-      {
-        "path": "resultMatches",
-        "real": "true",
-        "mini": "false"
       }
     ],
     "observed": {
       "authorizeParamMatches": false,
       "perfEventWithCid": false,
-      "resultMatches": false,
+      "resultMatches": true,
       "tokenBodyClientRequestId": null
     }
   },
@@ -4865,31 +4385,6 @@
         "path": "brokerLog[0]",
         "real": "{\"brokerId\":\"MicrosoftEntra\",\"call\":\"getSupportedContracts\"}",
         "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.ok.authority",
-        "real": "\"https://localhost:4599/tenant/\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.correlationIdPresent",
-        "real": "true",
-        "mini": "false"
-      },
-      {
-        "path": "result.ok.fromPlatformBroker",
-        "real": "false",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.state",
-        "real": "\"<dynamic>\"",
-        "mini": "null"
-      },
-      {
-        "path": "result.ok.tokenType",
-        "real": "\"Bearer\"",
-        "mini": "null"
       }
     ],
     "observed": {
@@ -4902,20 +4397,20 @@
             "tenantId": "tenant-123",
             "username": "ada@contoso.com"
           },
-          "authority": null,
-          "correlationIdPresent": false,
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
           "expiresInFuture": true,
           "expiresOnType": "Date",
           "fromCache": false,
-          "fromPlatformBroker": null,
+          "fromPlatformBroker": false,
           "idToken": "<jwt>",
           "scopes": [
             "User.Read",
             "openid",
             "profile"
           ],
-          "state": null,
-          "tokenType": null
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
         }
       }
     }

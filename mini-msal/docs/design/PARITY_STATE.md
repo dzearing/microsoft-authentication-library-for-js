@@ -160,6 +160,16 @@ Entries (append as you go):
   (lib.mjs) — snapshot scope order is alphabetical, not wire order; real
   result scopes = ScopeSet.fromString(AT target).asArray(), casing preserved.
 
+- **B1 (2026-07-10)**: result.state semantics per snapshots (NOT the naive
+  "always custom-or-empty"): interactive flows + ssoSilent return state ""
+  (or custom, C1); acquireTokenSilent results (ALL rungs, incl. the hidden
+  iframe) have state undefined — msal-common sets `state: ""` in
+  generateAuthenticationResult, but real silent responses observably carry
+  none, so mini strips it on the silentLadder iframe rung. correlationId for
+  redirect flows is generated at acquireTokenRedirect time and persisted in
+  the msal.request temp entry so the post-redirect result reuses it (real
+  stores it in the temp request the same way).
+
 - **A5 (2026-07-10)**: silent ladder now policy-gated: useAT (pol 0/1/2 and
   !forceRefresh) → useRT (pol ≠ 1/5) → useFrame (pol 0/4/5). AccessToken(1)
   miss → ClientAuthError `token_refresh_required`; RT missing with no iframe
@@ -263,7 +273,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 
 ### Phase B — systemic behavioral diffs
 
-- [ ] **B1** `pending` — Result shape parity: AuthenticationResult gains
+- [x] **B1** `done 2026-07-10 — pass 23/75, mini-stack 20.4 KB min / 7.5 gz` — Result shape parity: AuthenticationResult gains
   `authority` (canonical, trailing slash), `correlationId` (generate per
   request if not provided), `tokenType: "Bearer"`, `state` (custom state or
   ""), `fromPlatformBroker: false`, `expiresOn` semantics unchanged;
@@ -401,3 +411,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | A6 | done 2026-07-10 | 12/75 | 19.7 KB min / 7.3 gz | +1 pass (silent.concurrent-dedupe): inFlight Map keyed like real's thumbprint (scopes/homeAccountId/authority/claims, no policy/forceRefresh), entry deleted on settle; silent ladder hoisted to silentLadder() closure. Total diffs 568→566; e2e 25/25; mini-core 11.8 min / 4.7 gz |
 | A7 | done 2026-07-10 | 13/75 | 20.0 KB min / 7.4 gz | +1 pass (errors.interaction-in-progress): core lock()/unlock() on `msal.interaction.status` (real's entry shape `{clientId,type}`, type signin/signout); popup + redirect + logout take the lock, popup/logoutPopup release in finally, processRedirect releases on return (covers redirect + signout return legs); popup window names now `msal.<uuid>` (real names are per-request unique via correlationId). Total diffs 566→561; e2e 25/25; mini-core 12.1 min / 4.8 gz |
 | A8 | done 2026-07-10 | 13/75 | 19.9 KB min / 7.4 gz | +0 pass by design (scenarios also need B1/B2): removed the auto-write of `active-account-filters` on login — active account ONLY via setActiveAccount, logout still clears it when it matches. All active-account diffs gone (activeAfterSecondLogin, logout.ok.active, storage active-account-filters keys). e2e 25/25 unchanged — demo app already calls setActiveAccount explicitly. Total diffs 561→554; mini-core 12.0 min / 4.7 gz |
+| B1 | done 2026-07-10 | 23/75 | 20.4 KB min / 7.5 gz | +10 pass (silent.cache-hit-fresh, expiry-window-refresh, policy-access-token-valid/at-and-rt/refresh-token/rt-and-network/skip, params.per-request-redirect-uri, params.scopes-normalization, resilience.network-drop). Result gains authority (`<authority>/`), correlationId (request's or per-request uuid; threaded redirect via msal.request, popup/ssoSilent via AuthCodeResponse, RT via redeemRefresh arg), tokenType "Bearer", fromPlatformBroker false, state "" on interactive+ssoSilent ONLY (absent on acquireTokenSilent — snapshots show real silent results carry NO state; silentLadder deletes it from the iframe rung). AccountInfo gains environment (cache entity's). telemetry.correlation-id-propagation resultMatches now true (rest of that scenario is C3). Total diffs 554→448; e2e 25/25; mini-core 12.5 min / 4.9 gz |

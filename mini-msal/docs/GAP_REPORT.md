@@ -14,16 +14,16 @@ exists but differs observably · **missing-feature** = absent by design ·
 | Area | Scenarios | Pass | Behavioral diff | Missing feature | Bug |
 |---|---|---|---|---|---|
 | 1. Core flows | 9 | 0 | 9 | 0 | 0 |
-| 2. Silent acquisition | 12 | 2 | 10 | 0 | 0 |
+| 2. Silent acquisition | 12 | 9 | 3 | 0 | 0 |
 | 3. Accounts & cache | 7 | 1 | 4 | 2 | 0 |
-| 4. Errors & guards | 10 | 7 | 3 | 0 | 0 |
+| 4. Errors & guards | 10 | 8 | 2 | 0 | 0 |
 | 5. Platform broker / WAM | 7 | 0 | 0 | 7 | 0 |
 | 6. Nested app auth (NAA) | 6 | 0 | 0 | 6 | 0 |
 | 7. Telemetry | 5 | 0 | 0 | 5 | 0 |
-| 8. Request passthrough | 9 | 2 | 1 | 6 | 0 |
-| 9. Resilience | 4 | 1 | 1 | 2 | 0 |
+| 8. Request passthrough | 9 | 3 | 0 | 6 | 0 |
+| 9. Resilience | 4 | 2 | 0 | 2 | 0 |
 | 10. Init & misc | 6 | 0 | 3 | 3 | 0 |
-| **Total** | **75** | **13** | **31** | **31** | **0** |
+| **Total** | **75** | **23** | **21** | **31** | **0** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -105,12 +105,12 @@ here instead of being repeated per scenario:
 
 ### 2. Silent acquisition
 
-#### `silent.cache-hit-fresh` — ↔️ behavioral-diff
+#### `silent.cache-hit-fresh` — ✅ pass
 
 - **real**: Cache hit; still fetches authority metadata (1 discovery request) per fresh client.
 - **mini**: Cache hit with zero network (own discovery cache). Result-shape gaps only.
 
-#### `silent.expiry-window-refresh` — ↔️ behavioral-diff
+#### `silent.expiry-window-refresh` — ✅ pass
 
 - **real**: AT inside 300s renewal window → refresh_token grant.
 - **mini**: Same refresh behavior (300s window matches); shape gaps only.
@@ -125,7 +125,7 @@ here instead of being repeated per scenario:
 - **real**: prompt=none iframe fallback with account-derived hints.
 - **mini**: Same fallback chain (authorize prompt=none → code exchange); param gaps only.
 
-#### `silent.policy-access-token-valid` — ↔️ behavioral-diff
+#### `silent.policy-access-token-valid` — ✅ pass
 
 - **real**: CacheLookupPolicy.AccessToken + valid AT → cache hit.
 - **mini**: Same outcome; shape gaps only.
@@ -135,22 +135,22 @@ here instead of being repeated per scenario:
 - **real**: CacheLookupPolicy.AccessToken + expired AT → throws ClientAuthError token_refresh_required (no fallback, as documented).
 - **mini**: Ignores the policy: silently falls through to the RT grant and RETURNS A TOKEN where real throws.
 
-#### `silent.policy-at-and-rt` — ↔️ behavioral-diff
+#### `silent.policy-at-and-rt` — ✅ pass
 
 - **real**: Expired AT → RT grant (no iframe).
 - **mini**: Policy enforced (A5); result-shape gaps only (B1).
 
-#### `silent.policy-refresh-token` — ↔️ behavioral-diff
+#### `silent.policy-refresh-token` — ✅ pass
 
 - **real**: CacheLookupPolicy.RefreshToken IGNORES the valid AT and uses the RT grant (fromCache=false).
 - **mini**: Policy enforced (A5): same RT grant, fromCache=false; result-shape gaps only (B1).
 
-#### `silent.policy-rt-and-network` — ↔️ behavioral-diff
+#### `silent.policy-rt-and-network` — ✅ pass
 
 - **real**: RT grant fails (invalid_grant) → falls back to prompt=none iframe → new code exchange.
 - **mini**: Policy enforced (A5): same RT→iframe network sequence; result-shape gaps only (B1).
 
-#### `silent.policy-skip` — ↔️ behavioral-diff
+#### `silent.policy-skip` — ✅ pass
 
 - **real**: Skip → straight to prompt=none iframe (skips AT cache AND RT).
 - **mini**: Policy enforced (A5): straight to the iframe like real; result-shape gaps only (B1).
@@ -239,7 +239,7 @@ here instead of being repeated per scenario:
 - **real**: BrowserAuthError redirect_in_iframe.
 - **mini**: Same code; name/message differ.
 
-#### `errors.nested-popup-guard` — ↔️ behavioral-diff · est. 0.1 KB to close
+#### `errors.nested-popup-guard` — ✅ pass · est. 0.1 KB to close
 
 - **real**: SURPRISE: real v5.16 ALLOWS loginPopup from an msal.*-named window (completes fine); silent fails only with no_account_error. The window-name block documented for v3/v4 is gone in the bridge era.
 - **mini**: Guard removed (matches real): popup completes but result shape differs (B1) and silent then SUCCEEDS because mini auto-set the active account (A8).
@@ -392,7 +392,7 @@ here instead of being repeated per scenario:
 - **real**: Per-request authority triggers discovery for that authority; result.authority reflects it; token refreshed against it.
 - **mini**: authority + forceRefresh ignored → returned the cached token from the default authority.
 
-#### `params.scopes-normalization` — ↔️ behavioral-diff · est. 0.1 KB to close
+#### `params.scopes-normalization` — ✅ pass · est. 0.1 KB to close
 
 - **real**: Dedupes exact-duplicate scopes (keeps distinct casings), appends OIDC defaults once; empty scopes → 'openid profile offline_access'.
 - **mini**: Scope wire format matches (A4); remaining diffs are B1 result-shape fields (authority, correlationId, tokenType, state, fromPlatformBroker).
@@ -409,7 +409,7 @@ here instead of being repeated per scenario:
 - **real**: 503 → ServerError with telemetry-formatted message; no automatic retry (1 hit).
 - **mini**: Same single-attempt behavior; error is a bare 'Error' with the raw description.
 
-#### `resilience.network-drop` — ↔️ behavioral-diff
+#### `resilience.network-drop` — ✅ pass
 
 - **real**: Dropped socket transparently retried by the browser fetch stack — request succeeded on both stacks; only result-shape diffs.
 - **mini**: Same recovery; shape gaps only.

@@ -55,6 +55,7 @@ export function popup(ctx: ClientContext): void {
                     verifier,
                     scopes: req.scopes,
                     redirectUri,
+                    correlationId: req.correlationId,
                 });
             } finally {
                 win.close();
