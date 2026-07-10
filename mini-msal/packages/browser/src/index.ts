@@ -255,7 +255,7 @@ export interface AuthClient {
     initialize(): Promise<void>;
     addEventCallback(cb: EventCallback): string | null;
     removeEventCallback(id: string): void;
-    getAllAccounts(): AccountInfo[];
+    getAllAccounts(filter?: AccountFilter): AccountInfo[];
     getAccount(filter: AccountFilter): AccountInfo | null;
     getActiveAccount(): AccountInfo | null;
     setActiveAccount(account: AccountInfo | null): void;
@@ -388,22 +388,25 @@ export function createClient(
         };
     };
 
-    const getAllAccounts = (): AccountInfo[] =>
+    const matchesFilter = (a: AccountInfo, f: AccountFilter): boolean =>
+        (!f.homeAccountId || a.homeAccountId === f.homeAccountId) &&
+        (!f.localAccountId || a.localAccountId === f.localAccountId) &&
+        (!f.username ||
+            a.username.toLowerCase() === f.username.toLowerCase());
+
+    const getAllAccounts = (filter?: AccountFilter): AccountInfo[] =>
         accountKeys()
             .map((k) => readJSON<AccountEntity>(k))
             .filter((e): e is AccountEntity => !!e)
-            .map(toAccountInfo);
+            .map(toAccountInfo)
+            .filter((a) => !filter || matchesFilter(a, filter));
 
+    // Real returns null on an empty/all-empty filter (CacheManager
+    // .getAccountInfoFilteredBy) rather than the first account.
     const getAccount = (filter: AccountFilter): AccountInfo | null =>
-        getAllAccounts().find(
-            (a) =>
-                (!filter.homeAccountId ||
-                    a.homeAccountId === filter.homeAccountId) &&
-                (!filter.localAccountId ||
-                    a.localAccountId === filter.localAccountId) &&
-                (!filter.username ||
-                    a.username.toLowerCase() === filter.username.toLowerCase())
-        ) ?? null;
+        filter && Object.values(filter).some((v) => v)
+            ? getAllAccounts(filter)[0] ?? null
+            : null;
 
     const activeKey = `msal.${clientId}.active-account-filters`;
 

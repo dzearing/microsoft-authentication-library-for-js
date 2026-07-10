@@ -3194,29 +3194,11 @@
   {
     "id": "accounts.get-account-filters",
     "area": "accounts",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "filters.ok.allWithFilter[0]",
-        "real": "\"grace@contoso.com\"",
-        "mini": "\"ada@contoso.com\""
-      },
-      {
-        "path": "filters.ok.allWithFilter[1]",
-        "real": "\"<missing>\"",
-        "mini": "\"grace@contoso.com\""
-      },
-      {
-        "path": "filters.ok.emptyFilter",
-        "real": "null",
-        "mini": "\"ada@contoso.com\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "filters": {
         "ok": {
           "allWithFilter": [
-            "ada@contoso.com",
             "grace@contoso.com"
           ],
           "byHomeAccountId": "ada@contoso.com",
@@ -3224,7 +3206,7 @@
           "byUnknown": null,
           "byUsername": "ada@contoso.com",
           "byUsernameUpper": "ada@contoso.com",
-          "emptyFilter": "ada@contoso.com",
+          "emptyFilter": null,
           "legacyByHomeId": null,
           "legacyByLocalId": null,
           "legacyByUsername": null
