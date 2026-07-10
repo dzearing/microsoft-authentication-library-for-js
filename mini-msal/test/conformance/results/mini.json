@@ -3398,36 +3398,35 @@
   {
     "id": "telemetry.last-telemetry-after-failure",
     "area": "telemetry",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "failedCall.ok",
-        "real": "{\"accessToken\":\"mock-access-token-0\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":\"https://localhost:4599/tenant/\",\"correlationIdPresent\":true,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":fal…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "failedCall.err",
-        "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":\"invalid_grant\",\"message\":\"Error(s): Not Available - Timestamp: Not Available - Description: injected 400 - Correlation ID: Not Available - Trace I\",\"name\":\"ServerError\",\"subError\":null}"
-      },
-      {
-        "path": "tokenCalls",
-        "real": "2",
-        "mini": "1"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "failedCall": {
-        "err": {
-          "errorCode": "invalid_grant",
-          "message": "Error(s): Not Available - Timestamp: Not Available - Description: injected 400 - Correlation ID: Not Available - Trace I",
-          "name": "ServerError",
-          "subError": null
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
         }
       },
       "lastTelemetryMentionsError": false,
       "lastTelemetryParam": "",
-      "tokenCalls": 1
+      "tokenCalls": 2
     }
   },
   {

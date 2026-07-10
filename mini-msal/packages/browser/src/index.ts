@@ -1227,10 +1227,22 @@ export function createClient(
                 try {
                     return await redeemRefresh({ ...req, account }, rt.secret);
                 } catch (e) {
-                    if (
-                        !useFrame ||
-                        !(e instanceof InteractionRequiredAuthError)
-                    ) {
+                    // real's checkIfRefreshTokenErrorCanBeResolvedSilently:
+                    // iframe renewal only for invalid_grant/
+                    // token_refresh_required errors that don't require
+                    // interaction (bad_token subError excepted), or
+                    // no_tokens_found/refresh_token_expired
+                    const err = e as AuthError;
+                    const resolvable =
+                        (!(
+                            e instanceof InteractionRequiredAuthError &&
+                            err.subError !== "bad_token"
+                        ) &&
+                            (err.errorCode === "invalid_grant" ||
+                                err.errorCode === "token_refresh_required")) ||
+                        err.errorCode === "no_tokens_found" ||
+                        err.errorCode === "refresh_token_expired";
+                    if (!useFrame || !resolvable) {
                         throw e;
                     }
                 }

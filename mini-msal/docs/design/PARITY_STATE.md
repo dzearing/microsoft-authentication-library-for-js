@@ -301,6 +301,18 @@ Entries (append as you go):
   if something compares it). Throttle store is sessionStorage directly —
   C6 must route it through the configured cacheLocation like real.
 
+- **C3 (2026-07-10)**: silent iframe-fallback breadth now = real's
+  checkIfRefreshTokenErrorCanBeResolvedSilently (StandardController): after an
+  RT-rung failure, fall back to the hidden iframe ONLY when the policy allows
+  iframe renewal (Default/RefreshTokenAndNetwork/Skip — mini's `useFrame`
+  already encoded this) AND the error is resolvable: (non-IRAE OR IRAE with
+  subError `bad_token`) with errorCode `invalid_grant`/`token_refresh_required`,
+  OR errorCode `no_tokens_found`/`refresh_token_expired`. Two-sided change vs
+  mini's old "fall back on any IRAE": a ServerError invalid_grant RT failure
+  now RECOVERS via iframe (telemetry.last-telemetry-after-failure — real's
+  tokenCalls=2), while a true interaction_required IRAE from the RT grant now
+  surfaces immediately instead of burning an iframe attempt.
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -443,14 +455,14 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   + proactive-refresh observable behavior per snapshot
   (resilience.proactive-refresh: what real did — study snapshot first).
   Scenarios: resilience.*.
-- [ ] **C3** `pending` — MOSTLY DONE BY B3 (identity/telemetry/lib-capability
-  body params, client-request-id query param, correlationId threading —
+- [x] **C3** `done 2026-07-10 — pass 53/75, mini-stack 26.4 KB min / 9.3 gz` —
+  MOSTLY DONE BY B3 (identity/telemetry/lib-capability body params,
+  client-request-id query param, correlationId threading —
   telemetry.token-request-headers passes; real sends EMPTY telemetry values,
-  see B3 log entry). Remaining: telemetry.correlation-id-propagation's last
-  diff is the perf event (C4's job); telemetry.last-telemetry-after-failure
-  needs real's behavior on a failed RT grant (real completed the call via
-  fallback — tokenCalls 2, failedCall.ok — study scenario + real source;
-  likely RT-failure → iframe fallback breadth, not telemetry).
+  see B3 log entry). Finished here: RT-failure → iframe fallback breadth now
+  matches real's checkIfRefreshTokenErrorCanBeResolvedSilently (see Decision
+  Log) — telemetry.last-telemetry-after-failure passes.
+  telemetry.correlation-id-propagation's last diff is the perf event (C4).
 - [ ] **C4** `pending` — Perf events: `addPerformanceCallback` +
   BrowserPerformanceClient-equivalent opt-in via `telemetry.client` config;
   emit `initializeClientApplication`, `acquireTokenPopup`,
@@ -535,3 +547,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | B4 | done 2026-07-10 | 44/75 | 24.4 KB min / 8.7 gz | +4 pass (core.storage-shape-after-login, init.storage-before-login, accounts.logout-redirect, accounts.logout-popup-per-account; redirect-state-tampered was already done by B2). msal.version on initialize; lastUpdatedAt on all entities + cachedByApiId (real ApiId per flow) on the account; end_session gains client-request-id + state (lib-state format), per-request postLogoutRedirectUri honored on both logout flows. Mock-IdP determinism fix: nonce now keyed per PKCE challenge (see Decision Log — was a global that a stray late authorize could clobber → phantom nonce_mismatch flake). Total diffs 145→143 (accounts.local-storage +1, a C6 item). e2e 25/25; mini-core 15.4 min / 5.8 gz |
 | C1 | done 2026-07-10 | 50/75 | 25.4 KB min / 9.0 gz | +6 pass (params.login-hint-domain-hint, sid-passthrough, extra-query-parameters, claims-and-cae, custom-state, authority-override-per-request — all 9 params.* now green). sid gated on prompt=none, select_account suppresses hints+ccs; eQP on authorize + token QUERY (real ignores tokenQueryParameters — see Decision Log); mergedClaims w/ clientCapabilities xms_cc; custom state `b64(libState)\|custom` echoed on result; per-request authority w/o re-discovery. Total diffs 143→132; remaining diffs all C2–C9 areas. e2e 25/25; mini-core 16.3 min / 6.1 gz |
 | C2 | done 2026-07-10 | 52/75 | 26.2 KB min / 9.3 gz | +2 pass (resilience.throttle-429-retry-after, proactive-refresh — all 4 resilience.* green). Throttle cache in post() keyed by real-shaped thumbprint; blocked retry re-throws stored ServerError w/ errorCode "" + raw error_description, zero network; refresh_in → refreshOn on AT entity + result. Total diffs 132→127; remaining 23 diff scenarios all C3–C9 areas. e2e 25/25; mini-core 17.2 min / 6.3 gz |
+| C3 | done 2026-07-10 | 53/75 | 26.4 KB min / 9.3 gz | +1 pass (telemetry.last-telemetry-after-failure). Iframe fallback eligibility = real's checkIfRefreshTokenErrorCanBeResolvedSilently: invalid_grant/token_refresh_required non-IRAE (or IRAE w/ subError bad_token) + no_tokens_found/refresh_token_expired — RT invalid_grant now recovers via iframe (tokenCalls 2); plain IRAE no longer falls back. Total diffs 127→124; remaining telemetry diffs are C4 perf events. e2e 25/25; mini-core 17.4 min / 6.4 gz |

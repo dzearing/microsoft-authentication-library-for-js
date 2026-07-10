@@ -19,11 +19,11 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 4. Errors & guards | 10 | 10 | 0 | 0 | 0 |
 | 5. Platform broker / WAM | 7 | 0 | 0 | 7 | 0 |
 | 6. Nested app auth (NAA) | 6 | 0 | 0 | 6 | 0 |
-| 7. Telemetry | 5 | 1 | 0 | 4 | 0 |
+| 7. Telemetry | 5 | 2 | 0 | 3 | 0 |
 | 8. Request passthrough | 9 | 9 | 0 | 0 | 0 |
 | 9. Resilience | 4 | 4 | 0 | 0 | 0 |
 | 10. Init & misc | 6 | 2 | 1 | 3 | 0 |
-| **Total** | **75** | **52** | **1** | **22** | **0** |
+| **Total** | **75** | **53** | **1** | **21** | **0** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -345,7 +345,7 @@ here instead of being repeated per scenario:
 - **real**: request.correlationId → authorize client-request-id param, result.correlationId, perf events.
 - **mini**: correlationId not supported anywhere.
 
-#### `telemetry.last-telemetry-after-failure` — 🚫 missing-feature
+#### `telemetry.last-telemetry-after-failure` — ✅ pass
 
 - **real**: After a failed RT grant real retried via iframe fallback (2 token calls) and the next request carries x-client-last-telemetry (empty summary here; failure cache exists).
 - **mini**: Failure surfaced directly; no retry chain, no last-telemetry.
