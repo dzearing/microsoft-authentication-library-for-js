@@ -14,6 +14,7 @@ import {
 import { popup, type PopupClient } from "@mini-msal/browser/popup";
 import { broker, type BrokerClient } from "@mini-msal/browser/broker";
 import { localStorageCache } from "@mini-msal/browser/local-storage";
+import { createNestableClient } from "@mini-msal/browser/naa";
 import {
     telemetry,
     type TelemetryClient,
@@ -129,8 +130,11 @@ export async function createAuth(
 
 /** real's factory surface: construct + initialize */
 export const createStandardPublicClientApplication = createAuth;
-/** NAA factory — no bridge support yet (C9); like real with no bridge
- * present, falls back to a standard PCA */
-export const createNestablePublicClientApplication = createAuth;
+/** NAA factory: bridge-backed client when the host provides
+ * window.nestedAppAuthBridge, else a standard PCA (like real) */
+export const createNestablePublicClientApplication = (
+    config: Config
+): Promise<PublicClientApplication> =>
+    createNestableClient(config, createAuth);
 /** platform-broker probe — mini has no broker support yet (C7) */
 export const isPlatformBrokerAvailable = async (): Promise<boolean> => false;

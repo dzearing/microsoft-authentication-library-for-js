@@ -455,6 +455,34 @@ Entries (append as you go):
   drop included). Both extension scenarios passed first try; DOM scenarios
   untouched.
 
+- **C9 (2026-07-12)**: NAA = new subpath `@mini-msal/browser/naa` exporting
+  `createNestableClient(config, fallback)` — the fallback factory keeps the
+  module tree-shakable (compat passes `createAuth`). Bridge handshake at
+  create; success → `createClient(config, [naa(bridge)])` with the naa
+  feature OVERRIDING the client's methods (popup/silent → bridge, redirect/
+  logout/byCode/perf-callbacks/clearCache → sync-throw NestedAppAuthError
+  `unsupported_method`, handleRedirectPromise → null); any handshake failure
+  → fallback. Core gained two seams for hydration: `ctx.findToken(type,
+  match)` + `ctx.writeTokens({...})` (+0.7 KB min on mini-core — the naa
+  read/write path routes through the Store seam so localStorage mode works).
+  KEY DISCOVERIES from real 5.16: (1) tokenParams.extraParameters is a
+  Map in real, so it JSON-serializes to `{}` — request extraQueryParameters
+  NEVER hit the bridge wire (mini sends a literal `{}`); (2) cache lookups
+  use the bridge's accountContext (or the last token response's), NEVER
+  request.account — that's why the scenario's first silent call (raw account
+  object) goes to the bridge; (3) cached silent results report the AT
+  entity's ENVIRONMENT as result.authority (`toAuthenticationResultFromCache`
+  — snapshot shows "localhost:4599", not the config authority); (4) NAA
+  results have NO fromPlatformBroker key and tokenParams scope is
+  request.scopes verbatim (no OIDC append); NO_NETWORK/USER_CANCEL mappings
+  IGNORE the bridge's code (fixed codes), IRAE/ServerError use code +
+  description-as-message. Simplifications (unobservable): mini's NAA client
+  reuses core initialize, so it fetches discovery (real NAA never contacts
+  the authority); real's double ACQUIRE_TOKEN_SUCCESS on cache hits and
+  FAILURE-with-null-error on cache miss are not mirrored (single
+  START/SUCCESS/FAILURE stream). All 6 naa.* passed first try; the two
+  ~60s ERR scenarios from C5 are gone (full run ~2 min faster).
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -649,7 +677,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   extensionId, swallow failures), GetToken over the port, Response/Success
   mapping identical to C7. First-login gating parity (no nativeAccountId →
   web flow). Scenarios: broker.extension-*, broker.dom-first-login.
-- [ ] **C9** `pending` — NAA: `createNestablePublicClientApplication` +
+- [x] **C9** `done 2026-07-12 — pass 75/75, mini-stack 39.5 KB min / 13.4 gz` — NAA: `createNestablePublicClientApplication` +
   window.nestedAppAuthBridge (GetInitContext handshake envelope with
   clientLibrary `msal.js.browser` / clientLibraryVersion `5.16.0` per
   Decision Log), GetToken/GetTokenPopup mapping, browser-cache-first silent, error
@@ -731,3 +759,4 @@ push → reset). "Consumer" below means someone who has never read this repo.
 | C6 | done 2026-07-10 | 64/75 | 32.1 KB min / 11.3 gz | +2 pass (accounts.local-storage, cross-tab-events — ALL accounts.* green). New `@mini-msal/browser/local-storage` feature (encrypted entities via cookie-keyed HKDF/AES-GCM, plaintext indexes, memory mirror, msal.broadcast.cache sync); core `Store` seam + msal.broadcast.event bus (post always, subscribe in LS mode). GAP_REPORT: 0 bugs, 0 behavioral-diffs, 11 missing-feature (C7–C9 only). e2e 25/25 (sessionStorage interop untouched); mini-core 18.6 min / 6.9 gz |
 | C7 | done 2026-07-10 | 68/75 | 37.0 KB min / 12.6 gz | +4 pass (broker.dom-probe-and-interactive, dom-first-login, dom-error-mapping, dom-disabled-fallback — all 4 first try). New `@mini-msal/browser/broker` feature (DOM transport): initialize probe, acquireTokenByCode({nativeAccountId}), brokered silent via new ctx.nativeSilent seam, real's error mapping + fatal-DISABLED provider drop. Core +ctx.writeAccount, toAccountInfo surfaces nativeAccountId (mini-core 18.8 min / 7.0 gz, +0.2). GAP_REPORT: 68 pass, 7 missing-feature (C8 extension ×2, C9 naa ×5). e2e 25/25 |
 | C8 | done 2026-07-12 | 70/75 | 38.8 KB min / 13.3 gz | +2 pass (broker.extension-handshake-capture, extension-fake-e2e — both first try; ALL broker.* green). Extension transport in ./broker behind a Provider seam: Handshake via window.postMessage + MessageChannel (bounce-back detection + nativeBrokerHandshakeTimeout), GetToken sends the full initRequest verbatim over the port, snake_case result mapped to the shared handleResponse, per-transport x-client-xtra-sku (chrome\|<version> from HandshakeResponse). GAP_REPORT: 70 pass, 5 missing-feature (C9 naa only). e2e 25/25; mini-core 18.8 min / 7.0 gz (unchanged — feature-module bytes only) |
+| C9 | done 2026-07-12 | 75/75 | 39.5 KB min / 13.4 gz | +5 pass (ALL naa.* green, first try — 75/75 TOTAL, GAP_REPORT all-pass). New `@mini-msal/browser/naa`: createNestableClient(config, fallback) — GetInitContext handshake, GetTokenPopup/GetToken over the bridge, browser-cache-first silent via new core seams findToken/writeTokens, real's error-status mapping, unsupported APIs sync-throw unsupported_method. Compat's createNestablePublicClientApplication now = createNestableClient(config, createAuth). e2e 25/25; mini-core 19.5 min / 7.1 gz (+0.7 seams) |

@@ -3664,113 +3664,135 @@
   {
     "id": "naa.init-handshake",
     "area": "naa",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "handshake[0]",
-        "real": "{\"clientLibrary\":\"msal.js.browser\",\"clientLibraryVersion\":\"5.16.0\",\"hasRequestId\":true,\"hasSendTime\":true,\"messageType\":\"NestedAppAuthRequest\",\"method\":\"GetInitContext\",\"tokenParams\":null}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "redirectApi.err",
-        "real": "{\"errorCode\":\"unsupported_method\",\"message\":\"See https://aka.ms/msal.js.errors#unsupported_method for details\",\"name\":\"NestedAppAuthError\",\"subError\":null}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "redirectApi.ok",
-        "real": "\"<missing>\"",
-        "mini": "null"
-      }
-    ],
+    "status": "pass",
     "observed": {
       "created": {
         "ok": "created"
       },
-      "handshake": [],
+      "handshake": [
+        {
+          "clientLibrary": "msal.js.browser",
+          "clientLibraryVersion": "5.16.0",
+          "hasRequestId": true,
+          "hasSendTime": true,
+          "messageType": "NestedAppAuthRequest",
+          "method": "GetInitContext",
+          "tokenParams": null
+        }
+      ],
       "redirectApi": {
-        "ok": null
+        "err": {
+          "errorCode": "unsupported_method",
+          "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+          "name": "NestedAppAuthError",
+          "subError": null
+        }
       }
     }
   },
   {
     "id": "naa.get-token-popup",
     "area": "naa",
-    "status": "error",
-    "diffs": [
-      {
-        "path": "bridgeRequests",
-        "real": "[{\"clientLibrary\":\"msal.js.browser\",\"clientLibraryVersion\":\"5.16.0\",\"hasRequestId\":true,\"hasSendTime\":true,\"messageType\":\"NestedAppAuthRequest\",\"method\":\"GetTokenPopup\",\"tokenParams\":{\"authenticationScheme\":\"Bearer\",\"clientId\":\"<guid>\",\"forceRefresh\":null,\"hasCorrelationId\":true,\"keys\":[\"authenticat…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "result",
-        "real": "{\"ok\":{\"accessToken\":\"naa-access-token\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":\"https://localhost:4599/tenant/\",\"correlationIdPresent\":true,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "fatal",
-        "real": "\"<missing>\"",
-        "mini": "\"Error: scenario timeout after 60000ms\\n    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27\\n    at async file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:117:27\""
-      }
-    ],
-    "fatal": "Error: scenario timeout after 60000ms\n    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27\n    at async file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:117:27",
+    "status": "pass",
     "observed": {
-      "fatal": "Error: scenario timeout after 60000ms\n    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27\n    at async file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:117:27"
+      "bridgeRequests": [
+        {
+          "clientLibrary": "msal.js.browser",
+          "clientLibraryVersion": "5.16.0",
+          "hasRequestId": true,
+          "hasSendTime": true,
+          "messageType": "NestedAppAuthRequest",
+          "method": "GetTokenPopup",
+          "tokenParams": {
+            "authenticationScheme": "Bearer",
+            "clientId": "<guid>",
+            "forceRefresh": null,
+            "hasCorrelationId": true,
+            "keys": [
+              "authenticationScheme",
+              "claims",
+              "clientId",
+              "correlationId",
+              "extraParameters",
+              "scope"
+            ],
+            "scope": "User.Read"
+          }
+        }
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "naa-access-token",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": null,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
     }
   },
   {
     "id": "naa.silent-cache-then-bridge",
     "area": "naa",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "callsAfterFirst",
-        "real": "1",
-        "mini": "0"
-      },
-      {
-        "path": "callsAfterSecond",
-        "real": "1",
-        "mini": "0"
-      },
-      {
-        "path": "first.ok",
-        "real": "{\"accessToken\":\"naa-access-token\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":\"https://localhost:4599/tenant/\",\"correlationIdPresent\":true,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\":null,\"…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "first.err",
-        "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":\"authority_mismatch\",\"message\":\"See https://aka.ms/msal.js.errors#authority_mismatch for details\",\"name\":\"ClientConfigurationError\",\"subError\":null}"
-      },
-      {
-        "path": "second.ok",
-        "real": "{\"accessToken\":\"naa-access-token\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":\"localhost:4599\",\"correlationIdPresent\":true,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":true,\"fromPlatformBroker\":null,\"idToken\":\"<jwt>\",…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "second.err",
-        "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":\"no_account_error\",\"message\":\"See https://aka.ms/msal.js.errors#no_account_error for details\",\"name\":\"BrowserAuthError\",\"subError\":null}"
-      }
-    ],
+    "status": "pass",
     "observed": {
-      "callsAfterFirst": 0,
-      "callsAfterSecond": 0,
+      "callsAfterFirst": 1,
+      "callsAfterSecond": 1,
       "first": {
-        "err": {
-          "errorCode": "authority_mismatch",
-          "message": "See https://aka.ms/msal.js.errors#authority_mismatch for details",
-          "name": "ClientConfigurationError",
-          "subError": null
+        "ok": {
+          "accessToken": "naa-access-token",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": null,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
         }
       },
       "second": {
-        "err": {
-          "errorCode": "no_account_error",
-          "message": "See https://aka.ms/msal.js.errors#no_account_error for details",
-          "name": "BrowserAuthError",
-          "subError": null
+        "ok": {
+          "accessToken": "naa-access-token",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "localhost:4599",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": true,
+          "fromPlatformBroker": null,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
         }
       }
     }
@@ -3778,151 +3800,87 @@
   {
     "id": "naa.error-mapping",
     "area": "naa",
-    "status": "error",
-    "diffs": [
-      {
-        "path": "NO_NETWORK",
-        "real": "{\"err\":{\"errorCode\":\"no_network_connectivity\",\"message\":\"See https://aka.ms/msal.js.errors#no_network_connectivity for details\",\"name\":\"ClientAuthError\",\"subError\":null}}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "PERSISTENT_ERROR",
-        "real": "{\"err\":{\"errorCode\":\"fake_code\",\"message\":\"fake PERSISTENT_ERROR\",\"name\":\"ServerError\",\"subError\":null}}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "USER_CANCEL",
-        "real": "{\"err\":{\"errorCode\":\"user_canceled\",\"message\":\"See https://aka.ms/msal.js.errors#user_canceled for details\",\"name\":\"ClientAuthError\",\"subError\":null}}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "USER_INTERACTION_REQUIRED",
-        "real": "{\"err\":{\"errorCode\":\"fake_code\",\"message\":\"fake USER_INTERACTION_REQUIRED\",\"name\":\"InteractionRequiredAuthError\",\"subError\":null}}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "fatal",
-        "real": "\"<missing>\"",
-        "mini": "\"Error: scenario timeout after 60000ms\\n    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27\\n    at async file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:117:27\""
-      }
-    ],
-    "fatal": "Error: scenario timeout after 60000ms\n    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27\n    at async file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:117:27",
+    "status": "pass",
     "observed": {
-      "fatal": "Error: scenario timeout after 60000ms\n    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27\n    at async file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:117:27"
+      "NO_NETWORK": {
+        "err": {
+          "errorCode": "no_network_connectivity",
+          "message": "See https://aka.ms/msal.js.errors#no_network_connectivity for details",
+          "name": "ClientAuthError",
+          "subError": null
+        }
+      },
+      "PERSISTENT_ERROR": {
+        "err": {
+          "errorCode": "fake_code",
+          "message": "fake PERSISTENT_ERROR",
+          "name": "ServerError",
+          "subError": null
+        }
+      },
+      "USER_CANCEL": {
+        "err": {
+          "errorCode": "user_canceled",
+          "message": "See https://aka.ms/msal.js.errors#user_canceled for details",
+          "name": "ClientAuthError",
+          "subError": null
+        }
+      },
+      "USER_INTERACTION_REQUIRED": {
+        "err": {
+          "errorCode": "fake_code",
+          "message": "fake USER_INTERACTION_REQUIRED",
+          "name": "InteractionRequiredAuthError",
+          "subError": null
+        }
+      }
     }
   },
   {
     "id": "naa.unsupported-apis",
     "area": "naa",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "acquireTokenByCode.err.errorCode",
-        "real": "\"unsupported_method\"",
-        "mini": "\"auth_code_or_nativeAccountId_required\""
-      },
-      {
-        "path": "acquireTokenByCode.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#unsupported_method for details\"",
-        "mini": "\"See https://aka.ms/msal.js.errors#auth_code_or_nativeAccountId_required for details\""
-      },
-      {
-        "path": "acquireTokenByCode.err.name",
-        "real": "\"NestedAppAuthError\"",
-        "mini": "\"BrowserAuthError\""
-      },
-      {
-        "path": "addPerformanceCallback.err",
-        "real": "{\"errorCode\":\"unsupported_method\",\"message\":\"See https://aka.ms/msal.js.errors#unsupported_method for details\",\"name\":\"NestedAppAuthError\",\"subError\":null}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "addPerformanceCallback.ok",
-        "real": "\"<missing>\"",
-        "mini": "\"resolved\""
-      },
-      {
-        "path": "loginRedirect.err.errorCode",
-        "real": "\"unsupported_method\"",
-        "mini": "null"
-      },
-      {
-        "path": "loginRedirect.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#unsupported_method for details\"",
-        "mini": "\"e is not iterable\""
-      },
-      {
-        "path": "loginRedirect.err.name",
-        "real": "\"NestedAppAuthError\"",
-        "mini": "\"TypeError\""
-      },
-      {
-        "path": "logoutPopup.err.errorCode",
-        "real": "\"unsupported_method\"",
-        "mini": "\"interaction_in_progress\""
-      },
-      {
-        "path": "logoutPopup.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#unsupported_method for details\"",
-        "mini": "\"See https://aka.ms/msal.js.errors#interaction_in_progress for details\""
-      },
-      {
-        "path": "logoutPopup.err.name",
-        "real": "\"NestedAppAuthError\"",
-        "mini": "\"BrowserAuthError\""
-      },
-      {
-        "path": "logoutRedirect.err.errorCode",
-        "real": "\"unsupported_method\"",
-        "mini": "\"interaction_in_progress\""
-      },
-      {
-        "path": "logoutRedirect.err.message",
-        "real": "\"See https://aka.ms/msal.js.errors#unsupported_method for details\"",
-        "mini": "\"See https://aka.ms/msal.js.errors#interaction_in_progress for details\""
-      },
-      {
-        "path": "logoutRedirect.err.name",
-        "real": "\"NestedAppAuthError\"",
-        "mini": "\"BrowserAuthError\""
-      }
-    ],
+    "status": "pass",
     "observed": {
       "acquireTokenByCode": {
         "err": {
-          "errorCode": "auth_code_or_nativeAccountId_required",
-          "message": "See https://aka.ms/msal.js.errors#auth_code_or_nativeAccountId_required for details",
-          "name": "BrowserAuthError",
+          "errorCode": "unsupported_method",
+          "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+          "name": "NestedAppAuthError",
           "subError": null
         }
       },
       "addPerformanceCallback": {
-        "ok": "resolved"
+        "err": {
+          "errorCode": "unsupported_method",
+          "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+          "name": "NestedAppAuthError",
+          "subError": null
+        }
       },
       "handleRedirectPromise": {
         "ok": "null"
       },
       "loginRedirect": {
         "err": {
-          "errorCode": null,
-          "message": "e is not iterable",
-          "name": "TypeError",
+          "errorCode": "unsupported_method",
+          "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+          "name": "NestedAppAuthError",
           "subError": null
         }
       },
       "logoutPopup": {
         "err": {
-          "errorCode": "interaction_in_progress",
-          "message": "See https://aka.ms/msal.js.errors#interaction_in_progress for details",
-          "name": "BrowserAuthError",
+          "errorCode": "unsupported_method",
+          "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+          "name": "NestedAppAuthError",
           "subError": null
         }
       },
       "logoutRedirect": {
         "err": {
-          "errorCode": "interaction_in_progress",
-          "message": "See https://aka.ms/msal.js.errors#interaction_in_progress for details",
-          "name": "BrowserAuthError",
+          "errorCode": "unsupported_method",
+          "message": "See https://aka.ms/msal.js.errors#unsupported_method for details",
+          "name": "NestedAppAuthError",
           "subError": null
         }
       }

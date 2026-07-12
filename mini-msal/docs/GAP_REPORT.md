@@ -18,12 +18,12 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 3. Accounts & cache | 7 | 7 | 0 | 0 | 0 |
 | 4. Errors & guards | 10 | 10 | 0 | 0 | 0 |
 | 5. Platform broker / WAM | 7 | 7 | 0 | 0 | 0 |
-| 6. Nested app auth (NAA) | 6 | 1 | 0 | 5 | 0 |
+| 6. Nested app auth (NAA) | 6 | 6 | 0 | 0 | 0 |
 | 7. Telemetry | 5 | 5 | 0 | 0 | 0 |
 | 8. Request passthrough | 9 | 9 | 0 | 0 | 0 |
 | 9. Resilience | 4 | 4 | 0 | 0 | 0 |
 | 10. Init & misc | 6 | 6 | 0 | 0 | 0 |
-| **Total** | **75** | **70** | **0** | **5** | **0** |
+| **Total** | **75** | **75** | **0** | **0** | **0** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -293,33 +293,27 @@ here instead of being repeated per scenario:
 
 ### 6. Nested app auth (NAA)
 
-#### `naa.init-handshake` — 🚫 missing-feature · est. 5 KB to close
+#### `naa.init-handshake` — ✅ pass · est. 5 KB to close
 
 - **real**: createNestablePublicClientApplication + window.nestedAppAuthBridge: GetInitContext envelope (messageType NestedAppAuthRequest, clientLibrary msal.js.browser 5.16.0, requestId/sendTime); NAA controller active (acquireTokenRedirect → NestedAppAuthError unsupported_method).
 - **mini**: createNestablePublicClientApplication not exported.
 
-#### `naa.get-token-popup` — 🚫 missing-feature
+#### `naa.get-token-popup` — ✅ pass
 
 - **real**: acquireTokenPopup → bridge GetTokenPopup (tokenParams: clientId, scope 'openid profile offline_access User.Read', authenticationScheme Bearer, correlationId); token+account response mapped into AuthenticationResult.
 - **mini**: n/a.
-- ⚠️ scenario errored on mini: Error: scenario timeout after 60000ms
-    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27
-    at
 
-#### `naa.silent-cache-then-bridge` — 🚫 missing-feature
+#### `naa.silent-cache-then-bridge` — ✅ pass
 
 - **real**: First silent → bridge GetToken; SECOND silent served from the browser cache (bridge call count stays 1).
 - **mini**: n/a.
 
-#### `naa.error-mapping` — 🚫 missing-feature
+#### `naa.error-mapping` — ✅ pass
 
 - **real**: USER_INTERACTION_REQUIRED→IRAE(code); USER_CANCEL→ClientAuthError user_canceled; PERSISTENT_ERROR→ServerError(code); NO_NETWORK→ClientAuthError no_network_connectivity.
 - **mini**: n/a.
-- ⚠️ scenario errored on mini: Error: scenario timeout after 60000ms
-    at file:///Users/dzearing/git/microsoft-authentication-library-for-js/mini-msal/test/conformance/run.mjs:120:27
-    at
 
-#### `naa.unsupported-apis` — 🚫 missing-feature
+#### `naa.unsupported-apis` — ✅ pass
 
 - **real**: loginRedirect/logoutRedirect/logoutPopup/acquireTokenByCode/addPerformanceCallback → NestedAppAuthError unsupported_method; handleRedirectPromise → null.
 - **mini**: n/a.

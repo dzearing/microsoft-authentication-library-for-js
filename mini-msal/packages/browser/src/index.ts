@@ -367,7 +367,7 @@ async function post(
  */
 const P = "msal.3";
 
-interface TokenEntity {
+export interface TokenEntity {
     credentialType: string;
     homeAccountId: string;
     environment: string;
@@ -501,6 +501,22 @@ export interface ClientContext {
     setStore(store: Store): void;
     /** cache an account entity + index it (routed through the Store seam) */
     writeAccount(entity: AccountEntity): Promise<void>;
+    /** read a cached credential entity from a token-key index (./naa) */
+    findToken(
+        type: "idToken" | "accessToken" | "refreshToken",
+        match: (t: TokenEntity) => boolean
+    ): TokenEntity | undefined;
+    /** cache id+access token entities + index them (./naa hydration) */
+    writeTokens(t: {
+        homeAccountId: string;
+        environment: string;
+        realm: string;
+        idToken: string;
+        accessToken: string;
+        target: string;
+        /** epoch seconds */
+        expiresOn: number;
+    }): Promise<void>;
     /** ./broker's silent interception: a promise routes the request to the
      * platform broker; undefined runs the web silent ladder */
     nativeSilent?: (
@@ -1667,6 +1683,43 @@ export function createClient(
             if (!ks.includes(key)) {
                 writeJSON(`${P}.account.keys`, [...ks, key]);
             }
+        },
+        findToken: (type, match) => findCred(tokenKeys()[type], match),
+        writeTokens: async (t) => {
+            const ts = String(Date.now());
+            const base = `${P}|${t.homeAccountId}|${t.environment}`;
+            const idKey = `${base}|idtoken|${clientId}|${t.realm}||`;
+            const atKey = `${base}|accesstoken|${clientId}|${t.realm}|${t.target.toLowerCase()}|`;
+            const shared = {
+                homeAccountId: t.homeAccountId,
+                environment: t.environment,
+                clientId,
+                realm: t.realm,
+                lastUpdatedAt: ts,
+            };
+            await writeUser(idKey, {
+                ...shared,
+                credentialType: "IdToken",
+                secret: t.idToken,
+            } satisfies TokenEntity);
+            await writeUser(atKey, {
+                ...shared,
+                credentialType: "AccessToken",
+                secret: t.accessToken,
+                target: t.target,
+                cachedAt: String(Math.floor(Date.now() / 1000)),
+                expiresOn: String(t.expiresOn),
+                extendedExpiresOn: String(t.expiresOn),
+                tokenType: "Bearer",
+            } satisfies TokenEntity);
+            const keys = tokenKeys();
+            const add = (list: string[], k: string) =>
+                list.includes(k) ? list : [...list, k];
+            writeJSON(tokenKeysKey, {
+                idToken: add(keys.idToken, idKey),
+                accessToken: add(keys.accessToken, atKey),
+                refreshToken: keys.refreshToken,
+            });
         },
         logoutUrl,
     };
