@@ -31,4 +31,13 @@ writeFileSync(
         app.replace(/"\.\/authConfig\.js"/g, '"./authConfig.mock.js"')
 );
 
-console.log("generated test/apps/{mini-app,mini-app-mock,app-mock}.tsx");
+// Compat-only (no React) counterpart of msal-only.ts — measures the full
+// @mini-msal/compat drop-in against msal-browser-core apples-to-apples.
+const only = readFileSync(appsDir + "msal-only.ts", "utf8");
+writeFileSync(
+    appsDir + "mini-only.ts",
+    "// GENERATED from msal-only.ts by sync-variants.mjs — do not edit\n" +
+        only.replace(/"@azure\/msal-browser"/g, '"@mini-msal/compat"')
+);
+
+console.log("generated test/apps/{mini-app,mini-app-mock,app-mock}.tsx + mini-only.ts");

@@ -2,11 +2,11 @@
 
 A from-scratch, pay-to-play reimplementation of `@azure/msal-browser` +
 `@azure/msal-react` — same protocol, same cache format, same API shapes.
-Consume it as a one-import drop-in (`@mini-msal/compat`, ~37 KB min with
-every feature composed) or à la carte (`createClient` core ~19 KB min +
-tree-shakable feature modules), vs ~249 KB min for the real stack. A
-75-scenario conformance suite measures exactly how close it is to the real
-thing (currently 68/75 identical, 0 bugs).
+Consume it as a one-import drop-in (`@mini-msal/compat`, ~32.5 KB min with
+every feature composed, vs ~220.5 KB for tree-shaken `@azure/msal-browser`)
+or à la carte (`createClient` core ~19.5 KB min + tree-shakable feature
+modules). A 75-scenario conformance suite measures exactly how close it is
+to the real thing: **75/75 identical** (0 behavioral diffs, 0 bugs).
 
 **Start here → [docs/README.md](./docs/README.md)** (goals, architecture,
 how to consume it, current parity status).
@@ -24,7 +24,7 @@ npm install
 npm run build              # generate app variants + build all bundles
 npm run e2e                # 25-check dual-stack E2E vs local mock IdP
 npm run conformance        # capture real → replay mini → regenerate docs/GAP_REPORT.md
-npm run measure            # bundle sizes: real ~249 KB vs compat ~37 KB vs core ~19 KB
+npm run measure            # bundle sizes: real ~220 KB vs compat ~32.5 KB vs core ~19.5 KB
 ```
 
 Layout: library code in `packages/` (`@mini-msal/browser` core + feature

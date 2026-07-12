@@ -483,6 +483,21 @@ Entries (append as you go):
   START/SUCCESS/FAILURE stream). All 6 naa.* passed first try; the two
   ~60s ERR scenarios from C5 are gone (full run ~2 min faster).
 
+- **C10 (2026-07-12)**: final sweep, all green: full conformance mini 75/75,
+  determinism `conformance:check` 75/75, e2e 25/25, GAP_REPORT regenerated
+  all-pass. Size matrix gained the missing apples-to-apples row: new rspack
+  variant `mini-compat` (32.5 KB min / 11.0 gz / 9.9 br) built from
+  `test/apps/mini-only.ts`, GENERATED from `msal-only.ts` by sync-variants
+  (import swapped to `@mini-msal/compat`) — the no-React counterpart of
+  msal-browser-core (220.5 KB → 6.8× smaller). Verified `mini-core.ts` still
+  exercises sign-out (logoutRedirect), silent + ssoSilent + redirect fallback,
+  and multi-account APIs (getAllAccounts/getAccount filters/active account).
+  Docs refreshed: docs/README.md (headline sizes, compat in the package tree,
+  bridge-based architecture prose, implemented list now includes
+  broker/NAA/LS/telemetry, final size matrix in Status), root README
+  (75/75 + new sizes), bundle-size-experiment.md (final results table +
+  variant rows; old 2026-07-01 numbers kept as historical note).
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -684,7 +699,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   mapping per docs/design/naa-protocol.md, unsupported APIs →
   NestedAppAuthError `unsupported_method`, no-bridge → standard PCA
   fallback. Scenarios: naa.*.
-- [ ] **C10** `pending` — Final sweep: full `npm run conformance` (expect
+- [x] **C10** `done 2026-07-12 — pass 75/75, mini-stack 39.5 KB min / 13.4 gz` — Final sweep: full `npm run conformance` (expect
   75/75 mini pass), determinism `conformance:check` 75/75, e2e 25/25,
   `npm run measure` final sizes. **Final bundle-size retest (user-requested
   2026-07-10)**: publish a fresh measured matrix with at minimum (a)
@@ -760,3 +775,4 @@ push → reset). "Consumer" below means someone who has never read this repo.
 | C7 | done 2026-07-10 | 68/75 | 37.0 KB min / 12.6 gz | +4 pass (broker.dom-probe-and-interactive, dom-first-login, dom-error-mapping, dom-disabled-fallback — all 4 first try). New `@mini-msal/browser/broker` feature (DOM transport): initialize probe, acquireTokenByCode({nativeAccountId}), brokered silent via new ctx.nativeSilent seam, real's error mapping + fatal-DISABLED provider drop. Core +ctx.writeAccount, toAccountInfo surfaces nativeAccountId (mini-core 18.8 min / 7.0 gz, +0.2). GAP_REPORT: 68 pass, 7 missing-feature (C8 extension ×2, C9 naa ×5). e2e 25/25 |
 | C8 | done 2026-07-12 | 70/75 | 38.8 KB min / 13.3 gz | +2 pass (broker.extension-handshake-capture, extension-fake-e2e — both first try; ALL broker.* green). Extension transport in ./broker behind a Provider seam: Handshake via window.postMessage + MessageChannel (bounce-back detection + nativeBrokerHandshakeTimeout), GetToken sends the full initRequest verbatim over the port, snake_case result mapped to the shared handleResponse, per-transport x-client-xtra-sku (chrome\|<version> from HandshakeResponse). GAP_REPORT: 70 pass, 5 missing-feature (C9 naa only). e2e 25/25; mini-core 18.8 min / 7.0 gz (unchanged — feature-module bytes only) |
 | C9 | done 2026-07-12 | 75/75 | 39.5 KB min / 13.4 gz | +5 pass (ALL naa.* green, first try — 75/75 TOTAL, GAP_REPORT all-pass). New `@mini-msal/browser/naa`: createNestableClient(config, fallback) — GetInitContext handshake, GetTokenPopup/GetToken over the bridge, browser-cache-first silent via new core seams findToken/writeTokens, real's error-status mapping, unsupported APIs sync-throw unsupported_method. Compat's createNestablePublicClientApplication now = createNestableClient(config, createAuth). e2e 25/25; mini-core 19.5 min / 7.1 gz (+0.7 seams) |
+| C10 | done 2026-07-12 | 75/75 | 39.5 KB min / 13.4 gz | FINAL SWEEP all green: conformance mini 75/75, check 75/75, e2e 25/25, GAP_REPORT all-pass. New `mini-compat` variant (compat, no React) 32.5 min / 11.0 gz / 9.9 br vs msal-browser-core 220.5/55.4/46.4 (6.8×); stack 39.5/13.4/12.0 vs 248.8/64.9/53.9 (6.3×); mini-core 19.5/7.1/6.3 (verified: still exercises sign-out + multi-account). READMEs + bundle-size-experiment.md updated to final matrix. C-series COMPLETE — D-series next |

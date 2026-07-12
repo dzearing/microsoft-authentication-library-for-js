@@ -7,8 +7,10 @@ mini-msal is a from-scratch reimplementation of the parts of
 `@azure/msal-browser` and `@azure/msal-react` that a typical single-page app
 actually uses. It signs users in with the same protocol (auth code + PKCE),
 stores tokens in the same cache format, exposes the same API shapes — and
-ships in about **20 KB minified / 7 KB gzip**, where the real stack costs
-about **249 KB minified / 65 KB gzip**.
+the full drop-in with **every** feature composed ships in about
+**32.5 KB minified / 11 KB gzip**, where tree-shaken `@azure/msal-browser`
+costs about **220.5 KB minified / 55 KB gzip** (core-only mini is
+19.5 KB min / 7.1 KB gzip).
 
 It is a **prototype**, not a supported product. Its job is to prove, with
 evidence, what a minimal MSAL could look like and exactly where it still
@@ -76,7 +78,8 @@ import { telemetry } from "@mini-msal/browser/telemetry";
 const pca = createClient(config, [popup, telemetry]);
 ```
 
-Feature modules today: `./popup`, `./broker` (platform broker / WAM),
+Feature modules today: `./popup`, `./broker` (platform broker / WAM — DOM +
+extension transports), `./naa` (nested app auth for Teams/Office hosts),
 `./local-storage` (encrypted localStorage + cross-tab sync), `./telemetry`
 (performance events), `./redirect-bridge` (the popup/iframe bridge-page
 bundle, 0.6 KB vs real's 6.5 KB).
@@ -99,17 +102,25 @@ The whole library is intentionally small enough to read in one sitting:
 
 ```
 packages/
-├── browser/src/index.ts    ~900 lines: everything protocol + cache
-└── react/src/index.tsx     ~250 lines: React bindings over the browser package
+├── browser/src/            @mini-msal/browser: createClient core + feature
+│                           modules (popup, broker, naa, local-storage,
+│                           telemetry, redirect-bridge) as subpath exports
+├── compat/src/             @mini-msal/compat: classic PublicClientApplication
+│                           composing every feature — the drop-in
+└── react/src/index.tsx     @mini-msal/react: React bindings over either style
 ```
 
-**`@mini-msal/browser`** is one class (`PublicClientApplication`) plus small
-helpers. The flow logic is deliberately simple:
+**`@mini-msal/browser`** is a composable core — `createClient(config,
+[features])` — where each feature is a plain function receiving the client's
+internal context (closures, no classes, so seam bytes stay near zero and
+tree shaking works). The flow logic is deliberately simple:
 
 - **Interactive login** builds an authorize URL (auth code + PKCE S256,
   `response_mode=fragment`), then either navigates the page (redirect flow)
-  or opens a popup and polls its URL until the code arrives (popup flow).
-  `handleRedirectPromise()` finishes the redirect flow after the round trip.
+  or opens a popup (popup flow); popup/iframe responses complete via real
+  v5's redirect-bridge mechanism (a BroadcastChannel message posted by the
+  bridge page at the redirect URI). `handleRedirectPromise()` finishes the
+  redirect flow after the round trip.
 - **Silent acquisition** (`acquireTokenSilent`) walks a three-step ladder:
   return a cached, unexpired access token → otherwise redeem the refresh
   token → otherwise retry sign-in invisibly in a hidden iframe with
@@ -134,28 +145,29 @@ reference behavior that prevents effect loops).
 
 ## What's implemented, and what isn't
 
-Implemented and verified end-to-end:
+Implemented and verified end-to-end (all 75 conformance scenarios pass):
 
 - OIDC discovery; redirect, popup, and `ssoSilent` login (auth code + PKCE)
-- `acquireTokenSilent` (cache → refresh token → `prompt=none` iframe),
+- `acquireTokenSilent` (cache → refresh token → `prompt=none` iframe, full
+  `CacheLookupPolicy` semantics, in-flight dedupe, forceRefresh),
   `acquireTokenPopup`, `acquireTokenRedirect`
 - Multi-account cache, active account, `getAccount*` lookups
 - Logout (redirect + popup, per-account or all)
-- Event callbacks, MSAL-compatible error classification
-- Iframe/popup environment guards; per-request `redirectUri`, `prompt`,
-  `loginHint`; the React layer
+- Event callbacks (real's exact event streams + payload shapes),
+  MSAL-compatible error classes/codes, interaction lock
+- Platform broker (WAM) — DOM and extension transports; nested app auth
+  (Teams/Office hosts); perf events (`addPerformanceCallback`); logger;
+  `localStorage` (encrypted entities) + cross-tab sync; 429 throttling
+  cache; `refresh_in`/`refreshOn`; claims/CAE; custom state;
+  `sid`/`domainHint`/`extraQueryParameters`; per-request authority
+  override; the React layer
 
-Not implemented (by design, for now): platform broker (WAM), nested app auth
-(Teams/Office hosts), telemetry/perf events, logger, `localStorage` +
-cross-tab sync, 429 throttling cache, proactive refresh (`refresh_in`),
-claims/CAE, custom state, `sid`/`domainHint`/`extraQueryParameters`,
-per-request authority override, B2C/CIAM/ADFS authorities, PoP tokens.
+Not implemented (by design, for now): B2C/CIAM/ADFS authorities, PoP tokens,
+and anything else the 75 scenarios don't observe (e.g. real's native
+in-memory broker token cache — mini re-asks the broker each call).
 
-The precise, evidence-backed list — including **8 known bugs** in what mini
-does claim to support, each with a cost-to-fix estimate — lives in
-[GAP_REPORT.md](./GAP_REPORT.md). Headline estimate: **~4 KB** of additions
-close every bug and most app-visible behavioral differences; full parity
-including broker + NAA is ~27 KB more (still ~5× smaller than real).
+The evidence lives in [GAP_REPORT.md](./GAP_REPORT.md): **75/75 scenarios
+identical — 0 behavioral diffs, 0 bugs.**
 
 ## How we know it behaves the same
 
@@ -212,15 +224,25 @@ To try it against a real Entra ID tenant, see
 
 ## Status and next steps
 
-Current conformance standing (75 scenarios): **68 identical · 7 missing
-features · 0 behavioral diffs · 0 bugs.** The work is driven task-by-task
-from [design/PARITY_STATE.md](./design/PARITY_STATE.md); remaining:
-platform-broker extension transport (C8), nested app auth (C9), final sweep +
-published size matrix (C10), then an à-la-carte DX / docs / examples phase
-(D-series).
+Current conformance standing (75 scenarios): **75 identical · 0 missing
+features · 0 behavioral diffs · 0 bugs** — the C-series (full compat parity)
+is complete. Determinism check 75/75, e2e 25/25. The work is driven
+task-by-task from [design/PARITY_STATE.md](./design/PARITY_STATE.md);
+remaining: the à-la-carte DX / docs / examples phase (D-series).
 
-Size today (min / gzip): à-la-carte core ~18.8 / 7.0 KB · `@mini-msal/compat`
-with every feature ~37.0 / 12.6 KB · real msal stack ~249 / 65 KB. Every
-parity task records its size cost in the PARITY_STATE progress log — full
-parity is being bought at roughly 1/7th of real's size, and consumers who
-compose less pay less.
+Final measured size matrix (2026-07-12, msal-browser 5.16.0):
+
+| build | minified | gzip -9 | brotli |
+|---|---:|---:|---:|
+| real: msal-react + msal-browser stack | 248.8 KB | 64.9 KB | 53.9 KB |
+| real: msal-browser only (no React) | 220.5 KB | 55.4 KB | 46.4 KB |
+| real: redirect-bridge page | 6.5 KB | 2.7 KB | 2.4 KB |
+| **mini: compat + react stack** | **39.5 KB** | **13.4 KB** | **12.0 KB** |
+| **mini: `@mini-msal/compat`, every feature (no React)** | **32.5 KB** | **11.0 KB** | **9.9 KB** |
+| **mini: `createClient` core only (redirect + silent + multi-account + sign-out)** | **19.5 KB** | **7.1 KB** | **6.3 KB** |
+| mini: redirect-bridge page | 0.6 KB | 0.4 KB | 0.3 KB |
+
+Full drop-in parity costs ~1/7th of real's bytes (6.8× smaller browser-only,
+6.3× smaller with React); consumers who compose less pay less, down to the
+19.5 KB core. Every parity task recorded its size cost in the PARITY_STATE
+progress log.

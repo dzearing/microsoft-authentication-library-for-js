@@ -114,6 +114,10 @@ export default [
         externals: reactExternals,
     }),
 
+    // Full @mini-msal/compat drop-in with no React layer (generated from
+    // msal-only.ts); counterpart of msal-browser-core.
+    makeConfig("mini-compat", "./test/apps/mini-only.ts"),
+
     // Pay-to-play floor: @mini-msal/browser core only (createClient with
     // redirect + silent flows) — no popup feature, no React, no compat.
     makeConfig("mini-core", "./test/apps/mini-core.ts"),
