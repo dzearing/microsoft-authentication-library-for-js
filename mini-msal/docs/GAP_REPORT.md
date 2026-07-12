@@ -17,13 +17,13 @@ exists but differs observably · **missing-feature** = absent by design ·
 | 2. Silent acquisition | 12 | 12 | 0 | 0 | 0 |
 | 3. Accounts & cache | 7 | 7 | 0 | 0 | 0 |
 | 4. Errors & guards | 10 | 10 | 0 | 0 | 0 |
-| 5. Platform broker / WAM | 7 | 5 | 0 | 2 | 0 |
+| 5. Platform broker / WAM | 7 | 7 | 0 | 0 | 0 |
 | 6. Nested app auth (NAA) | 6 | 1 | 0 | 5 | 0 |
 | 7. Telemetry | 5 | 5 | 0 | 0 | 0 |
 | 8. Request passthrough | 9 | 9 | 0 | 0 | 0 |
 | 9. Resilience | 4 | 4 | 0 | 0 | 0 |
 | 10. Init & misc | 6 | 6 | 0 | 0 | 0 |
-| **Total** | **75** | **68** | **0** | **7** | **0** |
+| **Total** | **75** | **70** | **0** | **5** | **0** |
 
 ## Systemic gaps (appear across most scenarios; counted once)
 
@@ -276,12 +276,12 @@ here instead of being repeated per scenario:
 - **real**: DISABLED is fatal: NativeAuthError surfaced, broker dropped — the second call doesn't touch the broker and throws unable_to_acquire_token_from_native_platform.
 - **mini**: n/a.
 
-#### `broker.extension-handshake-capture` — 🚫 missing-feature
+#### `broker.extension-handshake-capture` — ✅ pass
 
 - **real**: With allowPlatformBroker and no extension: TWO Handshake postMessages (channel 53ee284d-…, preferred extensionId ppnbnpeolgkicgegkbkbjmhlideopiji then undefined, MessagePort transferred); failure swallowed; init + web flows unaffected.
 - **mini**: Config ignored; no handshake attempted (also no failure).
 
-#### `broker.extension-fake-e2e` — 🚫 missing-feature
+#### `broker.extension-fake-e2e` — ✅ pass
 
 - **real**: Full extension protocol works against a fake: HandshakeResponse over the transferred port, GetToken request {accountId, scope, tokenType, windowTitleSubstring, extraParameters:{telemetry:MATS}}, Response/Success/result → AuthenticationResult with fromPlatformBroker=true.
 - **mini**: n/a.

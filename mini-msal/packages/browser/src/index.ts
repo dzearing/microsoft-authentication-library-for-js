@@ -105,6 +105,8 @@ export interface Config {
         iframeBridgeTimeout?: number;
         /** probe/use the platform broker (./broker feature) */
         allowPlatformBroker?: boolean;
+        /** extension-transport Handshake timeout, ms (default 2000) */
+        nativeBrokerHandshakeTimeout?: number;
         loggerOptions?: {
             loggerCallback?: (
                 level: number,

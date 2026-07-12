@@ -1,8 +1,10 @@
 /**
- * Platform-broker feature (WAM), DOM transport: real v5's experimental
- * navigator.platformAuthentication path. Probed at initialize() when
- * system.allowPlatformBroker + experimental.allowPlatformBrokerWithDOM are
- * both set (the extension transport is a separate follow-up). Attaches
+ * Platform-broker feature (WAM), both transports. Probed at initialize()
+ * when system.allowPlatformBroker is set: the DOM path
+ * (navigator.platformAuthentication, needs
+ * experimental.allowPlatformBrokerWithDOM too) is tried first, then the
+ * browser-extension path (Handshake over window.postMessage +
+ * MessageChannel — preferred extension id, retried with any). Attaches
  * acquireTokenByCode({nativeAccountId}) — the hybrid entry point into the
  * broker — and routes acquireTokenSilent through the broker when the
  * account carries a nativeAccountId (ctx.nativeSilent seam).
@@ -22,6 +24,16 @@ import {
 
 const AKA = (code: string) =>
     `See https://aka.ms/msal.js.errors#${code} for details`;
+
+const CHANNEL_ID = "53ee284d-920a-4b59-9d30-a60315b26836";
+const PREFERRED_EXTENSION_ID = "ppnbnpeolgkicgegkbkbjmhlideopiji";
+
+/** transport handle: per-transport x-client-xtra-sku value + a GetToken
+ * sender resolving to the camelCase shape handleResponse consumes */
+interface Provider {
+    sku: string;
+    send(req: Record<string, any>): Promise<Record<string, any>>;
+}
 
 /** real's NativeAuthError: raw broker code/description + ext status blob */
 export class NativeAuthError extends AuthError {
@@ -87,31 +99,181 @@ export interface BrokerClient {
 export function broker(ctx: ClientContext): void {
     const c = ctx.client;
     const config = ctx.config;
-    // navigator.platformAuthentication once the probe succeeds
-    let provider: any;
+    // the winning transport once a probe succeeds
+    let provider: Provider | undefined;
 
     const origInit = c.initialize;
     c.initialize = async () => {
         await origInit();
-        // real probes at initialize when allowPlatformBroker is set; the DOM
-        // handler additionally needs the experimental flag. Probe errors are
-        // swallowed — the app falls back to web flows.
-        if (
-            config.system?.allowPlatformBroker &&
-            config.experimental?.allowPlatformBrokerWithDOM
-        ) {
+        // real probes at initialize when allowPlatformBroker is set: DOM
+        // handler first (needs the experimental flag too), then the browser
+        // extension — preferred extension id, retried with undefined. All
+        // probe errors are swallowed — the app falls back to web flows.
+        if (!config.system?.allowPlatformBroker) return;
+        if (config.experimental?.allowPlatformBrokerWithDOM) {
             try {
                 const pa = (navigator as any).platformAuthentication;
                 const contracts =
                     await pa?.getSupportedContracts("MicrosoftEntra");
                 if (contracts?.includes("get-token-and-sign-out")) {
-                    provider = pa;
+                    provider = domProvider(pa);
                 }
             } catch {
-                /* web-flow fallback, like real */
+                /* try the extension next, like real */
+            }
+        }
+        if (!provider) {
+            try {
+                provider = await extensionProvider(PREFERRED_EXTENSION_ID);
+            } catch {
+                try {
+                    provider = await extensionProvider(undefined);
+                } catch {
+                    /* web-flow fallback, like real */
+                }
             }
         }
     };
+
+    /** extension error blob ({code, description, ext:{status,error}}) →
+     * the same mapping the DOM error shape goes through */
+    const extError = (e: {
+        code?: string;
+        description?: string;
+        ext?: { status?: string; error?: number };
+    }) =>
+        mapError({
+            code: e.code ?? "",
+            errorCode: String(e.ext?.error ?? ""),
+            description: e.description ?? "",
+            status: e.ext?.status,
+        });
+
+    // real's PlatformAuthExtensionHandler: Handshake posted to the window
+    // with a MessageChannel port; our own Handshake bouncing back on the
+    // window means no extension intercepted it (nativeExtensionNotInstalled),
+    // silence until the timeout means a handler swallowed it. The port then
+    // carries GetToken/Response for the session.
+    const extensionProvider = (extensionId?: string): Promise<Provider> =>
+        new Promise((resolve, reject) => {
+            const mc = new MessageChannel();
+            const responseId = crypto.randomUUID();
+            const pending = new Map<
+                string,
+                { resolve: (v: any) => void; reject: (e: unknown) => void }
+            >();
+            const fail = (code: string) => {
+                clearTimeout(timer);
+                window.removeEventListener("message", onWindow, false);
+                mc.port1.close();
+                mc.port2.close();
+                reject(new BrowserAuthError(code));
+            };
+            const onWindow = (event: MessageEvent) => {
+                const d = event.data;
+                if (
+                    event.source === window &&
+                    d?.channel === CHANNEL_ID &&
+                    (!d.extensionId || d.extensionId === extensionId) &&
+                    d.responseId === responseId &&
+                    d.body?.method === "Handshake"
+                ) {
+                    fail("native_extension_not_installed");
+                }
+            };
+            const timer = setTimeout(
+                () => fail("native_handshake_timeout"),
+                config.system?.nativeBrokerHandshakeTimeout ?? 2000
+            );
+            mc.port1.onmessage = (m) => {
+                const d = m.data;
+                if (
+                    d?.responseId === responseId &&
+                    d.body?.method === "HandshakeResponse"
+                ) {
+                    clearTimeout(timer);
+                    window.removeEventListener("message", onWindow, false);
+                    extensionId = d.extensionId;
+                    // real's makeExtraSkuString: extension slot filled only
+                    // when the handshake reported a version; name "chrome"
+                    // for the preferred extension, else "unknown"
+                    const name =
+                        extensionId === PREFERRED_EXTENSION_ID
+                            ? "chrome"
+                            : extensionId
+                              ? "unknown"
+                              : "";
+                    const extSku =
+                        name && d.body.version
+                            ? `${name}|${d.body.version}`
+                            : "|";
+                    resolve({
+                        sku: `msal.js.browser|5.16.0,|,${extSku},|`,
+                        send: (req) =>
+                            new Promise((res, rej) => {
+                                const rid = crypto.randomUUID();
+                                pending.set(rid, { resolve: res, reject: rej });
+                                mc.port1.postMessage({
+                                    channel: CHANNEL_ID,
+                                    extensionId,
+                                    responseId: rid,
+                                    body: { method: "GetToken", request: req },
+                                });
+                            }),
+                    });
+                } else if (d?.body?.method === "Response") {
+                    const p = pending.get(d.responseId);
+                    if (!p) return;
+                    pending.delete(d.responseId);
+                    const r = d.body.response;
+                    const result = r?.result;
+                    if (r?.status !== "Success") {
+                        p.reject(extError(r ?? {}));
+                    } else if (result?.code && result.description) {
+                        p.reject(extError(result));
+                    } else if (
+                        !result ||
+                        [
+                            "access_token",
+                            "id_token",
+                            "client_info",
+                            "account",
+                            "scope",
+                            "expires_in",
+                        ].some((k) => !(k in result))
+                    ) {
+                        p.reject(
+                            new AuthError(
+                                "unexpected_error",
+                                "Response missing expected properties."
+                            )
+                        );
+                    } else {
+                        // snake_case wire result → handleResponse's shape
+                        p.resolve({
+                            accessToken: result.access_token,
+                            idToken: result.id_token,
+                            clientInfo: result.client_info,
+                            account: result.account,
+                            scopes: result.scope,
+                            expiresIn: result.expires_in,
+                            state: result.state,
+                        });
+                    }
+                }
+            };
+            window.addEventListener("message", onWindow, false);
+            window.postMessage(
+                {
+                    channel: CHANNEL_ID,
+                    extensionId,
+                    responseId,
+                    body: { method: "Handshake" },
+                },
+                window.origin,
+                [mc.port2]
+            );
+        });
 
     // real's initializePlatformRequest: request minus scopes/claims, plus the
     // broker protocol fields; leftovers become stringified extraParameters at
@@ -147,7 +309,7 @@ export function broker(ctx: ClientContext): void {
             extraParameters: {
                 ...req.extraParameters,
                 telemetry: "MATS",
-                "x-client-xtra-sku": "msal.js.browser|5.16.0,|,DOM API|",
+                "x-client-xtra-sku": provider!.sku,
             },
             extendedExpiryToken: false,
             keyId: undefined,
@@ -172,54 +334,58 @@ export function broker(ctx: ClientContext): void {
 
     // real's PlatformAuthDOMHandler: named protocol fields stay top-level,
     // every remaining truthy property is stringified into extraParameters
-    const sendMessage = async (r: Record<string, any>) => {
-        const {
-            accountId,
-            clientId,
-            authority,
-            scope,
-            redirectUri,
-            correlationId,
-            state,
-            storeInCache,
-            embeddedClientId,
-            extraParameters,
-            ...rest
-        } = r;
-        const extra: Record<string, string> = { ...extraParameters };
-        for (const [k, v] of Object.entries(rest)) {
-            if (v) {
-                extra[k] = typeof v === "object" ? JSON.stringify(v) : String(v);
+    const domProvider = (pa: any): Provider => ({
+        sku: "msal.js.browser|5.16.0,|,DOM API|",
+        async send(r) {
+            const {
+                accountId,
+                clientId,
+                authority,
+                scope,
+                redirectUri,
+                correlationId,
+                state,
+                storeInCache,
+                embeddedClientId,
+                extraParameters,
+                ...rest
+            } = r;
+            const extra: Record<string, string> = { ...extraParameters };
+            for (const [k, v] of Object.entries(rest)) {
+                if (v) {
+                    extra[k] =
+                        typeof v === "object" ? JSON.stringify(v) : String(v);
+                }
             }
-        }
-        const response = await provider.executeGetToken({
-            accountId,
-            brokerId: "MicrosoftEntra",
-            authority,
-            clientId,
-            correlationId,
-            extraParameters: extra,
-            isSecurityTokenService: false,
-            redirectUri,
-            scope,
-            state,
-            storeInCache,
-            embeddedClientId,
-        });
-        if (response.isSuccess === false && response.error?.code) {
-            throw mapError(response.error);
-        }
-        if (
-            ["accessToken", "idToken", "clientInfo", "account", "scopes",
-                "expiresIn"].some((k) => !(k in response))
-        ) {
-            throw new AuthError(
-                "unexpected_error",
-                "Response missing expected properties."
-            );
-        }
-        return response;
-    };
+            const response = await pa.executeGetToken({
+                accountId,
+                brokerId: "MicrosoftEntra",
+                authority,
+                clientId,
+                correlationId,
+                extraParameters: extra,
+                isSecurityTokenService: false,
+                redirectUri,
+                scope,
+                state,
+                storeInCache,
+                embeddedClientId,
+            });
+            if (response.isSuccess === false && response.error?.code) {
+                throw mapError(response.error);
+            }
+            if (
+                ["accessToken", "idToken", "clientInfo", "account", "scopes",
+                    "expiresIn"].some((k) => !(k in response))
+            ) {
+                throw new AuthError(
+                    "unexpected_error",
+                    "Response missing expected properties."
+                );
+            }
+            return response;
+        },
+    });
 
     // real's handleNativeResponse: cache the account (with nativeAccountId),
     // build the broker-shaped 14-key AuthenticationResult
@@ -327,7 +493,7 @@ export function broker(ctx: ClientContext): void {
     ): Promise<AuthenticationResult> => {
         const nativeReq = initRequest(req, accountId);
         try {
-            const response = await sendMessage(nativeReq);
+            const response = await provider!.send(nativeReq);
             return await handleResponse(response, nativeReq, apiId);
         } catch (e) {
             if (isFatal(e)) {

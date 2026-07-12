@@ -3555,21 +3555,24 @@
   {
     "id": "broker.extension-handshake-capture",
     "area": "broker",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "handshakes[0]",
-        "real": "{\"channel\":\"<guid>\",\"extensionId\":\"ppnbnpeolgkicgegkbkbjmhlideopiji\",\"hasResponseId\":true,\"method\":\"Handshake\",\"portsTransferred\":1}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "handshakes[1]",
-        "real": "{\"channel\":\"<guid>\",\"extensionId\":null,\"hasResponseId\":true,\"method\":\"Handshake\",\"portsTransferred\":1}",
-        "mini": "\"<missing>\""
-      }
-    ],
+    "status": "pass",
     "observed": {
-      "handshakes": [],
+      "handshakes": [
+        {
+          "channel": "<guid>",
+          "extensionId": "ppnbnpeolgkicgegkbkbjmhlideopiji",
+          "hasResponseId": true,
+          "method": "Handshake",
+          "portsTransferred": 1
+        },
+        {
+          "channel": "<guid>",
+          "extensionId": null,
+          "hasResponseId": true,
+          "method": "Handshake",
+          "portsTransferred": 1
+        }
+      ],
       "initResult": {
         "ok": {
           "initMs": "<5s"
@@ -3584,37 +3587,63 @@
   {
     "id": "broker.extension-fake-e2e",
     "area": "broker",
-    "status": "diff",
-    "diffs": [
-      {
-        "path": "extLog[0]",
-        "real": "{\"extensionId\":\"ppnbnpeolgkicgegkbkbjmhlideopiji\",\"method\":\"Handshake\"}",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "extLog[1]",
-        "real": "{\"accountId\":\"native-acc-1\",\"extraParameters\":{\"telemetry\":\"MATS\",\"x-client-xtra-sku\":\"msal.js.browser|5.16.0,|,chrome|1.0.0,|\"},\"method\":\"GetToken\",\"requestKeys\":[\"accountId\",\"authority\",\"claims\",\"clientId\",\"correlationId\",\"extendedExpiryToken\",\"extraParameters\",\"keyId\",\"nativeAccountId\",\"prompt\",\"…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.ok",
-        "real": "{\"accessToken\":\"ext-broker-access-token\",\"account\":{\"homeAccountId\":\"oid-123.tenant-123\",\"tenantId\":\"tenant-123\",\"username\":\"ada@contoso.com\"},\"authority\":\"https://localhost:4599/tenant/\",\"correlationIdPresent\":true,\"expiresInFuture\":true,\"expiresOnType\":\"Date\",\"fromCache\":false,\"fromPlatformBroker\"…",
-        "mini": "\"<missing>\""
-      },
-      {
-        "path": "result.err",
-        "real": "\"<missing>\"",
-        "mini": "{\"errorCode\":\"unable_to_acquire_token_from_native_platform\",\"message\":\"See https://aka.ms/msal.js.errors#unable_to_acquire_token_from_native_platform for details\",\"name\":\"BrowserAuthError\",\"subError\":null}"
-      }
-    ],
+    "status": "pass",
     "observed": {
-      "extLog": [],
+      "extLog": [
+        {
+          "extensionId": "ppnbnpeolgkicgegkbkbjmhlideopiji",
+          "method": "Handshake"
+        },
+        {
+          "accountId": "native-acc-1",
+          "extraParameters": {
+            "telemetry": "MATS",
+            "x-client-xtra-sku": "msal.js.browser|5.16.0,|,chrome|1.0.0,|"
+          },
+          "method": "GetToken",
+          "requestKeys": [
+            "accountId",
+            "authority",
+            "claims",
+            "clientId",
+            "correlationId",
+            "extendedExpiryToken",
+            "extraParameters",
+            "keyId",
+            "nativeAccountId",
+            "prompt",
+            "redirectUri",
+            "scope",
+            "tokenType",
+            "windowTitleSubstring"
+          ],
+          "scope": "User.Read openid profile offline_access",
+          "tokenType": null
+        }
+      ],
       "result": {
-        "err": {
-          "errorCode": "unable_to_acquire_token_from_native_platform",
-          "message": "See https://aka.ms/msal.js.errors#unable_to_acquire_token_from_native_platform for details",
-          "name": "BrowserAuthError",
-          "subError": null
+        "ok": {
+          "accessToken": "ext-broker-access-token",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": true,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "offline_access",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
         }
       }
     }

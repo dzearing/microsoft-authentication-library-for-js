@@ -434,6 +434,27 @@ Entries (append as you go):
   from ./broker + re-exported by compat (exported-surface checks specific
   keys only — verified no diff).
 
+- **C8 (2026-07-12)**: extension transport joined ./broker behind a `Provider`
+  seam ({sku, send(nativeReq)}) — DOM keeps its filtered executeGetToken shape,
+  extension posts the WHOLE initRequest object verbatim as body.request over
+  the MessageChannel port (that's why the snapshot's requestKeys include
+  undefined-valued keyId/prompt/tokenType — structured clone preserves them;
+  never JSON.stringify that request). Probe order = real's
+  getPlatformAuthProvider: DOM (if experimental flag) → extension preferred id
+  → extension undefined id, all errors swallowed. Bounce detection: our own
+  Handshake seen back on the window (bubble listener, source===window,
+  matching responseId) → not-installed, fail fast; else
+  system.nativeBrokerHandshakeTimeout (default 2000ms, type added to core
+  config). x-client-xtra-sku is per-transport (makeExtraSkuString): extension
+  = `msal.js.browser|5.16.0,|,<name>|<version>,|` with name "chrome" iff the
+  preferred extension id answered ("unknown" otherwise), version from the
+  HandshakeResponse; DOM keeps its literal. Extension results are snake_case
+  (access_token/scope/expires_in…) and get mapped to the DOM camelCase shape
+  before the shared handleResponse; error blobs ({code, description,
+  ext:{status,error}}) route through the same mapError as DOM (fatal DISABLED
+  drop included). Both extension scenarios passed first try; DOM scenarios
+  untouched.
+
 ## Task list (execute strictly top-to-bottom)
 
 Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y KB`
@@ -622,7 +643,7 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   second call `unable_to_acquire_token_from_native_platform`). Protocol:
   docs/design/broker-protocol.md. Scenarios: broker.dom-*,
   broker.is-platform-broker-available.
-- [ ] **C8** `pending` — Platform broker, extension transport: Handshake via
+- [x] **C8** `done 2026-07-12 — pass 70/75, mini-stack 38.8 KB min / 13.3 gz` — Platform broker, extension transport: Handshake via
   window.postMessage + MessageChannel (channel id, preferred extension id,
   2s default timeout `nativeBrokerHandshakeTimeout`, retry with undefined
   extensionId, swallow failures), GetToken over the port, Response/Success
@@ -709,3 +730,4 @@ push → reset). "Consumer" below means someone who has never read this repo.
 | C5 | done 2026-07-10 | 62/75 | 29.3 KB min / 10.4 gz | +6 pass (init.get-configuration, logger-callback, exported-surface, popup-without-bridge + free: broker.is-platform-broker-available, naa.no-bridge-fallback — ALL init.* green). Popup/iframe completion migrated to real's redirect-bridge (BroadcastChannel, see Decision Log) — mini bridge page bundle 0.6 KB min (real's: 6.5 KB); logger in core; getConfiguration; full export surface incl. 52 BrowserAuthErrorCodes. GAP_REPORT: 0 bugs, 0 behavioral-diffs, 13 missing-feature (C6–C9 only). NOTE: naa.get-token-popup/error-mapping now ERR at 60s each (+2 min per full run until C9 — see Decision Log). e2e 25/25; mini-core 18.2 min / 6.7 gz |
 | C6 | done 2026-07-10 | 64/75 | 32.1 KB min / 11.3 gz | +2 pass (accounts.local-storage, cross-tab-events — ALL accounts.* green). New `@mini-msal/browser/local-storage` feature (encrypted entities via cookie-keyed HKDF/AES-GCM, plaintext indexes, memory mirror, msal.broadcast.cache sync); core `Store` seam + msal.broadcast.event bus (post always, subscribe in LS mode). GAP_REPORT: 0 bugs, 0 behavioral-diffs, 11 missing-feature (C7–C9 only). e2e 25/25 (sessionStorage interop untouched); mini-core 18.6 min / 6.9 gz |
 | C7 | done 2026-07-10 | 68/75 | 37.0 KB min / 12.6 gz | +4 pass (broker.dom-probe-and-interactive, dom-first-login, dom-error-mapping, dom-disabled-fallback — all 4 first try). New `@mini-msal/browser/broker` feature (DOM transport): initialize probe, acquireTokenByCode({nativeAccountId}), brokered silent via new ctx.nativeSilent seam, real's error mapping + fatal-DISABLED provider drop. Core +ctx.writeAccount, toAccountInfo surfaces nativeAccountId (mini-core 18.8 min / 7.0 gz, +0.2). GAP_REPORT: 68 pass, 7 missing-feature (C8 extension ×2, C9 naa ×5). e2e 25/25 |
+| C8 | done 2026-07-12 | 70/75 | 38.8 KB min / 13.3 gz | +2 pass (broker.extension-handshake-capture, extension-fake-e2e — both first try; ALL broker.* green). Extension transport in ./broker behind a Provider seam: Handshake via window.postMessage + MessageChannel (bounce-back detection + nativeBrokerHandshakeTimeout), GetToken sends the full initRequest verbatim over the port, snake_case result mapped to the shared handleResponse, per-transport x-client-xtra-sku (chrome\|<version> from HandshakeResponse). GAP_REPORT: 70 pass, 5 missing-feature (C9 naa only). e2e 25/25; mini-core 18.8 min / 7.0 gz (unchanged — feature-module bytes only) |
