@@ -7,10 +7,23 @@ this file plus the docs it links.
 
 ## Mission
 
-Bring `@mini-msal/browser` + `@mini-msal/react` (in `mini-msal/packages/`) to
-**full behavioral parity** with real `@azure/msal-browser` 5.16.0 +
-`@azure/msal-react` 5.5.1 — **75/75 conformance scenarios passing, zero
-bugs** — while keeping the bundle as small as possible. Track size every task.
+Deliver a drop-in msal replacement that is also à-la-carte consumable
+(user requirements, restated 2026-07-12). Definition of done — ALL of:
+
+1. **100% compat**: `@mini-msal/compat` is a one-import drop-in for
+   `@azure/msal-browser` — 75/75 conformance scenarios passing, zero bugs,
+   e2e 25/25 (C-series tasks).
+2. **Pay-to-play**: every feature is an independently consumable,
+   tree-shakable module composed into `createClient`; nobody pays bytes for
+   features they don't compose (architecture landed in A0; each C-task adds
+   its feature as a module).
+3. **Effortless consumption**: it must be VERY straightforward to consume
+   just the parts you need — verified from a consumer's point of view, with
+   clear error behavior when a non-composed feature is invoked (D-series).
+4. **Docs & examples**: consumer-facing documentation and runnable examples
+   for each consumption profile, each with its measured size (D-series).
+
+Track bundle size on every task (core + compat).
 
 Evidence baseline (2026-07-07): 2 pass / 33 behavioral-diff / 32
 missing-feature / 8 bugs. See `docs/GAP_REPORT.md` for per-scenario detail and
@@ -60,12 +73,15 @@ Work from `mini-msal/` on branch `dzearing/mini-msal`.
 
    > Read mini-msal/docs/design/PARITY_STATE.md and follow its Standard
    > Operating Procedure: execute the next pending task (test → fix →
-   > validate → update the state doc → commit), then run /reset-context with
-   > this same prompt to continue the loop. Stop instead of resetting only
-   > when: all tasks are done (75/75 pass, e2e 25/25), you are blocked on a
-   > decision only the user can make, or the same task has failed twice.
+   > validate → update the state doc → commit + push), then run
+   > /reset-context with this same prompt to continue the loop. Stop instead
+   > of resetting only when: every task in the task list is done, you are
+   > blocked on a decision only the user can make, or the same task has
+   > failed twice.
 
    If all tasks are done, do NOT reset — write a final summary for the user.
+   Push after each commit: `git push fork dzearing/mini-msal` (origin is the
+   upstream AzureAD repo and rejects pushes; `fork` = dzearing's fork).
 
 ## Environment gotchas (cost hours before — do not rediscover)
 
@@ -631,6 +647,42 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   pass); update docs/README.md status section + size claims, root README,
   bundle-size-experiment results table if size changed materially; final
   commit; write user-facing summary (do NOT reset-context after this one).
+
+### Phase D — à-la-carte DX, docs & examples (after C10)
+
+The C-series proves compat correctness; the D-series makes the à-la-carte
+story real for consumers. Same SOP applies (validate → update doc → commit +
+push → reset). "Consumer" below means someone who has never read this repo.
+
+- [ ] **D1** `pending` — Seam hardening + consumer packaging. (a) Calling a
+  non-composed feature's API must fail with a clear, documented
+  BrowserAuthError (e.g. `feature_not_configured: loginPopup requires
+  composing popup from "@mini-msal/browser/popup"`) — never
+  undefined-is-not-a-function; add conformance-style unit checks for every
+  feature-owned public API on a core-only client. (b) Verify real-world
+  packaging: `npm pack` each package, install into a throwaway consumer app
+  (temp dir, file: deps), confirm subpath exports + types resolve and a
+  minimal build tree-shakes to the expected size. Fix exports maps as needed.
+- [ ] **D2** `pending` — Consumer docs. Rewrite `mini-msal/README.md` +
+  `docs/README.md` "How you consume it" into a real consumer guide:
+  quick-start per profile (compat drop-in; core-only redirect SPA;
+  core+popup; +react), a feature-catalog table (import path · what it adds ·
+  measured KB cost from the size matrix), the migration story from
+  `@azure/msal-browser` (change one import; cache carries over), and the
+  redirect-bridge page requirement. Every code sample must be copy-paste
+  runnable against the packages as they exist.
+- [ ] **D3** `pending` — Runnable examples with measured sizes. `examples/`
+  with one minimal app per profile (core-redirect, core+popup, compat
+  drop-in, react), built via the existing rspack infra and added to
+  `npm run measure` so each example doubles as a size regression check;
+  per-example README states what it composes and its measured size. Wire a
+  smoke check (reuse e2e harness) proving each example signs in against the
+  mock IdP.
+- [ ] **D4** `pending` — Requirements audit vs this Mission. Walk the four
+  definition-of-done bullets as a skeptic; for each, cite the evidence
+  (conformance counts, size matrix, packaging check, docs/examples). File any
+  gap found as a new task before this one is marked done. When no gaps
+  remain: final summary for the user, do NOT reset-context.
 
 ## Progress log
 

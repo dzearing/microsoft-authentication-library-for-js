@@ -33,34 +33,53 @@ diverge — that's what the conformance suite and gap report are for.
 
 ## How you consume it
 
-Two packages, mirroring the real ones:
+Two styles, one library (pay-to-play architecture):
 
-| Package | Mirrors | What's in it |
+| Style | Import | What you get |
 |---|---|---|
-| `@mini-msal/browser` | `@azure/msal-browser` | `PublicClientApplication`, auth flows, cache, errors, events |
-| `@mini-msal/react` | `@azure/msal-react` | `MsalProvider`, hooks, templates, `withMsal` |
+| **Drop-in (compat)** | `@mini-msal/compat` | The classic `PublicClientApplication` with **every** feature composed — swap the import from `@azure/msal-browser` and nothing else changes |
+| **À la carte** | `@mini-msal/browser` + feature subpaths | `createClient(config, [features])` — you bundle only the features you compose |
+| React bindings | `@mini-msal/react` | `MsalProvider`, hooks, templates, `withMsal` — works over either style |
 
-You import them directly. The API mirrors MSAL's, so for the supported
-surface, code looks exactly like MSAL code — only the import specifier
-changes:
+Drop-in:
 
-```tsx
-import { PublicClientApplication } from "@mini-msal/browser";
-import { MsalProvider, useMsal, MsalAuthenticationTemplate } from "@mini-msal/react";
+```ts
+import { PublicClientApplication } from "@mini-msal/compat";
 
 const pca = new PublicClientApplication({
-    auth: {
-        clientId: "your-client-id",
-        authority: "https://login.microsoftonline.com/your-tenant",
-        redirectUri: window.location.origin,
-    },
+    auth: { clientId: "...", authority: "...", redirectUri: window.location.origin },
 });
 await pca.initialize();
-
 // ...the calls you already know:
 await pca.loginPopup({ scopes: ["User.Read"] });
 const result = await pca.acquireTokenSilent({ scopes: ["User.Read"], account });
 ```
+
+À la carte — a redirect-only SPA that doesn't want to pay for popup, broker,
+localStorage encryption, or telemetry bytes:
+
+```ts
+import { createClient } from "@mini-msal/browser";
+
+const pca = createClient({ auth: { clientId: "..." } }); // core only
+await pca.initialize();
+await pca.loginRedirect({ scopes: ["User.Read"] });
+```
+
+...and features compose in as plain functions when you need them:
+
+```ts
+import { createClient } from "@mini-msal/browser";
+import { popup } from "@mini-msal/browser/popup";
+import { telemetry } from "@mini-msal/browser/telemetry";
+
+const pca = createClient(config, [popup, telemetry]);
+```
+
+Feature modules today: `./popup`, `./broker` (platform broker / WAM),
+`./local-storage` (encrypted localStorage + cross-tab sync), `./telemetry`
+(performance events), `./redirect-bridge` (the popup/iframe bridge-page
+bundle, 0.6 KB vs real's 6.5 KB).
 
 Because mini-msal reads and writes **real MSAL's exact v5 cache schema**
 (`msal.3` entities, token-key indexes, active-account filters — verified in
@@ -68,15 +87,11 @@ both directions by the e2e suite), you can even migrate a signed-in app
 between the two libraries without users losing their sessions, as long as the
 cache stays in `sessionStorage`.
 
-Two practical differences from real MSAL to know up front:
-
-- **No redirect-bridge page.** Real MSAL v5 requires you to serve a special
-  bridge page at every popup/iframe redirect URI. mini-msal polls the popup
-  URL instead, so a **blank page** works. (Register a blank page like
-  `/blank.html` as a redirect URI and pass it as `redirectUri` on popup and
-  silent requests.)
-- **One storage mode.** Only `cacheLocation: "sessionStorage"` is
-  implemented today.
+Like real MSAL v5, popup/iframe responses complete via a redirect-bridge
+page served at the popup redirect URI — mini ships a 0.6 KB bridge bundle
+(`@mini-msal/browser/redirect-bridge`). Both `sessionStorage` (default) and
+`localStorage` (encrypted entities + cross-tab events, matching real's
+observable shape) cache locations are implemented.
 
 ## Architecture
 
@@ -197,8 +212,15 @@ To try it against a real Entra ID tenant, see
 
 ## Status and next steps
 
-Current conformance standing (75 scenarios): **2 identical · 33 behavioral
-differences · 32 missing features · 8 bugs.** Most behavioral differences are
-cosmetic (event coverage, error `.name`, result metadata); the bugs are small
-and enumerated with fixes in the gap report. The suggested order of work is
-in [design/conformance-suite-notes.md](./design/conformance-suite-notes.md#if-asked-to-fix-mini-next-the-8-bugs-cheapest-first).
+Current conformance standing (75 scenarios): **68 identical · 7 missing
+features · 0 behavioral diffs · 0 bugs.** The work is driven task-by-task
+from [design/PARITY_STATE.md](./design/PARITY_STATE.md); remaining:
+platform-broker extension transport (C8), nested app auth (C9), final sweep +
+published size matrix (C10), then an à-la-carte DX / docs / examples phase
+(D-series).
+
+Size today (min / gzip): à-la-carte core ~18.8 / 7.0 KB · `@mini-msal/compat`
+with every feature ~37.0 / 12.6 KB · real msal stack ~249 / 65 KB. Every
+parity task records its size cost in the PARITY_STATE progress log — full
+parity is being bought at roughly 1/7th of real's size, and consumers who
+compose less pay less.
