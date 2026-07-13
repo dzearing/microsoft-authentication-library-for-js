@@ -442,6 +442,47 @@ Entries (append as you go):
   Size: compat 39.7 → 42.9 KB min (+3.2 = Logger class + namespace
   tables), mini-core 19.5 → 20.9 (+1.4, the core-resident Logger — first
   core growth since C8; accepted as core API surface, not a feature).
+- **C13 (2026-07-13)**: redirect navigation seams (audit findings
+  `navigate-to-login-request-url`, `on-redirect-navigate`,
+  `on-redirect-navigate-hook`, `navigation-client`,
+  `set-navigation-client`). Five new scenarios in NEW area 11
+  `11-navigation.mjs` (suite 78→83); ALL green on first mini run after
+  implementation. One seam, real's shape: `NavigationClient` class in CORE
+  (default navigateInternal/External = location.replace when noHistory else
+  assign, returning a promise that only REJECTS after `timeout` — so
+  loginRedirect now stays pending during a real navigation, exactly like
+  real), consulted for every redirect navigation with real's options
+  ({apiId 861/865/961, timeout system.redirectNavigationTimeout(30s),
+  noHistory}); swappable via system.navigationClient AND
+  setNavigationClient(). auth.onRedirectNavigate(url) fires before
+  acquire/logout navigation; false cancels — acquire leaves the interaction
+  lock HELD (real does), logout releases it and emits logoutEnd.
+  navigateToLoginRequestUrl (default true): acquireTokenRedirect caches the
+  start page under real's temp key `msal.{cid}.request.origin`
+  (request.redirectStartPage honored); handleRedirectPromise compares
+  normalized URLs (normUrl = drop hash + trailing-slash pathname), and on
+  mismatch caches the response hash under `msal.{cid}.urlHash`, clears the
+  URL hash, and navigateInternal(origin||homepage, noHistory:true) — result
+  is delivered by the NEXT load's handleRedirectPromise from the cached
+  hash; navigateInternal returning false processes in place (real's
+  contract). In-place branch restores the initiating page's own #hash
+  (real's replaceHash). document.title = "Microsoft Authentication" during
+  processing, restored in finally. Match-real event fix: redirect
+  logoutStart now carries the RAW logout request (null payload for
+  `logoutRedirect()`) — real only synthesizes the payload on the popup
+  path; the popup snapshot (account/correlationId/postLogoutRedirectUri)
+  still passes. unlock() moved from top-of-processRedirect into the
+  process/clean/forged legs so the lock survives the mid-replay load
+  (pinned by the deep-link scenario's afterReplay probe). e2e fix (not a
+  regression): the synthetic cancelled-login check seeded only
+  `msal.request`; a genuine mini flow now also caches request.origin, so
+  the seed gained that key — without it mini (like real) replays to the
+  homepage. mini's other temp key `msal.request` (params blob) still
+  differs from real's `msal.{cid}.request.params` schema — the new probes
+  compare only the two replay keys; full temp-key schema parity was NOT in
+  the audit findings and stays a non-goal. Size: compat 42.9 → 44.6 KB min
+  (+1.7), mini-core 20.9 → 22.5 (+1.6 — NavigationClient + replay live in
+  core since redirect is core surface).
 
 ## Completed task list (Phases A0, A, B, C — all done)
 
@@ -689,3 +730,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | C10 | done 2026-07-12 | 75/75 | 39.5 KB min / 13.4 gz | FINAL SWEEP all green: conformance mini 75/75, check 75/75, e2e 25/25, GAP_REPORT all-pass. New `mini-compat` variant (compat, no React) 32.5 min / 11.0 gz / 9.9 br vs msal-browser-core 220.5/55.4/46.4 (6.8×); stack 39.5/13.4/12.0 vs 248.8/64.9/53.9 (6.3×); mini-core 19.5/7.1/6.3 (verified: still exercises sign-out + multi-account). READMEs + bundle-size-experiment.md updated to final matrix. C-series COMPLETE — D-series next |
 | C11 | done 2026-07-13 | 77/77 | 46.8 KB min / 15.5 gz | +2 scenarios (suite 75→77: telemetry.perf-event-shape, -shape-silent — both green first mini run after 2 table fixes). Full per-flow perf-event shapes (6 flows), ext sub-measurement key sets, live sizes/counters; core seam err.silentRefreshReason; harness __cap.perfRaw. compat 39.7 min (+7.2 — shape tables), mini-core UNCHANGED 19.5 (pay-to-play holds). e2e 25/25 |
 | C12 | done 2026-07-13 | 78/78 | 50.0 KB min / 16.6 gz | +1 scenario (suite 77→78: init.exported-surface-2 — mini green first run). Core: Logger class (real clone/gate/format), LogLevel + reverse mappings, WrapperSKU, getLogger/setLogger/initializeWrapperLibrary (wrapper meta stored; headers stay stub-empty until C19). Compat: 5 *ErrorCodes namespaces (exact keys+values) + BrowserConfigurationAuthError via shared pack() w/ key=code irregulars. compat 42.9 min (+3.2), mini-core 20.9 (+1.4 core Logger). e2e 25/25 |
+| C13 | done 2026-07-13 | 83/83 | 51.6 KB min / 17.0 gz | +5 scenarios (suite 78→83, new area 11-navigation — ALL green first mini run). NavigationClient class + setNavigationClient + system.navigationClient; auth.onRedirectNavigate cancel hook (acquire keeps lock, logout releases + logoutEnd); navigateToLoginRequestUrl deep-link replay via real's msal.{cid}.request.origin / urlHash temp keys, redirectStartPage, in-place #hash restore, doc-title swap; redirect logoutStart payload = raw request (real). e2e cancelled-login seed gained request.origin. compat 44.6 min (+1.7), mini-core 22.5 (+1.6 — redirect is core). e2e 25/25 |

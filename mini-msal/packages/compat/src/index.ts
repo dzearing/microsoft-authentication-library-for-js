@@ -39,6 +39,8 @@ export {
     EventType,
     InteractionType,
     CacheLookupPolicy,
+    NavigationClient,
+    type NavigationOptions,
     version,
     type AccountInfo,
     type AccountFilter,

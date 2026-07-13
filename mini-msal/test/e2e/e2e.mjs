@@ -301,6 +301,12 @@ try {
                     "msal.request",
                     JSON.stringify({ verifier: "v", state: "S", scopes: ["User.Read"] })
                 );
+                // a real mid-flow state also carries the initiating page
+                // (C13: without it the library replays to the homepage)
+                sessionStorage.setItem(
+                    "msal.11111111-2222-3333-4444-555555555555.request.origin",
+                    "http://localhost:4173/mini-mock-app/"
+                );
             }
         });
         await page.goto(

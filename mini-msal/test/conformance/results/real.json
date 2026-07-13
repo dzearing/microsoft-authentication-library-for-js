@@ -1,7 +1,27 @@
 [
   {
-    "id": "init.exported-surface-2",
-    "area": "init",
+    "id": "navigation.deep-link-replay",
+    "area": "navigation",
+    "status": "captured"
+  },
+  {
+    "id": "navigation.on-redirect-navigate-cancel-login",
+    "area": "navigation",
+    "status": "captured"
+  },
+  {
+    "id": "navigation.on-redirect-navigate-cancel-logout",
+    "area": "navigation",
+    "status": "captured"
+  },
+  {
+    "id": "navigation.navigation-client-config",
+    "area": "navigation",
+    "status": "captured"
+  },
+  {
+    "id": "navigation.navigation-client-setter",
+    "area": "navigation",
     "status": "captured"
   }
 ]

@@ -90,6 +90,9 @@ export interface TokenRequest {
     cacheLookupPolicy?: number;
     forceRefresh?: boolean;
     correlationId?: string;
+    /** redirect flows: page to return to after the roundtrip (defaults to
+     * the current page when navigateToLoginRequestUrl is on) */
+    redirectStartPage?: string;
 }
 
 export interface Config {
@@ -99,10 +102,19 @@ export interface Config {
         redirectUri?: string;
         postLogoutRedirectUri?: string;
         clientCapabilities?: string[];
+        /** return to the initiating page after a redirect (default true) */
+        navigateToLoginRequestUrl?: boolean;
+        /** called with the URL before any redirect navigation; return false
+         * to cancel the navigation */
+        onRedirectNavigate?: (url: string) => boolean | void;
     };
     system?: {
         popupBridgeTimeout?: number;
         iframeBridgeTimeout?: number;
+        /** ms before a redirect navigation is considered failed (default 30s) */
+        redirectNavigationTimeout?: number;
+        /** custom navigation implementation for redirect flows */
+        navigationClient?: NavigationClient;
         /** probe/use the platform broker (./broker feature) */
         allowPlatformBroker?: boolean;
         /** extension-transport Handshake timeout, ms (default 2000) */
@@ -181,6 +193,54 @@ export const WrapperSKU = {
     React: "@azure/msal-react",
     Angular: "@azure/msal-angular",
 } as const;
+
+export interface NavigationOptions {
+    apiId: number;
+    timeout: number;
+    noHistory: boolean;
+}
+
+/**
+ * real's NavigationClient: every redirect navigation routes through a
+ * pluggable client (config.system.navigationClient / setNavigationClient) so
+ * apps can substitute SPA-router navigation. The default navigates the window
+ * and returns a promise that only settles by rejecting after `timeout`.
+ */
+export class NavigationClient {
+    navigateInternal(url: string, options: NavigationOptions) {
+        return NavigationClient.defaultNavigateWindow(url, options);
+    }
+    navigateExternal(url: string, options: NavigationOptions) {
+        return NavigationClient.defaultNavigateWindow(url, options);
+    }
+    static defaultNavigateWindow(
+        url: string,
+        options: NavigationOptions
+    ): Promise<boolean> {
+        if (options.noHistory) {
+            location.replace(url);
+        } else {
+            location.assign(url);
+        }
+        return new Promise((_, reject) => {
+            setTimeout(() => {
+                reject(new BrowserAuthError("timed_out", "failed_to_redirect"));
+            }, options.timeout);
+        });
+    }
+}
+
+/** real's normalizeUrlForComparison: drop hash, ensure trailing slash */
+const normUrl = (u: string): string => {
+    if (!u) return u;
+    try {
+        const x = new URL(u.split("#")[0]);
+        if (!x.pathname.endsWith("/")) x.pathname += "/";
+        return x.href;
+    } catch {
+        return u;
+    }
+};
 
 type LoggerOptions = NonNullable<Config["system"]>["loggerOptions"];
 
@@ -568,6 +628,8 @@ export interface AuthClient {
     setLogger(logger: Logger): void;
     /** store wrapper-library (react/angular) SKU + version */
     initializeWrapperLibrary(sku: string, version: string): void;
+    /** swap the navigation implementation used by redirect flows */
+    setNavigationClient(navigationClient: NavigationClient): void;
     loginRedirect(req: TokenRequest): Promise<void>;
     acquireTokenRedirect(req: TokenRequest): Promise<void>;
     handleRedirectPromise(): Promise<AuthenticationResult | null>;
@@ -691,6 +753,17 @@ export function createClient(
     // to server telemetry; mini sends stub-empty telemetry headers (see
     // TOKEN_TELEMETRY), so the metadata is only stored (C19 revisits)
     let wrapperMeta: [sku: string, version: string] | null = null;
+
+    // ---- redirect navigation seam (real's NavigationClient plumbing) ----
+    let navClient = config.system?.navigationClient ?? new NavigationClient();
+    const navOptions = (apiId: number, noHistory = false) => ({
+        apiId,
+        timeout: config.system?.redirectNavigationTimeout ?? 30_000,
+        noHistory,
+    });
+    // temp keys real uses for the return-to-start-page replay
+    const originKey = `msal.${clientId}.request.origin`;
+    const hashKey = `msal.${clientId}.urlHash`;
 
     // ---- interaction lock (same storage entry as real MSAL) ----
     const lockKey = "msal.interaction.status";
@@ -1271,16 +1344,26 @@ export function createClient(
             // the opener's poller (same behavior as real MSAL's iframe guard)
             return null;
         }
-        // back from a redirect (or clean load): release the interaction lock
-        // set before navigating away, like real's handleRedirectPromise
-        unlock();
-        const params = new URLSearchParams(location.hash.slice(1));
-        const code = params.get("code");
+        let params = new URLSearchParams(location.hash.slice(1));
+        let cachedHash = false;
+        if (!params.get("code") && !params.get("error")) {
+            // no response in the URL: a replay navigation may have cached the
+            // hash for this load (real's getRedirectResponse urlHash pickup)
+            const cached = sessionStorage.getItem(hashKey);
+            if (cached) {
+                sessionStorage.removeItem(hashKey);
+                params = new URLSearchParams(cached.slice(1));
+                cachedHash = true;
+            }
+        }
         const err = params.get("error");
         const stored = sessionStorage.getItem("msal.request");
-        // clean load: real resolves null silently, no handleRedirect events
-        if ((!code && !err) || !stored) return null;
-        sessionStorage.removeItem("msal.request");
+        // clean load: real resolves null silently, no handleRedirect events;
+        // the interaction lock set before navigating away is released
+        if ((!params.get("code") && !err) || !stored) {
+            unlock();
+            return null;
+        }
         const {
             verifier,
             state,
@@ -1295,19 +1378,67 @@ export function createClient(
         } = JSON.parse(stored);
         const had = accountKeys().length;
         emit(EventType.HANDLE_REDIRECT_START, "redirect");
+        const title = document.title;
+        document.title = "Microsoft Authentication";
         try {
             if (params.get("state") !== state) {
                 // forged/unknown state: real treats the response as not ours
                 // and resolves null (no failure event, no throw)
+                unlock();
+                sessionStorage.removeItem("msal.request");
                 return null;
             }
-            history.replaceState(null, "", location.pathname + location.search);
+            const navBack = config.auth.navigateToLoginRequestUrl ?? true;
+            if (!cachedHash) {
+                const origin = sessionStorage.getItem(originKey) ?? "";
+                if (navBack && normUrl(origin) !== normUrl(location.href)) {
+                    // returned somewhere other than the initiating page:
+                    // cache the response and navigate back; the next load's
+                    // handleRedirectPromise processes it (real's replay)
+                    sessionStorage.setItem(hashKey, location.hash);
+                    history.replaceState(
+                        null,
+                        "",
+                        location.pathname + location.search
+                    );
+                    let target = origin;
+                    if (!target) {
+                        target = location.origin + "/";
+                        sessionStorage.setItem(originKey, target);
+                    }
+                    if (
+                        (await navClient.navigateInternal(
+                            target,
+                            navOptions(865, true) // ApiId.handleRedirectPromise
+                        )) !== false
+                    ) {
+                        // interaction lock intentionally stays held mid-replay
+                        return null;
+                    }
+                    // custom client declined to navigate: process in place
+                    sessionStorage.removeItem(hashKey);
+                } else {
+                    history.replaceState(
+                        null,
+                        "",
+                        location.pathname + location.search
+                    );
+                    const i = origin.indexOf("#");
+                    if (navBack && i > -1) {
+                        // restore the app's own pre-login hash (replaceHash)
+                        location.hash = origin.slice(i + 1);
+                    }
+                }
+            }
+            unlock();
+            sessionStorage.removeItem("msal.request");
+            sessionStorage.removeItem(originKey);
             if (err) {
                 // login was cancelled/denied at the IdP
                 throw classify(err, params.get("error_description") ?? "");
             }
             const result = await redeem({
-                code: code!,
+                code: params.get("code")!,
                 verifier,
                 scopes,
                 correlationId,
@@ -1328,6 +1459,7 @@ export function createClient(
             emit(EventType.ACQUIRE_TOKEN_FAILURE, "redirect", undefined, e);
             throw e;
         } finally {
+            document.title = title;
             emit(EventType.HANDLE_REDIRECT_END, "redirect");
         }
     };
@@ -1650,6 +1782,9 @@ export function createClient(
         initializeWrapperLibrary(sku: string, version: string) {
             wrapperMeta = [sku, version];
         },
+        setNavigationClient(c: NavigationClient) {
+            navClient = c;
+        },
 
         // resolved config: user input over real's observable defaults (only
         // keys snapshots compare; unset optionals stay undefined like real)
@@ -1723,7 +1858,20 @@ export function createClient(
                     authority: req.authority,
                 })
             );
-            location.assign(url);
+            // start page cached so handleRedirectPromise can navigate back
+            // (navigateToLoginRequestUrl, default true)
+            sessionStorage.setItem(
+                originKey,
+                new URL(req.redirectStartPage ?? location.href, location.href)
+                    .href
+            );
+            // app hook: returning false cancels the navigation (the promise
+            // resolves and, like real, the interaction lock stays held)
+            if (config.auth.onRedirectNavigate?.(url) === false) return;
+            await navClient.navigateExternal(
+                url,
+                navOptions(861) // ApiId.acquireTokenRedirect
+            );
         },
 
         ssoSilent,
@@ -1794,11 +1942,23 @@ export function createClient(
                 postLogoutRedirectUri: config.auth.postLogoutRedirectUri,
                 ...req,
             };
-            // the page navigates away, so logoutStart is the only event a
-            // same-page listener can see (like real's RedirectClient.logout)
-            emit(EventType.LOGOUT_START, "redirect", validRequest);
+            // the page navigates away, so logoutStart is usually the only
+            // event a same-page listener sees; real passes the RAW request
+            // (null payload for logoutRedirect())
+            emit(EventType.LOGOUT_START, "redirect", req);
             clearAccount(req?.account);
-            location.assign(logoutUrl(validRequest));
+            const url = logoutUrl(validRequest);
+            if (config.auth.onRedirectNavigate?.(url) === false) {
+                // cancelled logout: real releases the interaction lock and a
+                // same-page listener does see logoutEnd
+                unlock();
+                emit(EventType.LOGOUT_END, "redirect");
+                return;
+            }
+            await navClient.navigateExternal(
+                url,
+                navOptions(961) // ApiId.logout
+            );
         },
     };
 

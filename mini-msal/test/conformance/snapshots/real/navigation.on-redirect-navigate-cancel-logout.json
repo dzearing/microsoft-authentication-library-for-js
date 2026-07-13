@@ -1,0 +1,62 @@
+{
+  "events": [
+    {
+      "error": null,
+      "eventType": "msal:initializeStart",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 0
+    },
+    {
+      "error": null,
+      "eventType": "msal:initializeEnd",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 1
+    },
+    {
+      "error": null,
+      "eventType": "msal:logoutStart",
+      "interactionType": "redirect",
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 2
+    },
+    {
+      "error": null,
+      "eventType": "msal:logoutEnd",
+      "interactionType": "redirect",
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 3
+    }
+  ],
+  "lock": null,
+  "navCalls": {
+    "ok": [
+      {
+        "call": "onRedirectNavigate",
+        "url": {
+          "page": "https://localhost:4599/logout",
+          "queryKeys": [
+            "client-request-id",
+            "post_logout_redirect_uri",
+            "state"
+          ]
+        }
+      }
+    ]
+  },
+  "origin": null,
+  "result": {
+    "ok": null
+  },
+  "url": {
+    "hashKeys": [],
+    "page": "http://localhost:4173/conformance-app/",
+    "query": ""
+  },
+  "urlHashKeys": null
+}

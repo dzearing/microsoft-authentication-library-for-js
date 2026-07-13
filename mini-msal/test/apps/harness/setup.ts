@@ -31,7 +31,42 @@ export function setupHarness(lib: any, target: string): void {
         message: String(e?.errorMessage ?? e?.message ?? e).slice(0, 120),
     });
 
+    // navigation instrumentation (C13): URL digests keep snapshots stable
+    const digestNavUrl = (url: string) => {
+        const u = new URL(url, location.href);
+        return {
+            page: u.origin + u.pathname,
+            queryKeys: [...u.searchParams.keys()].sort(),
+        };
+    };
+    const navRecorder = {
+        navigateInternal: (url: string, options: any) => {
+            g.__navCalls.push({ call: "internal", url: digestNavUrl(url), options });
+            return Promise.resolve(true);
+        },
+        navigateExternal: (url: string, options: any) => {
+            g.__navCalls.push({ call: "external", url: digestNavUrl(url), options });
+            return Promise.resolve(true);
+        },
+    };
+
     g.__create = async (config: any, opts: any = {}) => {
+        g.__navCalls = [];
+        if (opts.onRedirectNavigate === "record-cancel") {
+            config.auth = {
+                ...config.auth,
+                onRedirectNavigate: (url: string) => {
+                    g.__navCalls.push({
+                        call: "onRedirectNavigate",
+                        url: digestNavUrl(url),
+                    });
+                    return false;
+                },
+            };
+        }
+        if (opts.navigationClient === "config") {
+            config.system = { ...config.system, navigationClient: navRecorder };
+        }
         if (opts.captureLogs) {
             config.system = {
                 ...config.system,
@@ -88,6 +123,9 @@ export function setupHarness(lib: any, target: string): void {
             });
         } catch {
             /* mini has no performance client */
+        }
+        if (opts.navigationClient === "setter") {
+            pca.setNavigationClient(navRecorder);
         }
         if (!opts.noInit) {
             await pca.initialize();

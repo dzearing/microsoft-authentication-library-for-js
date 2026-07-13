@@ -24,10 +24,10 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-13)**: Phases A0–C12 COMPLETE — conformance 78/78,
-e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 42.9 KB min
-(real: 220.5), compat+react stack 50.0 KB (real: 248.8), core-only
-20.9 KB. Remaining: C-gaps C13–C21 (post-audit parity gaps beyond the
+**Status (2026-07-13)**: Phases A0–C13 COMPLETE — conformance 83/83,
+e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 44.6 KB min
+(real: 220.5), compat+react stack 51.6 KB (real: 248.8), core-only
+22.5 KB. Remaining: C-gaps C14–C21 (post-audit parity gaps beyond the
 suite) then D-series (à-la-carte DX/docs/examples).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
@@ -196,18 +196,19 @@ scenarios + a partial implementation, add a follow-up task, note it here.
   5 in ClientAuthErrorCodes, 1 in ClientConfigurationErrorCodes) +
   BrowserConfigurationAuthError. compat 42.9 KB min (+3.2), core 20.9
   (+1.4 — Logger is core since getLogger is core surface). e2e 25/25.
-- [ ] **C13** `pending` — Redirect navigation seams. Findings:
-  `navigate-to-login-request-url` (HIGH — default-config deep-link return
-  broken: cache the origin URI, replay navigation post-redirect),
-  `on-redirect-navigate` / `on-redirect-navigate-hook` (auth.
-  onRedirectNavigate callback incl. cancel-navigation), `navigation-client`
-  + `set-navigation-client` (NavigationClient class export,
-  system.navigationClient, setNavigationClient()). These share one seam:
-  route ALL redirect navigations through a navigation client + the
-  onRedirectNavigate hook, like real. Scenarios per findings' tests
-  (deep-link start URL, cancel-navigation probe, custom client recorder).
-  Context: audit json; `packages/browser/src/index.ts` (redirect flow +
-  processRedirect), `test/conformance/scenarios/01-core.mjs`.
+- [x] **C13** `done 2026-07-13 — pass 83/83, mini-stack 51.6 KB` — Redirect
+  navigation seams. Suite grew 78→83 (new area 11-navigation: deep-link
+  replay, onRedirectNavigate cancel login/logout, navigationClient
+  config/setter — all green first mini run). One seam like real:
+  NavigationClient class (core export + compat re-export, default = real's
+  replace/assign + reject-after-timeout promise), system.navigationClient +
+  setNavigationClient(), auth.onRedirectNavigate cancel hook (acquire keeps
+  the lock, logout releases + logoutEnd), navigateToLoginRequestUrl replay
+  via real's msal.{cid}.request.origin / urlHash keys (redirectStartPage,
+  homepage fallback, in-place #hash restore, navigateInternal-false =
+  process in place). Redirect logoutStart payload now the raw request.
+  compat 44.6 KB min (+1.7), core 22.5 (+1.6). e2e 25/25 (cancelled-login
+  seed gained request.origin). Details: PARITY_LOG C13 entry.
 - [ ] **C14** `pending` — Popup behaviors. Findings: `navigate-popups`
   (real opens `about:blank` SYNCHRONOUSLY in the call stack then navigates
   it — popup-blocker-visible; mini opens late), `logout-popup-main-window-

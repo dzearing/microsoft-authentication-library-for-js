@@ -4604,5 +4604,383 @@
         "ok": true
       }
     }
+  },
+  {
+    "id": "navigation.deep-link-replay",
+    "area": "navigation",
+    "status": "pass",
+    "observed": {
+      "accounts": {
+        "ok": [
+          "ada@contoso.com"
+        ]
+      },
+      "after": {
+        "lock": null,
+        "origin": null,
+        "urlHashKeys": null
+      },
+      "afterReplay": {
+        "lock": "set",
+        "origin": "http://localhost:4173/conformance-app/?tab=2&x=1",
+        "url": {
+          "hashKeys": [],
+          "page": "http://localhost:4173/conformance-app/",
+          "query": "?tab=2&x=1"
+        },
+        "urlHashKeys": [
+          "code",
+          "state"
+        ]
+      },
+      "beforeReplay": {
+        "lock": "set",
+        "origin": "http://localhost:4173/conformance-app/?tab=2&x=1",
+        "url": {
+          "hashKeys": [
+            "code",
+            "state"
+          ],
+          "page": "http://localhost:4173/conformance-app/",
+          "query": ""
+        },
+        "urlHashKeys": null
+      },
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:handleRedirectStart",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:acquireTokenSuccess",
+          "interactionType": "redirect",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "accessToken",
+            "account",
+            "authority",
+            "cloudGraphHostName",
+            "code",
+            "correlationId",
+            "expiresOn",
+            "extExpiresOn",
+            "familyId",
+            "fromCache",
+            "fromPlatformBroker",
+            "idToken",
+            "idTokenClaims",
+            "msGraphHost",
+            "refreshOn",
+            "requestId",
+            "scopes",
+            "state",
+            "tenantId",
+            "tokenType",
+            "uniqueId"
+          ],
+          "seq": 3
+        },
+        {
+          "error": null,
+          "eventType": "msal:loginSuccess",
+          "interactionType": "redirect",
+          "payloadAccount": "ada@contoso.com",
+          "payloadKeys": [
+            "authorityType",
+            "dataBoundary",
+            "environment",
+            "homeAccountId",
+            "idToken",
+            "idTokenClaims",
+            "kmsi",
+            "localAccountId",
+            "loginHint",
+            "name",
+            "nativeAccountId",
+            "tenantId",
+            "tenantProfiles",
+            "upn",
+            "username"
+          ],
+          "seq": 4
+        },
+        {
+          "error": null,
+          "eventType": "msal:handleRedirectEnd",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 5
+        }
+      ],
+      "finalUrl": {
+        "hashKeys": [],
+        "page": "http://localhost:4173/conformance-app/",
+        "query": "?tab=2&x=1"
+      },
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "navigation.on-redirect-navigate-cancel-login",
+    "area": "navigation",
+    "status": "pass",
+    "observed": {
+      "lock": "set",
+      "navCalls": {
+        "ok": [
+          {
+            "call": "onRedirectNavigate",
+            "url": {
+              "page": "https://localhost:4599/authorize",
+              "queryKeys": [
+                "claims",
+                "clidata",
+                "client-request-id",
+                "client_id",
+                "client_info",
+                "code_challenge",
+                "code_challenge_method",
+                "nonce",
+                "redirect_uri",
+                "response_mode",
+                "response_type",
+                "scope",
+                "state",
+                "x-client-SKU",
+                "x-client-VER"
+              ]
+            }
+          }
+        ]
+      },
+      "origin": "http://localhost:4173/conformance-app/",
+      "result": {
+        "ok": null
+      },
+      "url": {
+        "hashKeys": [],
+        "page": "http://localhost:4173/conformance-app/",
+        "query": ""
+      },
+      "urlHashKeys": null
+    }
+  },
+  {
+    "id": "navigation.on-redirect-navigate-cancel-logout",
+    "area": "navigation",
+    "status": "pass",
+    "observed": {
+      "events": [
+        {
+          "error": null,
+          "eventType": "msal:initializeStart",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 0
+        },
+        {
+          "error": null,
+          "eventType": "msal:initializeEnd",
+          "interactionType": null,
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 1
+        },
+        {
+          "error": null,
+          "eventType": "msal:logoutStart",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 2
+        },
+        {
+          "error": null,
+          "eventType": "msal:logoutEnd",
+          "interactionType": "redirect",
+          "payloadAccount": null,
+          "payloadKeys": null,
+          "seq": 3
+        }
+      ],
+      "lock": null,
+      "navCalls": {
+        "ok": [
+          {
+            "call": "onRedirectNavigate",
+            "url": {
+              "page": "https://localhost:4599/logout",
+              "queryKeys": [
+                "client-request-id",
+                "post_logout_redirect_uri",
+                "state"
+              ]
+            }
+          }
+        ]
+      },
+      "origin": null,
+      "result": {
+        "ok": null
+      },
+      "url": {
+        "hashKeys": [],
+        "page": "http://localhost:4173/conformance-app/",
+        "query": ""
+      },
+      "urlHashKeys": null
+    }
+  },
+  {
+    "id": "navigation.navigation-client-config",
+    "area": "navigation",
+    "status": "pass",
+    "observed": {
+      "lock": "set",
+      "navCalls": {
+        "ok": [
+          {
+            "call": "external",
+            "options": {
+              "apiId": 861,
+              "noHistory": false,
+              "timeout": 30000
+            },
+            "url": {
+              "page": "https://localhost:4599/authorize",
+              "queryKeys": [
+                "claims",
+                "clidata",
+                "client-request-id",
+                "client_id",
+                "client_info",
+                "code_challenge",
+                "code_challenge_method",
+                "nonce",
+                "redirect_uri",
+                "response_mode",
+                "response_type",
+                "scope",
+                "state",
+                "x-client-SKU",
+                "x-client-VER"
+              ]
+            }
+          }
+        ]
+      },
+      "origin": "http://localhost:4173/conformance-app/",
+      "result": {
+        "ok": null
+      },
+      "url": {
+        "hashKeys": [],
+        "page": "http://localhost:4173/conformance-app/",
+        "query": ""
+      },
+      "urlHashKeys": null
+    }
+  },
+  {
+    "id": "navigation.navigation-client-setter",
+    "area": "navigation",
+    "status": "pass",
+    "observed": {
+      "lock": "set",
+      "navCalls": {
+        "ok": [
+          {
+            "call": "external",
+            "options": {
+              "apiId": 861,
+              "noHistory": false,
+              "timeout": 30000
+            },
+            "url": {
+              "page": "https://localhost:4599/authorize",
+              "queryKeys": [
+                "claims",
+                "clidata",
+                "client-request-id",
+                "client_id",
+                "client_info",
+                "code_challenge",
+                "code_challenge_method",
+                "nonce",
+                "redirect_uri",
+                "response_mode",
+                "response_type",
+                "scope",
+                "state",
+                "x-client-SKU",
+                "x-client-VER"
+              ]
+            }
+          }
+        ]
+      },
+      "navClientExport": {
+        "ok": {
+          "subclassable": true,
+          "type": "function"
+        }
+      },
+      "origin": "http://localhost:4173/conformance-app/",
+      "result": {
+        "ok": null
+      },
+      "url": {
+        "hashKeys": [],
+        "page": "http://localhost:4173/conformance-app/",
+        "query": ""
+      },
+      "urlHashKeys": null
+    }
   }
 ]

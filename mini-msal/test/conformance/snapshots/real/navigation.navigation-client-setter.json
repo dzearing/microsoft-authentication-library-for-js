@@ -1,0 +1,51 @@
+{
+  "lock": "set",
+  "navCalls": {
+    "ok": [
+      {
+        "call": "external",
+        "options": {
+          "apiId": 861,
+          "noHistory": false,
+          "timeout": 30000
+        },
+        "url": {
+          "page": "https://localhost:4599/authorize",
+          "queryKeys": [
+            "claims",
+            "clidata",
+            "client-request-id",
+            "client_id",
+            "client_info",
+            "code_challenge",
+            "code_challenge_method",
+            "nonce",
+            "redirect_uri",
+            "response_mode",
+            "response_type",
+            "scope",
+            "state",
+            "x-client-SKU",
+            "x-client-VER"
+          ]
+        }
+      }
+    ]
+  },
+  "navClientExport": {
+    "ok": {
+      "subclassable": true,
+      "type": "function"
+    }
+  },
+  "origin": "http://localhost:4173/conformance-app/",
+  "result": {
+    "ok": null
+  },
+  "url": {
+    "hashKeys": [],
+    "page": "http://localhost:4173/conformance-app/",
+    "query": ""
+  },
+  "urlHashKeys": null
+}

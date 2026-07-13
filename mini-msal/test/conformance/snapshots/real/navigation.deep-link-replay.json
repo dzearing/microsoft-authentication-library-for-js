@@ -1,0 +1,155 @@
+{
+  "accounts": {
+    "ok": [
+      "ada@contoso.com"
+    ]
+  },
+  "after": {
+    "lock": null,
+    "origin": null,
+    "urlHashKeys": null
+  },
+  "afterReplay": {
+    "lock": "set",
+    "origin": "http://localhost:4173/conformance-app/?tab=2&x=1",
+    "url": {
+      "hashKeys": [],
+      "page": "http://localhost:4173/conformance-app/",
+      "query": "?tab=2&x=1"
+    },
+    "urlHashKeys": [
+      "code",
+      "state"
+    ]
+  },
+  "beforeReplay": {
+    "lock": "set",
+    "origin": "http://localhost:4173/conformance-app/?tab=2&x=1",
+    "url": {
+      "hashKeys": [
+        "code",
+        "state"
+      ],
+      "page": "http://localhost:4173/conformance-app/",
+      "query": ""
+    },
+    "urlHashKeys": null
+  },
+  "events": [
+    {
+      "error": null,
+      "eventType": "msal:initializeStart",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 0
+    },
+    {
+      "error": null,
+      "eventType": "msal:initializeEnd",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 1
+    },
+    {
+      "error": null,
+      "eventType": "msal:handleRedirectStart",
+      "interactionType": "redirect",
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 2
+    },
+    {
+      "error": null,
+      "eventType": "msal:acquireTokenSuccess",
+      "interactionType": "redirect",
+      "payloadAccount": "ada@contoso.com",
+      "payloadKeys": [
+        "accessToken",
+        "account",
+        "authority",
+        "cloudGraphHostName",
+        "code",
+        "correlationId",
+        "expiresOn",
+        "extExpiresOn",
+        "familyId",
+        "fromCache",
+        "fromPlatformBroker",
+        "idToken",
+        "idTokenClaims",
+        "msGraphHost",
+        "refreshOn",
+        "requestId",
+        "scopes",
+        "state",
+        "tenantId",
+        "tokenType",
+        "uniqueId"
+      ],
+      "seq": 3
+    },
+    {
+      "error": null,
+      "eventType": "msal:loginSuccess",
+      "interactionType": "redirect",
+      "payloadAccount": "ada@contoso.com",
+      "payloadKeys": [
+        "authorityType",
+        "dataBoundary",
+        "environment",
+        "homeAccountId",
+        "idToken",
+        "idTokenClaims",
+        "kmsi",
+        "localAccountId",
+        "loginHint",
+        "name",
+        "nativeAccountId",
+        "tenantId",
+        "tenantProfiles",
+        "upn",
+        "username"
+      ],
+      "seq": 4
+    },
+    {
+      "error": null,
+      "eventType": "msal:handleRedirectEnd",
+      "interactionType": "redirect",
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 5
+    }
+  ],
+  "finalUrl": {
+    "hashKeys": [],
+    "page": "http://localhost:4173/conformance-app/",
+    "query": "?tab=2&x=1"
+  },
+  "result": {
+    "ok": {
+      "accessToken": "mock-access-token-0",
+      "account": {
+        "homeAccountId": "oid-123.tenant-123",
+        "tenantId": "tenant-123",
+        "username": "ada@contoso.com"
+      },
+      "authority": "https://localhost:4599/tenant/",
+      "correlationIdPresent": true,
+      "expiresInFuture": true,
+      "expiresOnType": "Date",
+      "fromCache": false,
+      "fromPlatformBroker": false,
+      "idToken": "<jwt>",
+      "scopes": [
+        "User.Read",
+        "openid",
+        "profile"
+      ],
+      "state": "<dynamic>",
+      "tokenType": "Bearer"
+    }
+  }
+}

@@ -507,6 +507,36 @@ const C = {
         mini: "n/a.",
         cost: 0,
     },
+    "navigation.deep-link-replay": {
+        class: "missing-feature",
+        real: "navigateToLoginRequestUrl (default true): start page cached under msal.{cid}.request.origin; on return at a different URL the response hash is cached under msal.{cid}.urlHash and the window navigates back to the deep link (lock held mid-replay); handleRedirectPromise delivers the result there on the next load.",
+        mini: "Pre-C13: always processed the hash in place on the redirectUri page — deep-link users landed on the wrong page; no request.origin/urlHash keys.",
+        cost: 1.0,
+    },
+    "navigation.on-redirect-navigate-cancel-login": {
+        class: "missing-feature",
+        real: "auth.onRedirectNavigate(authorizeUrl) fires before navigating; returning false cancels navigation, loginRedirect resolves, interaction lock stays held, request.origin stays cached.",
+        mini: "Pre-C13: hook never read; page always hard-navigated via location.assign.",
+        cost: 0.3,
+    },
+    "navigation.on-redirect-navigate-cancel-logout": {
+        class: "missing-feature",
+        real: "onRedirectNavigate(endSessionUrl) on logoutRedirect: false cancels navigation, releases the interaction lock, logoutStart (null payload) + logoutEnd fire.",
+        mini: "Pre-C13: hook never read; also emitted logoutStart with a synthesized payload where real passes the raw (undefined) request.",
+        cost: 0.2,
+    },
+    "navigation.navigation-client-config": {
+        class: "missing-feature",
+        real: "system.navigationClient routes redirect navigation through navigateExternal(url, {apiId: 861, timeout: 30000, noHistory: false}) instead of navigating.",
+        mini: "Pre-C13: no navigationClient seam — location.assign directly.",
+        cost: 0.3,
+    },
+    "navigation.navigation-client-setter": {
+        class: "missing-feature",
+        real: "NavigationClient exported (subclassable); setNavigationClient() swaps the client consulted by redirect flows at runtime.",
+        mini: "Pre-C13: no NavigationClient export; setNavigationClient threw TypeError.",
+        cost: 0.3,
+    },
 };
 
 // ---- generate ---------------------------------------------------------------
@@ -521,6 +551,7 @@ const areaOrder = [
     "params",
     "resilience",
     "init",
+    "navigation",
 ];
 const areaTitles = {
     core: "1. Core flows",
@@ -533,6 +564,7 @@ const areaTitles = {
     params: "8. Request passthrough",
     resilience: "9. Resilience",
     init: "10. Init & misc",
+    navigation: "11. Redirect navigation",
 };
 
 const rows = results.map((r) => {
