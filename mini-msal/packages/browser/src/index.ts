@@ -69,6 +69,12 @@ export interface AuthenticationResult {
     fromPlatformBroker: boolean;
 }
 
+/** popup size/position overrides (real clamps them to the parent window) */
+export interface PopupWindowAttributes {
+    popupSize?: { height?: number; width?: number };
+    popupPosition?: { top?: number; left?: number };
+}
+
 export interface TokenRequest {
     scopes: string[];
     account?: AccountInfo;
@@ -93,6 +99,8 @@ export interface TokenRequest {
     /** redirect flows: page to return to after the roundtrip (defaults to
      * the current page when navigateToLoginRequestUrl is on) */
     redirectStartPage?: string;
+    popupWindowAttributes?: PopupWindowAttributes;
+    popupWindowParent?: Window;
 }
 
 export interface Config {
@@ -109,6 +117,10 @@ export interface Config {
         onRedirectNavigate?: (url: string) => boolean | void;
     };
     system?: {
+        /** open popups synchronously on about:blank inside the user gesture,
+         * then navigate them (real's default true); false defers the open
+         * until the authorize URL is ready */
+        navigatePopups?: boolean;
         popupBridgeTimeout?: number;
         iframeBridgeTimeout?: number;
         /** ms before a redirect navigation is considered failed (default 30s) */
@@ -702,6 +714,9 @@ export interface ClientContext {
         req?: { postLogoutRedirectUri?: string; correlationId?: string },
         interactionType?: string
     ): string;
+    /** main-window navigation through the NavigationClient seam
+     * (./popup's logoutPopup mainWindowRedirectUri) */
+    navigate(url: string, apiId: number): Promise<boolean | void>;
 }
 
 export type Feature = (ctx: ClientContext) => void;
@@ -1973,6 +1988,8 @@ export function createClient(
         waitForCode,
         redeem,
         clearAccount,
+        navigate: (url, apiId) =>
+            navClient.navigateInternal(url, navOptions(apiId)),
         setStore: (s) => (store = s),
         writeAccount: async (e) => {
             const key = `${P}|${e.homeAccountId}|${e.environment}|${e.realm}`;

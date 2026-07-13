@@ -15,6 +15,8 @@ import {
     loginViaRedirect,
     loginViaPopup,
     digestIdpLog,
+    armOpenRecorder,
+    openCalls,
     idp,
 } from "../lib.mjs";
 
@@ -238,6 +240,78 @@ export const scenarios = [
                     "state=<forged>"
                 ),
             };
+        },
+    },
+    {
+        id: "core.popup-open-timing",
+        note: "default navigatePopups: window.open call timing/url/name/features during loginPopup (popup-blocker window)",
+        async run(ctx) {
+            await gotoHarness(ctx);
+            await create(ctx, stdConfig(ctx));
+            await armOpenRecorder(ctx);
+            const result = await tryResult(
+                ctx,
+                async (popupUrl) => {
+                    globalThis.__inApiCall = true;
+                    const p = globalThis.__msal.loginPopup({
+                        scopes: ["User.Read"],
+                        redirectUri: popupUrl,
+                    });
+                    globalThis.__inApiCall = false;
+                    return p;
+                },
+                ctx.popupUrl
+            );
+            return { result, openCalls: await openCalls(ctx) };
+        },
+    },
+    {
+        id: "core.popup-open-timing-async",
+        note: "system.navigatePopups=false: popup opens late, directly at the authorize URL",
+        async run(ctx) {
+            await gotoHarness(ctx);
+            await create(
+                ctx,
+                stdConfig(ctx, { system: { navigatePopups: false } })
+            );
+            await armOpenRecorder(ctx);
+            const result = await tryResult(
+                ctx,
+                async (popupUrl) => {
+                    globalThis.__inApiCall = true;
+                    const p = globalThis.__msal.loginPopup({
+                        scopes: ["User.Read"],
+                        redirectUri: popupUrl,
+                    });
+                    globalThis.__inApiCall = false;
+                    return p;
+                },
+                ctx.popupUrl
+            );
+            return { result, openCalls: await openCalls(ctx) };
+        },
+    },
+    {
+        id: "core.popup-window-attributes",
+        note: "request.popupWindowAttributes: popupSize/popupPosition drive the window.open features string",
+        async run(ctx) {
+            await gotoHarness(ctx);
+            await create(ctx, stdConfig(ctx));
+            await armOpenRecorder(ctx);
+            const result = await tryResult(
+                ctx,
+                async (popupUrl) =>
+                    globalThis.__msal.loginPopup({
+                        scopes: ["User.Read"],
+                        redirectUri: popupUrl,
+                        popupWindowAttributes: {
+                            popupSize: { width: 300, height: 301 },
+                            popupPosition: { top: 11, left: 22 },
+                        },
+                    }),
+                ctx.popupUrl
+            );
+            return { result, openCalls: await openCalls(ctx) };
         },
     },
     {

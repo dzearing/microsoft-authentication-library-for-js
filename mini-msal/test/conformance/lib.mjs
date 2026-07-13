@@ -155,6 +155,53 @@ export function capture(ctx) {
     return ctx.page.evaluate(() => globalThis.__cap);
 }
 
+/**
+ * Wrap window.open to record {url, name, features, sync} per call. Calls are
+ * persisted in sessionStorage so they survive a main-window navigation
+ * (logoutPopup mainWindowRedirectUri). `sync` is true when the call happened
+ * while globalThis.__inApiCall was set — scenarios flag the synchronous span
+ * of the API call with it to observe popup-blocker-visible timing.
+ */
+export function armOpenRecorder(ctx) {
+    return ctx.page.evaluate(() => {
+        sessionStorage.setItem("__openCalls", "[]");
+        const orig = window.open.bind(window);
+        window.open = (url, name, features) => {
+            const calls = JSON.parse(sessionStorage.getItem("__openCalls"));
+            calls.push({
+                url: String(url ?? ""),
+                name: String(name ?? ""),
+                features: String(features ?? ""),
+                sync: !!globalThis.__inApiCall,
+            });
+            sessionStorage.setItem("__openCalls", JSON.stringify(calls));
+            return orig(url, name, features);
+        };
+    });
+}
+
+/**
+ * Read recorded window.open calls. URLs other than about:blank are digested
+ * to origin+path plus SORTED QUERY KEY NAMES (values are volatile).
+ */
+export async function openCalls(ctx) {
+    const calls = JSON.parse(
+        await ctx.page.evaluate(
+            () => sessionStorage.getItem("__openCalls") ?? "[]"
+        )
+    );
+    return calls.map((c) => {
+        let url = c.url;
+        if (url && url !== "about:blank") {
+            const u = new URL(url);
+            url = `${u.origin}${u.pathname}?${[...u.searchParams.keys()]
+                .sort()
+                .join(",")}`;
+        }
+        return { ...c, url };
+    });
+}
+
 /** Sorted sessionStorage + localStorage dump. */
 export function storageDump(ctx) {
     return ctx.page.evaluate(() => {

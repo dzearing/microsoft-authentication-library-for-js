@@ -283,7 +283,8 @@ export function telemetry(ctx: ClientContext): void {
                         ...successCommon(r, pre),
                         authorityEndpointSource: src,
                         httpVerToken: "",
-                        isAsyncPopup: false,
+                        isAsyncPopup:
+                            config.system?.navigatePopups === false,
                         kmsi: false,
                         lateResponseExperimentEnabled: false,
                         redirectBridgeMessageVersion: 1,

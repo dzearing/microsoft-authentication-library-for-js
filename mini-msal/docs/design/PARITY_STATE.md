@@ -24,10 +24,10 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-13)**: Phases A0–C13 COMPLETE — conformance 83/83,
-e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 44.6 KB min
-(real: 220.5), compat+react stack 51.6 KB (real: 248.8), core-only
-22.5 KB. Remaining: C-gaps C14–C21 (post-audit parity gaps beyond the
+**Status (2026-07-13)**: Phases A0–C14 COMPLETE — conformance 87/87,
+e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 45.9 KB min
+(real: 220.5), compat+react stack 53.0 KB (real: 248.8), core-only
+22.6 KB. Remaining: C-gaps C15–C21 (post-audit parity gaps beyond the
 suite) then D-series (à-la-carte DX/docs/examples).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
@@ -209,14 +209,18 @@ scenarios + a partial implementation, add a follow-up task, note it here.
   process in place). Redirect logoutStart payload now the raw request.
   compat 44.6 KB min (+1.7), core 22.5 (+1.6). e2e 25/25 (cancelled-login
   seed gained request.origin). Details: PARITY_LOG C13 entry.
-- [ ] **C14** `pending` — Popup behaviors. Findings: `navigate-popups`
-  (real opens `about:blank` SYNCHRONOUSLY in the call stack then navigates
-  it — popup-blocker-visible; mini opens late), `logout-popup-main-window-
-  redirect` (mainWindowRedirectUri navigation after popup logout +
-  popupWindowAttributes size/position). Scenarios: window.open wrapper
-  recording call timing/args; logoutPopup with mainWindowRedirectUri
-  asserting main-window URL. Context: audit json;
-  `packages/browser/src/popup.ts`, scenarios 01-core/03-accounts.
+- [x] **C14** `done 2026-07-13 — pass 87/87, mini-stack 53.0 KB` — Popup
+  behaviors (findings `navigate-popups`, `logout-popup-main-window-
+  redirect`). Suite grew 83→87 (core.popup-open-timing[-async],
+  core.popup-window-attributes, accounts.logout-popup-main-window-redirect
+  — all green first mini run after impl). system.navigatePopups (default
+  true): about:blank opened SYNCHRONOUSLY in the caller's stack then
+  location.assign'd; real's openSizedPopup geometry/features string +
+  generate[Logout]PopupName; request.popupWindowAttributes/
+  popupWindowParent; logoutPopup mainWindowRedirectUri navigates the main
+  window via new ctx.navigate seam (ApiId 962; lock survives navigation,
+  like real); telemetry isAsyncPopup wired. compat 45.9 KB min (+1.3),
+  core 22.6 (+0.1). Details: PARITY_LOG C14 entry.
 - [ ] **C15** `pending` — React bindings parity. Findings:
   `msalprovider-initialize` (provider must initialize() the instance),
   `inprogress-interaction-statuses` (full InteractionStatus state machine

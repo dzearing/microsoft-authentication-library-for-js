@@ -994,6 +994,123 @@
     }
   },
   {
+    "id": "core.popup-open-timing",
+    "area": "core",
+    "status": "pass",
+    "observed": {
+      "openCalls": [
+        {
+          "features": "width=483, height=600, top=82, left=420.5, scrollbars=yes",
+          "name": "msal.<guid>.User.Read.https://localhost:4599/tenant.<guid>",
+          "sync": true,
+          "url": "about:blank"
+        }
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "core.popup-open-timing-async",
+    "area": "core",
+    "status": "pass",
+    "observed": {
+      "openCalls": [
+        {
+          "features": "width=483, height=600, top=82, left=420.5, scrollbars=yes",
+          "name": "msal.<guid>.User.Read.https://localhost:4599/tenant.<guid>",
+          "sync": false,
+          "url": "https://localhost:4599/authorize?claims,clidata,client-request-id,client_id,client_info,code_challenge,code_challenge_method,nonce,redirect_uri,response_mode,response_type,scope,state,x-client-SKU,x-client-VER"
+        }
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "core.popup-window-attributes",
+    "area": "core",
+    "status": "pass",
+    "observed": {
+      "openCalls": [
+        {
+          "features": "width=300, height=301, top=11, left=22, scrollbars=yes",
+          "name": "msal.<guid>.User.Read.https://localhost:4599/tenant.<guid>",
+          "sync": false,
+          "url": "about:blank"
+        }
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
     "id": "core.storage-shape-after-login",
     "area": "core",
     "status": "pass",
@@ -2155,6 +2272,26 @@
           "msal.version": "5.16.0"
         }
       }
+    }
+  },
+  {
+    "id": "accounts.logout-popup-main-window-redirect",
+    "area": "accounts",
+    "status": "pass",
+    "observed": {
+      "accountsAfter": {
+        "ok": 0
+      },
+      "lockAfter": "{\"clientId\":\"<guid>\",\"type\":\"signout\"}",
+      "mainWindowUrl": "/conformance-app/index.html?logged-out=1",
+      "openCalls": [
+        {
+          "features": "width=300, height=300, top=82, left=420.5, scrollbars=yes",
+          "name": "msal.<guid>.oid-123.tenant-123.<guid>",
+          "sync": true,
+          "url": "about:blank"
+        }
+      ]
     }
   },
   {

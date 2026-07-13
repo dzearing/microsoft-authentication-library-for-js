@@ -1,0 +1,15 @@
+{
+  "accountsAfter": {
+    "ok": 0
+  },
+  "lockAfter": "{\"clientId\":\"<guid>\",\"type\":\"signout\"}",
+  "mainWindowUrl": "/conformance-app/index.html?logged-out=1",
+  "openCalls": [
+    {
+      "features": "width=300, height=300, top=82, left=420.5, scrollbars=yes",
+      "name": "msal.<guid>.oid-123.tenant-123.<guid>",
+      "sync": true,
+      "url": "about:blank"
+    }
+  ]
+}

@@ -75,6 +75,24 @@ const C = {
         mini: "Core msal.3 schema matches (interop verified) but lacks metadata fields; adds its own msal.meta.* discovery cache; AUTO-SETS active account on first login (real never does).",
         cost: 0.3,
     },
+    "core.popup-open-timing": {
+        class: "behavioral-diff",
+        real: "Default navigatePopups=true: window.open('about:blank') fires SYNCHRONOUSLY in the caller's stack (popup blockers see the user gesture) with real's name (msal.{clientId}.{scopes}.{authority}.{cid}) and sized/centered features string, then the popup is navigated to the authorize URL.",
+        mini: "Pre-C14: opened the final authorize URL only AFTER async PKCE work (blocker-visible gap), fixed 'width=483,height=600,popup=yes' features, random msal.{uuid} name; navigatePopups ignored.",
+        cost: 0.5,
+    },
+    "core.popup-open-timing-async": {
+        class: "behavioral-diff",
+        real: "system.navigatePopups=false: the open is deferred and fires directly at the authorize URL (async, real's non-default mode) with the same name/features format.",
+        mini: "Pre-C14: identical deferred timing by accident, but name/features format differed.",
+        cost: 0,
+    },
+    "core.popup-window-attributes": {
+        class: "missing-feature",
+        real: "request.popupWindowAttributes popupSize/popupPosition drive the features string (clamped to the parent window; centered defaults).",
+        mini: "Pre-C14: attributes ignored — fixed features string.",
+        cost: 0.2,
+    },
 
     // ---- silent ----
     "silent.cache-hit-fresh": {
@@ -174,6 +192,12 @@ const C = {
         real: "logoutStart/Success/End events (interactionType=popup); end_session gets client-request-id + state; per-request postLogoutRedirectUri honored.",
         mini: "Only that account's entities removed (matches); events differ (accountRemoved/logoutSuccess, no start/end); per-request postLogoutRedirectUri IGNORED (uses config); no state on end_session.",
         cost: 0.3,
+    },
+    "accounts.logout-popup-main-window-redirect": {
+        class: "missing-feature",
+        real: "logoutPopup({mainWindowRedirectUri}) navigates the MAIN window (NavigationClient, ApiId 962) after the popup roundtrip; popupWindowAttributes honored on the logout popup; name msal.{clientId}.{homeAccountId}.{cid}; interaction lock survives into the next page.",
+        mini: "Pre-C14: mainWindowRedirectUri ignored — main window stayed on the authenticated page over a cleared cache; attributes/name diverged.",
+        cost: 0.4,
     },
     "accounts.logout-redirect": {
         class: "behavioral-diff",

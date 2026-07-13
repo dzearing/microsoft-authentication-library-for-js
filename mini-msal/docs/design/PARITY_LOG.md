@@ -484,6 +484,38 @@ Entries (append as you go):
   (+1.7), mini-core 20.9 → 22.5 (+1.6 — NavigationClient + replay live in
   core since redirect is core surface).
 
+- **C14 (2026-07-13)**: popup behaviors (audit findings `navigate-popups`,
+  `logout-popup-main-window-redirect`). Four new scenarios (suite 83→87):
+  `core.popup-open-timing` / `-async` / `core.popup-window-attributes` in
+  01-core, `accounts.logout-popup-main-window-redirect` in 03-accounts —
+  all green on first mini run after implementation. New lib helpers
+  `armOpenRecorder`/`openCalls` wrap window.open and persist calls in
+  sessionStorage (survives the mainWindowRedirectUri navigation); `sync`
+  flag = call landed inside the scenario's `__inApiCall` span, i.e. inside
+  the user-gesture window that popup blockers honor. Behavior, real's
+  shape: `system.navigatePopups` (default TRUE) sync-opens `about:blank`
+  in the caller's stack for acquireTokenPopup/loginPopup AND logoutPopup,
+  then navigates it via `location.assign` (real's openPopup incl.
+  document.title = "Microsoft Authentication" + focus); false defers the
+  open to the final URL. openSizedPopup parity: features string with
+  spaces (`width=483, height=600, top=…, left=…, scrollbars=yes`),
+  request `popupWindowAttributes` popupSize/popupPosition clamped to the
+  parent window, centered defaults, `popupWindowParent` honored. Popup
+  names: token `msal.{clientId}.{scopes.join("-")}.{authority}.{cid}`,
+  logout `msal.{clientId}.{homeAccountId}.{cid}` (correlationId now
+  pre-generated in popup.ts and passed into authorizeUrl). A blocked sync
+  open (null) is carried like real: no immediate throw — the flow fails
+  at navigate time with popup_window_error (errors.popup-blocked
+  unchanged), and the pre-opened popup is closed on any failure.
+  logoutPopup `mainWindowRedirectUri`: after the popup roundtrip the MAIN
+  window navigates through the NavigationClient seam — new core
+  `ctx.navigate(url, apiId)` (ApiId.logoutPopup 962, noHistory:false);
+  snapshot pins that the interaction lock SURVIVES into the next page
+  (real never reaches its unlock either) — matched by awaiting the
+  never-settling navigation inside try. telemetry `isAsyncPopup` now
+  `navigatePopups === false` instead of hardcoded. Size: compat 44.6 →
+  45.9 KB min (+1.3), mini-core 22.5 → 22.6 (+0.1 — ctx.navigate seam).
+
 ## Completed task list (Phases A0, A, B, C — all done)
 
 ## Task list (execute strictly top-to-bottom)
@@ -731,3 +763,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | C11 | done 2026-07-13 | 77/77 | 46.8 KB min / 15.5 gz | +2 scenarios (suite 75→77: telemetry.perf-event-shape, -shape-silent — both green first mini run after 2 table fixes). Full per-flow perf-event shapes (6 flows), ext sub-measurement key sets, live sizes/counters; core seam err.silentRefreshReason; harness __cap.perfRaw. compat 39.7 min (+7.2 — shape tables), mini-core UNCHANGED 19.5 (pay-to-play holds). e2e 25/25 |
 | C12 | done 2026-07-13 | 78/78 | 50.0 KB min / 16.6 gz | +1 scenario (suite 77→78: init.exported-surface-2 — mini green first run). Core: Logger class (real clone/gate/format), LogLevel + reverse mappings, WrapperSKU, getLogger/setLogger/initializeWrapperLibrary (wrapper meta stored; headers stay stub-empty until C19). Compat: 5 *ErrorCodes namespaces (exact keys+values) + BrowserConfigurationAuthError via shared pack() w/ key=code irregulars. compat 42.9 min (+3.2), mini-core 20.9 (+1.4 core Logger). e2e 25/25 |
 | C13 | done 2026-07-13 | 83/83 | 51.6 KB min / 17.0 gz | +5 scenarios (suite 78→83, new area 11-navigation — ALL green first mini run). NavigationClient class + setNavigationClient + system.navigationClient; auth.onRedirectNavigate cancel hook (acquire keeps lock, logout releases + logoutEnd); navigateToLoginRequestUrl deep-link replay via real's msal.{cid}.request.origin / urlHash temp keys, redirectStartPage, in-place #hash restore, doc-title swap; redirect logoutStart payload = raw request (real). e2e cancelled-login seed gained request.origin. compat 44.6 min (+1.7), mini-core 22.5 (+1.6 — redirect is core). e2e 25/25 |
+| C14 | done 2026-07-13 | 87/87 | 53.0 KB min / 17.5 gz | +4 scenarios (suite 83→87, all green first mini run). system.navigatePopups default-true sync about:blank open in the user-gesture stack + location.assign navigate; openSizedPopup features/geometry + popupWindowAttributes/popupWindowParent; real popup name formats (token + logout); blocked sync open fails late as popup_window_error like real; logoutPopup mainWindowRedirectUri via new core ctx.navigate seam (ApiId 962, lock survives navigation); telemetry isAsyncPopup wired. compat 45.9 min (+1.3), mini-core 22.6 (+0.1). e2e 25/25 |

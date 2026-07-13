@@ -1,0 +1,34 @@
+{
+  "openCalls": [
+    {
+      "features": "width=483, height=600, top=82, left=420.5, scrollbars=yes",
+      "name": "msal.<guid>.User.Read.https://localhost:4599/tenant.<guid>",
+      "sync": false,
+      "url": "https://localhost:4599/authorize?claims,clidata,client-request-id,client_id,client_info,code_challenge,code_challenge_method,nonce,redirect_uri,response_mode,response_type,scope,state,x-client-SKU,x-client-VER"
+    }
+  ],
+  "result": {
+    "ok": {
+      "accessToken": "mock-access-token-0",
+      "account": {
+        "homeAccountId": "oid-123.tenant-123",
+        "tenantId": "tenant-123",
+        "username": "ada@contoso.com"
+      },
+      "authority": "https://localhost:4599/tenant/",
+      "correlationIdPresent": true,
+      "expiresInFuture": true,
+      "expiresOnType": "Date",
+      "fromCache": false,
+      "fromPlatformBroker": false,
+      "idToken": "<jwt>",
+      "scopes": [
+        "User.Read",
+        "openid",
+        "profile"
+      ],
+      "state": "<dynamic>",
+      "tokenType": "Bearer"
+    }
+  }
+}

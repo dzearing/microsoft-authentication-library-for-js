@@ -12,6 +12,8 @@ import {
     storageDump,
     loginViaPopup,
     digestIdpLog,
+    armOpenRecorder,
+    openCalls,
     idp,
 } from "../lib.mjs";
 
@@ -205,6 +207,51 @@ export const scenarios = [
                     /logout|account/i.test(e.eventType)
                 ),
                 storage: await storageDump(ctx),
+            };
+        },
+    },
+    {
+        id: "accounts.logout-popup-main-window-redirect",
+        note: "logoutPopup({mainWindowRedirectUri, popupWindowAttributes}): main window navigates after the popup roundtrip; logout popup name/features",
+        async run(ctx) {
+            await gotoHarness(ctx);
+            const config = stdConfig(ctx);
+            await loginViaPopup(ctx, config);
+            await armOpenRecorder(ctx);
+            await ctx.page.evaluate((popupUrl) => {
+                const account = globalThis.__msal.getAllAccounts()[0];
+                globalThis.__inApiCall = true;
+                globalThis.__msal
+                    .logoutPopup({
+                        account,
+                        postLogoutRedirectUri: popupUrl,
+                        mainWindowRedirectUri: "index.html?logged-out=1",
+                        popupWindowAttributes: {
+                            popupSize: { width: 300, height: 300 },
+                        },
+                    })
+                    .catch(
+                        (e) =>
+                            (globalThis.__logoutErr =
+                                globalThis.__serializeError(e))
+                    );
+                globalThis.__inApiCall = false;
+            }, ctx.popupUrl);
+            await ctx.page.waitForURL((u) => u.search.includes("logged-out=1"), {
+                timeout: 15000,
+            });
+            await ctx.page.waitForFunction(() => !!globalThis.__create);
+            await create(ctx, config);
+            const url = new URL(ctx.page.url());
+            return {
+                mainWindowUrl: url.pathname + url.search,
+                accountsAfter: await tryEval(ctx, () =>
+                    globalThis.__msal.getAllAccounts().length
+                ),
+                lockAfter: await ctx.page.evaluate(() =>
+                    sessionStorage.getItem("msal.interaction.status")
+                ),
+                openCalls: await openCalls(ctx),
             };
         },
     },
