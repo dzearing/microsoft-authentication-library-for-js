@@ -24,10 +24,10 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-13)**: Phases A0–C11 COMPLETE — conformance 77/77,
-e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 39.7 KB min
-(real: 220.5), compat+react stack 46.8 KB (real: 248.8), core-only
-19.5 KB. Remaining: C-gaps C12–C21 (post-audit parity gaps beyond the
+**Status (2026-07-13)**: Phases A0–C12 COMPLETE — conformance 78/78,
+e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 42.9 KB min
+(real: 220.5), compat+react stack 50.0 KB (real: 248.8), core-only
+20.9 KB. Remaining: C-gaps C13–C21 (post-audit parity gaps beyond the
 suite) then D-series (à-la-carte DX/docs/examples).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
@@ -185,19 +185,17 @@ scenarios + a partial implementation, add a follow-up task, note it here.
   not observable pre-C13; redirect perf events are C20's. Details/gotchas
   (43-char ext-key normalization collision!): PARITY_LOG C11 entry.
 
-- [ ] **C12** `pending` — API surface: logger + error-code namespaces.
-  Findings: `get-logger`, `error-code-namespace-exports`. Missing exports
-  break drop-in apps AT IMPORT TIME (`LogLevel` is in nearly every MSAL
-  sample config): add `Logger` class (with `.clone()`), `LogLevel`,
-  `getLogger()`/`setLogger()`/`initializeWrapperLibrary()` instance
-  methods, and the error-code namespace exports `AuthErrorCodes`,
-  `ClientAuthErrorCodes`, `InteractionRequiredAuthErrorCodes`,
-  `ClientConfigurationErrorCodes`, `BrowserConfigurationAuthErrorCodes` +
-  `BrowserConfigurationAuthError` class. Extend init.exported-surface (or
-  add init.exported-surface-2) per the findings' suggested tests.
-  Context: findings in audit json; `packages/browser/src/index.ts` (logger
-  + error classes), `packages/compat/src/index.ts` (export packing),
-  `test/conformance/scenarios/07-init.mjs`.
+- [x] **C12** `done 2026-07-13 — pass 78/78, mini-stack 50.0 KB` — API
+  surface: logger + error-code namespaces. Suite grew 77→78 (new
+  init.exported-surface-2, deterministic, mini green first run). Browser
+  core: `Logger` class (real's clone/level-gate/message format), `LogLevel`
+  (incl. reverse mappings), `WrapperSKU`, and getLogger/setLogger/
+  initializeWrapperLibrary on AuthClient (wrapper meta stored only —
+  telemetry headers stay stub-empty until C19). Compat: 5 *ErrorCodes
+  namespaces via a shared `pack()` (irregular keys as `key=code` entries —
+  5 in ClientAuthErrorCodes, 1 in ClientConfigurationErrorCodes) +
+  BrowserConfigurationAuthError. compat 42.9 KB min (+3.2), core 20.9
+  (+1.4 — Logger is core since getLogger is core surface). e2e 25/25.
 - [ ] **C13** `pending` — Redirect navigation seams. Findings:
   `navigate-to-login-request-url` (HIGH — default-config deep-link return
   broken: cache the origin URI, replay navigation post-redirect),

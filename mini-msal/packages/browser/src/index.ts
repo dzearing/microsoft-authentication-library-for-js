@@ -162,6 +162,113 @@ export const version = WIRE_ID["x-client-VER"];
 /** libraryName as emitted on perf events (./telemetry) — same impersonation block */
 export const LIB_NAME = "@azure/msal-browser";
 
+/** real's LogLevel numeric enum, incl. TS reverse mappings */
+export const LogLevel: Record<string | number, string | number> = {
+    Error: 0,
+    Warning: 1,
+    Info: 2,
+    Verbose: 3,
+    Trace: 4,
+    0: "Error",
+    1: "Warning",
+    2: "Info",
+    3: "Verbose",
+    4: "Trace",
+};
+
+/** wrapper-library SKUs for initializeWrapperLibrary (real's WrapperSKU) */
+export const WrapperSKU = {
+    React: "@azure/msal-react",
+    Angular: "@azure/msal-angular",
+} as const;
+
+type LoggerOptions = NonNullable<Config["system"]>["loggerOptions"];
+
+/**
+ * real's Logger: level-gated callback with real's message format
+ * `[<UTC time>] : [<correlationId>] : <pkg>@<ver> : <Level> - <msg>`.
+ * Wrapper libraries (msal-react/-angular) clone() it with their own SKU.
+ */
+export class Logger {
+    private cb: NonNullable<
+        NonNullable<LoggerOptions>["loggerCallback"]
+    >;
+    private level: number;
+    private pii: boolean;
+    private pkg: string;
+    constructor(
+        options?: LoggerOptions,
+        packageName = "",
+        packageVersion = ""
+    ) {
+        this.cb = options?.loggerCallback ?? (() => {});
+        this.level = options?.logLevel ?? 2;
+        this.pii = options?.piiLoggingEnabled ?? false;
+        this.pkg = `${packageName}@${packageVersion}`;
+    }
+    clone(packageName: string, packageVersion: string): Logger {
+        return new Logger(
+            {
+                loggerCallback: this.cb,
+                logLevel: this.level,
+                piiLoggingEnabled: this.pii,
+            },
+            packageName,
+            packageVersion
+        );
+    }
+    isPiiLoggingEnabled(): boolean {
+        return this.pii;
+    }
+    /** same semi-public signature as real's Logger.logMessage */
+    logMessage(
+        msg: string,
+        options: {
+            logLevel: number;
+            containsPii?: boolean;
+            correlationId?: string;
+        }
+    ): void {
+        const { logLevel, containsPii = false, correlationId = "" } = options;
+        if (logLevel > this.level || (containsPii && !this.pii)) return;
+        this.cb(
+            logLevel,
+            `[${new Date().toUTCString()}] : [${correlationId}] : ${this.pkg} : ${LogLevel[logLevel]} - ${msg}`,
+            containsPii
+        );
+    }
+    error(m: string, cid?: string) {
+        this.logMessage(m, { logLevel: 0, correlationId: cid });
+    }
+    errorPii(m: string, cid?: string) {
+        this.logMessage(m, { logLevel: 0, containsPii: true, correlationId: cid });
+    }
+    warning(m: string, cid?: string) {
+        this.logMessage(m, { logLevel: 1, correlationId: cid });
+    }
+    warningPii(m: string, cid?: string) {
+        this.logMessage(m, { logLevel: 1, containsPii: true, correlationId: cid });
+    }
+    info(m: string, cid?: string) {
+        this.logMessage(m, { logLevel: 2, correlationId: cid });
+    }
+    infoPii(m: string, cid?: string) {
+        this.logMessage(m, { logLevel: 2, containsPii: true, correlationId: cid });
+    }
+    verbose(m: string, cid?: string) {
+        this.logMessage(m, { logLevel: 3, correlationId: cid });
+    }
+    verbosePii(m: string, cid?: string) {
+        this.logMessage(m, { logLevel: 3, containsPii: true, correlationId: cid });
+    }
+    trace(m: string, cid?: string) {
+        this.logMessage(m, { logLevel: 4, correlationId: cid });
+    }
+    tracePii(m: string, cid?: string) {
+        this.logMessage(m, { logLevel: 4, containsPii: true, correlationId: cid });
+    }
+}
+
 export class AuthError extends Error {
     name = "AuthError";
     constructor(
@@ -457,6 +564,10 @@ export interface AuthClient {
     getConfiguration(): any;
     getActiveAccount(): AccountInfo | null;
     setActiveAccount(account: AccountInfo | null): void;
+    getLogger(): Logger;
+    setLogger(logger: Logger): void;
+    /** store wrapper-library (react/angular) SKU + version */
+    initializeWrapperLibrary(sku: string, version: string): void;
     loginRedirect(req: TokenRequest): Promise<void>;
     acquireTokenRedirect(req: TokenRequest): Promise<void>;
     handleRedirectPromise(): Promise<AuthenticationResult | null>;
@@ -569,12 +680,17 @@ export function createClient(
         new BrowserAuthError("uninitialized_public_client_application");
 
     // ---- logger (real's Logger gate: default volume Info(2)) ----
-    const lo = config.system?.loggerOptions;
-    const log = (level: number, msg: string) => {
-        if (level <= (lo?.logLevel ?? 2)) {
-            lo?.loggerCallback?.(level, msg, false);
-        }
-    };
+    let logger = new Logger(
+        config.system?.loggerOptions,
+        LIB_NAME,
+        WIRE_ID["x-client-VER"]
+    );
+    const log = (level: number, msg: string) =>
+        logger.logMessage(msg, { logLevel: level });
+    // wrapper SKU/version (initializeWrapperLibrary) — real forwards these
+    // to server telemetry; mini sends stub-empty telemetry headers (see
+    // TOKEN_TELEMETRY), so the metadata is only stored (C19 revisits)
+    let wrapperMeta: [sku: string, version: string] | null = null;
 
     // ---- interaction lock (same storage entry as real MSAL) ----
     const lockKey = "msal.interaction.status";
@@ -1526,6 +1642,14 @@ export function createClient(
         getAllAccounts,
         getAccount,
         getActiveAccount,
+
+        getLogger: () => logger,
+        setLogger(l: Logger) {
+            logger = l;
+        },
+        initializeWrapperLibrary(sku: string, version: string) {
+            wrapperMeta = [sku, version];
+        },
 
         // resolved config: user input over real's observable defaults (only
         // keys snapshots compare; unset optionals stay undefined like real)

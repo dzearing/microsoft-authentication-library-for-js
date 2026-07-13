@@ -1,12 +1,7 @@
 [
   {
-    "id": "telemetry.perf-event-shape",
-    "area": "telemetry",
-    "status": "captured"
-  },
-  {
-    "id": "telemetry.perf-event-shape-silent",
-    "area": "telemetry",
+    "id": "init.exported-surface-2",
+    "area": "init",
     "status": "captured"
   }
 ]

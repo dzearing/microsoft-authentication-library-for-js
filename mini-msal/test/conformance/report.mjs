@@ -363,6 +363,12 @@ const C = {
         mini: "Small subset: PublicClientApplication, 8 EventTypes, 3 error classes, CacheLookupPolicy, InteractionType.",
         cost: 1.0,
     },
+    "init.exported-surface-2": {
+        class: "missing-feature",
+        real: "Exports Logger (clone/level gate/format), LogLevel, WrapperSKU, AuthErrorCodes/ClientAuthErrorCodes/ClientConfigurationErrorCodes/InteractionRequiredAuthErrorCodes/BrowserConfigurationAuthErrorCodes namespaces + BrowserConfigurationAuthError class; PCA exposes getLogger/setLogger/initializeWrapperLibrary.",
+        mini: "None of these existed pre-C12 — import of LogLevel or any *ErrorCodes namespace failed at module load; getLogger() was undefined.",
+        cost: 0.5,
+    },
     "init.storage-before-login": {
         class: "behavioral-diff",
         real: "Bare initialize() writes only msal.version.",

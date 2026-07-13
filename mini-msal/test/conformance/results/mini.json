@@ -3144,6 +3144,145 @@
     }
   },
   {
+    "id": "init.exported-surface-2",
+    "area": "init",
+    "status": "pass",
+    "observed": {
+      "ok": {
+        "bcaeShape": {
+          "errorCode": "storage_not_supported",
+          "isAuthError": true,
+          "msgHasAka": true,
+          "name": "BrowserConfigurationAuthError"
+        },
+        "exports": {
+          "authErrorCodes": {
+            "postRequestFailed": "post_request_failed",
+            "unexpectedError": "unexpected_error"
+          },
+          "browserConfigurationAuthError": "function",
+          "browserConfigurationAuthErrorCodes": {
+            "inMemRedirectUnavailable": "in_mem_redirect_unavailable",
+            "storageNotSupported": "storage_not_supported",
+            "stubbedPublicClientApplicationCalled": "stubbed_public_client_application_called"
+          },
+          "clientAuthErrorCodes": {
+            "authorizationCodeMissingFromServerResponse": "authorization_code_missing_from_server_response",
+            "bindingKeyNotRemoved": "binding_key_not_removed",
+            "cannotAppendScopeSet": "cannot_append_scopeset",
+            "cannotRemoveEmptyScope": "cannot_remove_empty_scope",
+            "clientInfoDecodingError": "client_info_decoding_error",
+            "clientInfoEmptyError": "client_info_empty_error",
+            "emptyInputScopeSet": "empty_input_scopeset",
+            "endSessionEndpointNotSupported": "end_session_endpoint_not_supported",
+            "endpointResolutionError": "endpoints_resolution_error",
+            "hashNotDeserialized": "hash_not_deserialized",
+            "invalidCacheEnvironment": "invalid_cache_environment",
+            "invalidCacheRecord": "invalid_cache_record",
+            "invalidState": "invalid_state",
+            "keyIdMissing": "key_id_missing",
+            "methodNotImplemented": "method_not_implemented",
+            "misplacedResourceParam": "misplaced_resource_parameter",
+            "multipleMatchingAppMetadata": "multiple_matching_appMetadata",
+            "multipleMatchingTokens": "multiple_matching_tokens",
+            "nestedAppAuthBridgeDisabled": "nested_app_auth_bridge_disabled",
+            "networkError": "network_error",
+            "noAccountFound": "no_account_found",
+            "noAccountInSilentRequest": "no_account_in_silent_request",
+            "noCryptoObject": "no_crypto_object",
+            "noNetworkConnectivity": "no_network_connectivity",
+            "nonceMismatch": "nonce_mismatch",
+            "nullOrEmptyToken": "null_or_empty_token",
+            "openIdConfigError": "openid_config_error",
+            "platformBrokerError": "platform_broker_error",
+            "requestCannotBeMade": "request_cannot_be_made",
+            "resourceParameterRequired": "resource_parameter_required",
+            "stateMismatch": "state_mismatch",
+            "stateNotFound": "state_not_found",
+            "tokenClaimsCnfRequiredForSignedJwt": "token_claims_cnf_required_for_signedjwt",
+            "tokenParsingError": "token_parsing_error",
+            "tokenRefreshRequired": "token_refresh_required",
+            "unexpectedCredentialType": "unexpected_credential_type",
+            "userCanceled": "user_canceled"
+          },
+          "clientConfigurationErrorCodes": {
+            "authorityMismatch": "authority_mismatch",
+            "authorityUriInsecure": "authority_uri_insecure",
+            "cannotAllowPlatformBroker": "cannot_allow_platform_broker",
+            "cannotSetOIDCOptions": "cannot_set_OIDCOptions",
+            "claimsRequestParsingError": "claims_request_parsing_error",
+            "emptyInputScopesError": "empty_input_scopes_error",
+            "invalidAuthenticationHeader": "invalid_authentication_header",
+            "invalidAuthorityMetadata": "invalid_authority_metadata",
+            "invalidClaims": "invalid_claims",
+            "invalidCloudDiscoveryMetadata": "invalid_cloud_discovery_metadata",
+            "invalidCodeChallengeMethod": "invalid_code_challenge_method",
+            "invalidPlatformBrokerConfiguration": "invalid_platform_broker_configuration",
+            "invalidRequestMethodForEAR": "invalid_request_method_for_EAR",
+            "issuerValidationFailed": "issuer_validation_failed",
+            "logoutRequestEmpty": "logout_request_empty",
+            "missingNonceAuthenticationHeader": "missing_nonce_authentication_header",
+            "missingSshJwk": "missing_ssh_jwk",
+            "missingSshKid": "missing_ssh_kid",
+            "pkceParamsMissing": "pkce_params_missing",
+            "redirectUriEmpty": "redirect_uri_empty",
+            "tokenRequestEmpty": "token_request_empty",
+            "untrustedAuthority": "untrusted_authority",
+            "urlEmptyError": "empty_url_error",
+            "urlParseError": "url_parse_error"
+          },
+          "interactionRequiredAuthErrorCodes": {
+            "badToken": "bad_token",
+            "consentRequired": "consent_required",
+            "interactionRequired": "interaction_required",
+            "interruptedUser": "interrupted_user",
+            "loginRequired": "login_required",
+            "nativeAccountUnavailable": "native_account_unavailable",
+            "noTokensFound": "no_tokens_found",
+            "refreshTokenExpired": "refresh_token_expired",
+            "uiNotAllowed": "ui_not_allowed"
+          },
+          "logLevel": {
+            "0": "Error",
+            "1": "Warning",
+            "2": "Info",
+            "3": "Verbose",
+            "4": "Trace",
+            "Error": 0,
+            "Info": 2,
+            "Trace": 4,
+            "Verbose": 3,
+            "Warning": 1
+          },
+          "logger": "function",
+          "wrapperSKU": {
+            "Angular": "@azure/msal-angular",
+            "React": "@azure/msal-react"
+          }
+        },
+        "instanceMethods": {
+          "cloneHasMethods": true,
+          "getLoggerReturnsLogger": true,
+          "initializeWrapperLibraryVoid": true,
+          "setLoggerOk": true
+        },
+        "loggerClass": {
+          "callbackCalls": [
+            {
+              "hasMarker": true,
+              "level": 2
+            },
+            {
+              "hasMarker": true,
+              "level": 3
+            }
+          ],
+          "cloneIsLogger": true
+        }
+      }
+    }
+  },
+  {
     "id": "init.storage-before-login",
     "area": "init",
     "status": "pass",

@@ -148,6 +148,113 @@ export const scenarios = [
         },
     },
     {
+        id: "init.exported-surface-2",
+        note: "module exports (C12): Logger/LogLevel/WrapperSKU, error-code namespaces, logger instance methods",
+        async run(ctx) {
+            await gotoHarness(ctx);
+            await create(ctx, stdConfig(ctx));
+            return await tryEval(ctx, () => {
+                const lib = globalThis.__lib;
+                const digestEnum = (o) =>
+                    o
+                        ? Object.fromEntries(
+                              Object.entries(o).filter(
+                                  ([, v]) =>
+                                      typeof v === "string" ||
+                                      typeof v === "number"
+                              )
+                          )
+                        : null;
+                // Logger class: level gate + clone carry-over (no timestamps
+                // in the digest — messages are only probed for the marker)
+                const seen = [];
+                const logger = new lib.Logger({
+                    loggerCallback: (level, message) =>
+                        seen.push({
+                            level,
+                            hasMarker: message.includes("c12-probe"),
+                        }),
+                    logLevel: lib.LogLevel.Verbose,
+                });
+                logger.info("c12-probe info");
+                logger.trace("c12-probe trace (gated out at Verbose)");
+                const clone = logger.clone("test-wrapper", "9.9.9");
+                clone.verbose("c12-probe clone");
+                const pca = globalThis.__msal;
+                const instLogger = pca.getLogger?.();
+                const instClone = instLogger?.clone?.("sku", "1.0");
+                let setLoggerOk, wrapperVoid;
+                try {
+                    setLoggerOk =
+                        pca.setLogger(new lib.Logger({})) === undefined;
+                } catch (e) {
+                    setLoggerOk = String(e);
+                }
+                try {
+                    wrapperVoid =
+                        pca.initializeWrapperLibrary(
+                            "@azure/msal-react",
+                            "3.0.0"
+                        ) === undefined;
+                } catch (e) {
+                    wrapperVoid = String(e);
+                }
+                let bcaeShape;
+                try {
+                    const e = new lib.BrowserConfigurationAuthError(
+                        "storage_not_supported"
+                    );
+                    bcaeShape = {
+                        name: e.name,
+                        errorCode: e.errorCode,
+                        isAuthError: e instanceof lib.AuthError,
+                        msgHasAka: e.message.includes(
+                            "aka.ms/msal.js.errors"
+                        ),
+                    };
+                } catch (e) {
+                    bcaeShape = String(e);
+                }
+                return {
+                    exports: {
+                        logger: typeof lib.Logger,
+                        logLevel: digestEnum(lib.LogLevel),
+                        wrapperSKU: digestEnum(lib.WrapperSKU),
+                        authErrorCodes: digestEnum(lib.AuthErrorCodes),
+                        clientAuthErrorCodes: digestEnum(
+                            lib.ClientAuthErrorCodes
+                        ),
+                        clientConfigurationErrorCodes: digestEnum(
+                            lib.ClientConfigurationErrorCodes
+                        ),
+                        interactionRequiredAuthErrorCodes: digestEnum(
+                            lib.InteractionRequiredAuthErrorCodes
+                        ),
+                        browserConfigurationAuthErrorCodes: digestEnum(
+                            lib.BrowserConfigurationAuthErrorCodes
+                        ),
+                        browserConfigurationAuthError:
+                            typeof lib.BrowserConfigurationAuthError,
+                    },
+                    bcaeShape,
+                    loggerClass: {
+                        callbackCalls: seen,
+                        cloneIsLogger: clone instanceof lib.Logger,
+                    },
+                    instanceMethods: {
+                        getLoggerReturnsLogger:
+                            instLogger instanceof lib.Logger,
+                        cloneHasMethods:
+                            typeof instClone?.info === "function" &&
+                            typeof instClone?.verbose === "function",
+                        setLoggerOk,
+                        initializeWrapperLibraryVoid: wrapperVoid,
+                    },
+                };
+            });
+        },
+    },
+    {
         id: "init.storage-before-login",
         note: "what the library writes to storage on bare initialize()",
         async run(ctx) {

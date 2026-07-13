@@ -417,6 +417,31 @@ Entries (append as you go):
   (unobservable until C13's seam exists; C20 owns redirect perf events).
   Size: compat 32.5 → 39.7 KB min (+7.2 KB = the shape tables; pay-to-play
   holds — mini-core unchanged at 19.5, only /telemetry composers pay).
+- **C12 (2026-07-13)**: logger + error-code namespace API surface (audit
+  findings `get-logger`, `error-code-namespace-exports`). New scenario
+  `init.exported-surface-2` (suite 77→78) pins: full LogLevel enum incl. TS
+  reverse mappings, WrapperSKU, all five *ErrorCodes namespaces
+  KEY-AND-VALUE exact (37/24/9/2/3 entries), BrowserConfigurationAuthError
+  shape, Logger level-gate + clone behavior, and
+  getLogger/setLogger/initializeWrapperLibrary on the instance — mini green
+  on FIRST run after implementation. Placement decisions: Logger, LogLevel,
+  WrapperSKU + the three instance methods live in CORE (getLogger is core
+  client surface; internal `log()` now routes through a swappable Logger so
+  setLogger really redirects library logs; message format = real's
+  `[UTC] : [cid] : pkg@ver : Level - msg`, level default Info(2)). The five
+  *ErrorCodes namespaces + BrowserConfigurationAuthError are COMPAT-only
+  (drop-in surface packing, same as BrowserAuthErrorCodes precedent) via a
+  shared `pack()` helper — irregular keys that don't camelize from their
+  code are written `key=code`: cannotAppendScopeSet, emptyInputScopeSet,
+  endpointResolutionError, misplacedResourceParam, openIdConfigError,
+  tokenClaimsCnfRequiredForSignedJwt (ClientAuth) and urlEmptyError
+  (ClientConfiguration). initializeWrapperLibrary only STORES the wrapper
+  sku/version: real forwards it to server-telemetry headers, but browser
+  5.16 stubs those to empty strings on the wire (finding's
+  verdict.corrections) — C19's server-telemetry task owns populating them.
+  Size: compat 39.7 → 42.9 KB min (+3.2 = Logger class + namespace
+  tables), mini-core 19.5 → 20.9 (+1.4, the core-resident Logger — first
+  core growth since C8; accepted as core API surface, not a feature).
 
 ## Completed task list (Phases A0, A, B, C — all done)
 
@@ -663,3 +688,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | C9 | done 2026-07-12 | 75/75 | 39.5 KB min / 13.4 gz | +5 pass (ALL naa.* green, first try — 75/75 TOTAL, GAP_REPORT all-pass). New `@mini-msal/browser/naa`: createNestableClient(config, fallback) — GetInitContext handshake, GetTokenPopup/GetToken over the bridge, browser-cache-first silent via new core seams findToken/writeTokens, real's error-status mapping, unsupported APIs sync-throw unsupported_method. Compat's createNestablePublicClientApplication now = createNestableClient(config, createAuth). e2e 25/25; mini-core 19.5 min / 7.1 gz (+0.7 seams) |
 | C10 | done 2026-07-12 | 75/75 | 39.5 KB min / 13.4 gz | FINAL SWEEP all green: conformance mini 75/75, check 75/75, e2e 25/25, GAP_REPORT all-pass. New `mini-compat` variant (compat, no React) 32.5 min / 11.0 gz / 9.9 br vs msal-browser-core 220.5/55.4/46.4 (6.8×); stack 39.5/13.4/12.0 vs 248.8/64.9/53.9 (6.3×); mini-core 19.5/7.1/6.3 (verified: still exercises sign-out + multi-account). READMEs + bundle-size-experiment.md updated to final matrix. C-series COMPLETE — D-series next |
 | C11 | done 2026-07-13 | 77/77 | 46.8 KB min / 15.5 gz | +2 scenarios (suite 75→77: telemetry.perf-event-shape, -shape-silent — both green first mini run after 2 table fixes). Full per-flow perf-event shapes (6 flows), ext sub-measurement key sets, live sizes/counters; core seam err.silentRefreshReason; harness __cap.perfRaw. compat 39.7 min (+7.2 — shape tables), mini-core UNCHANGED 19.5 (pay-to-play holds). e2e 25/25 |
+| C12 | done 2026-07-13 | 78/78 | 50.0 KB min / 16.6 gz | +1 scenario (suite 77→78: init.exported-surface-2 — mini green first run). Core: Logger class (real clone/gate/format), LogLevel + reverse mappings, WrapperSKU, getLogger/setLogger/initializeWrapperLibrary (wrapper meta stored; headers stay stub-empty until C19). Compat: 5 *ErrorCodes namespaces (exact keys+values) + BrowserConfigurationAuthError via shared pack() w/ key=code irregulars. compat 42.9 min (+3.2), mini-core 20.9 (+1.4 core Logger). e2e 25/25 |

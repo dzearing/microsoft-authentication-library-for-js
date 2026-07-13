@@ -23,9 +23,14 @@ import {
 export { BrowserPerformanceClient } from "@mini-msal/browser/telemetry";
 export { NativeAuthError } from "@mini-msal/browser/broker";
 
+import { AuthError } from "@mini-msal/browser";
+
 export {
     AuthError,
     InteractionRequiredAuthError,
+    Logger,
+    LogLevel,
+    WrapperSKU,
     BrowserAuthError,
     ClientAuthError,
     ClientConfigurationError,
@@ -69,36 +74,104 @@ export const PromptValue = {
 
 export const OIDC_DEFAULT_SCOPES = ["openid", "profile", "offline_access"];
 
-/** real's 52 BrowserAuthErrorCodes, packed (camelCase key <- snake code) */
-export const BrowserAuthErrorCodes: Record<string, string> =
+/** unpack "snake_code" (key camelized from code) / "irregularKey=snake_code"
+ * entries into real's *ErrorCodes namespace shape */
+const pack = (s: string): Record<string, string> =>
     Object.fromEntries(
-        (
-            "pkce_not_created ear_jwk_empty ear_jwe_empty crypto_nonexistent " +
-            "empty_navigate_uri hash_empty_error no_state_in_hash " +
-            "hash_does_not_contain_known_properties unable_to_parse_state " +
-            "state_interaction_type_mismatch interaction_in_progress " +
-            "interaction_in_progress_cancelled popup_window_error " +
-            "empty_window_error user_cancelled redirect_bridge_empty_response " +
-            "redirect_in_iframe block_iframe_reload block_nested_popups " +
-            "iframe_closed_prematurely silent_logout_unsupported " +
-            "no_account_error silent_prompt_value_error " +
-            "no_token_request_cache_error unable_to_parse_token_request_cache_error " +
-            "auth_request_not_set_error invalid_cache_type non_browser_environment " +
-            "database_not_open no_network_connectivity post_request_failed " +
-            "get_request_failed failed_to_parse_response unable_to_load_token " +
-            "crypto_key_not_found auth_code_required " +
-            "auth_code_or_nativeAccountId_required spa_code_and_nativeAccountId_present " +
-            "database_unavailable unable_to_acquire_token_from_native_platform " +
-            "native_handshake_timeout native_extension_not_installed " +
-            "native_connection_not_established uninitialized_public_client_application " +
-            "native_prompt_not_supported invalid_base64_string " +
-            "invalid_pop_token_request failed_to_build_headers " +
-            "failed_to_parse_headers failed_to_decrypt_ear_response " +
-            "timed_out empty_response"
-        )
-            .split(" ")
-            .map((c) => [c.replace(/_(.)/g, (_, ch) => ch.toUpperCase()), c])
+        s.split(" ").map((e) => {
+            const [k, v] = e.split("=");
+            return v
+                ? [k, v]
+                : [k.replace(/_(.)/g, (_, ch) => ch.toUpperCase()), k];
+        })
     );
+
+/** real's 52 BrowserAuthErrorCodes, packed (camelCase key <- snake code) */
+export const BrowserAuthErrorCodes: Record<string, string> = pack(
+    "pkce_not_created ear_jwk_empty ear_jwe_empty crypto_nonexistent " +
+        "empty_navigate_uri hash_empty_error no_state_in_hash " +
+        "hash_does_not_contain_known_properties unable_to_parse_state " +
+        "state_interaction_type_mismatch interaction_in_progress " +
+        "interaction_in_progress_cancelled popup_window_error " +
+        "empty_window_error user_cancelled redirect_bridge_empty_response " +
+        "redirect_in_iframe block_iframe_reload block_nested_popups " +
+        "iframe_closed_prematurely silent_logout_unsupported " +
+        "no_account_error silent_prompt_value_error " +
+        "no_token_request_cache_error unable_to_parse_token_request_cache_error " +
+        "auth_request_not_set_error invalid_cache_type non_browser_environment " +
+        "database_not_open no_network_connectivity post_request_failed " +
+        "get_request_failed failed_to_parse_response unable_to_load_token " +
+        "crypto_key_not_found auth_code_required " +
+        "auth_code_or_nativeAccountId_required spa_code_and_nativeAccountId_present " +
+        "database_unavailable unable_to_acquire_token_from_native_platform " +
+        "native_handshake_timeout native_extension_not_installed " +
+        "native_connection_not_established uninitialized_public_client_application " +
+        "native_prompt_not_supported invalid_base64_string " +
+        "invalid_pop_token_request failed_to_build_headers " +
+        "failed_to_parse_headers failed_to_decrypt_ear_response " +
+        "timed_out empty_response"
+);
+
+/** real's AuthErrorCodes (msal-common auth-layer) */
+export const AuthErrorCodes = pack("post_request_failed unexpected_error");
+
+/** real's 37 ClientAuthErrorCodes */
+export const ClientAuthErrorCodes = pack(
+    "authorization_code_missing_from_server_response binding_key_not_removed " +
+        "cannotAppendScopeSet=cannot_append_scopeset cannot_remove_empty_scope " +
+        "client_info_decoding_error client_info_empty_error " +
+        "emptyInputScopeSet=empty_input_scopeset " +
+        "end_session_endpoint_not_supported " +
+        "endpointResolutionError=endpoints_resolution_error " +
+        "hash_not_deserialized invalid_cache_environment invalid_cache_record " +
+        "invalid_state key_id_missing method_not_implemented " +
+        "misplacedResourceParam=misplaced_resource_parameter " +
+        "multiple_matching_appMetadata multiple_matching_tokens " +
+        "nested_app_auth_bridge_disabled network_error no_account_found " +
+        "no_account_in_silent_request no_crypto_object no_network_connectivity " +
+        "nonce_mismatch null_or_empty_token " +
+        "openIdConfigError=openid_config_error platform_broker_error " +
+        "request_cannot_be_made resource_parameter_required state_mismatch " +
+        "state_not_found " +
+        "tokenClaimsCnfRequiredForSignedJwt=token_claims_cnf_required_for_signedjwt " +
+        "token_parsing_error token_refresh_required " +
+        "unexpected_credential_type user_canceled"
+);
+
+/** real's 24 ClientConfigurationErrorCodes */
+export const ClientConfigurationErrorCodes = pack(
+    "authority_mismatch authority_uri_insecure cannot_allow_platform_broker " +
+        "cannot_set_OIDCOptions claims_request_parsing_error " +
+        "empty_input_scopes_error invalid_authentication_header " +
+        "invalid_authority_metadata invalid_claims " +
+        "invalid_cloud_discovery_metadata invalid_code_challenge_method " +
+        "invalid_platform_broker_configuration invalid_request_method_for_EAR " +
+        "issuer_validation_failed logout_request_empty " +
+        "missing_nonce_authentication_header missing_ssh_jwk missing_ssh_kid " +
+        "pkce_params_missing redirect_uri_empty token_request_empty " +
+        "untrusted_authority urlEmptyError=empty_url_error url_parse_error"
+);
+
+/** real's 9 InteractionRequiredAuthErrorCodes */
+export const InteractionRequiredAuthErrorCodes = pack(
+    "bad_token consent_required interaction_required interrupted_user " +
+        "login_required native_account_unavailable no_tokens_found " +
+        "refresh_token_expired ui_not_allowed"
+);
+
+/** real's 3 BrowserConfigurationAuthErrorCodes */
+export const BrowserConfigurationAuthErrorCodes = pack(
+    "in_mem_redirect_unavailable storage_not_supported " +
+        "stubbed_public_client_application_called"
+);
+
+/** real's browser-config error class (aka.ms message, like BrowserAuthError) */
+export class BrowserConfigurationAuthError extends AuthError {
+    name = "BrowserConfigurationAuthError";
+    constructor(errorCode: string, subError?: string) {
+        super(errorCode, undefined, subError);
+    }
+}
 
 export interface PublicClientApplication
     extends AuthClient,
