@@ -158,10 +158,21 @@ pass counts and sizes: [PARITY_LOG.md](./PARITY_LOG.md).
 
 C10 proved parity **as observed by the suite**; the user flagged that
 unobserved surface (e.g. perf-event fields) can still break real consumers.
-These tasks close audit-discovered gaps. Each task is TEST-FIRST: extend the
-conformance suite (new scenario or widened comparison), re-capture real
-snapshots (`--target=real --grep=<id>`), verify determinism, THEN implement
-mini to match. Suite growth means pass counts read `X/<new total>`.
+A 47-agent adversarial audit (2026-07-13) confirmed 40 gaps (0 refuted).
+**Evidence file: `audit-findings-2026-07-13.json` (same dir) — grep it by
+the finding ids listed in each task; each finding carries verified
+file:line evidence on both sides (`verdict.reason`) and factual
+corrections (`verdict.corrections`). Read the task's findings BEFORE
+implementing; never read the file wholesale (~44k tokens).**
+
+Each task is TEST-FIRST: extend the conformance suite (new scenario or
+widened comparison), re-capture real snapshots
+(`--target=real --grep=<id>`), verify determinism (run twice), THEN
+implement mini to match. Suite growth means pass counts read
+`X/<new total>`. Keep new scenarios deterministic against the mock IdP
+(see conformance-suite-notes.md). If a task's feature turns out
+substantially larger than its session budget, split it: land the
+scenarios + a partial implementation, add a follow-up task, note it here.
 
 - [ ] **C11** `pending` — Perf-event field parity. Mini's PerformanceEvent
   carries only `{name, correlationId, durationMs, success, errorCode}`;
@@ -182,6 +193,121 @@ mini to match. Suite growth means pass counts read `X/<new total>`.
   `node_modules/@azure/msal-common/dist/telemetry/performance/*.mjs`,
   `node_modules/@azure/msal-browser/dist/telemetry/BrowserPerformanceClient.mjs`,
   `test/conformance/scenarios/08-telemetry.mjs`.
+
+- [ ] **C12** `pending` — API surface: logger + error-code namespaces.
+  Findings: `get-logger`, `error-code-namespace-exports`. Missing exports
+  break drop-in apps AT IMPORT TIME (`LogLevel` is in nearly every MSAL
+  sample config): add `Logger` class (with `.clone()`), `LogLevel`,
+  `getLogger()`/`setLogger()`/`initializeWrapperLibrary()` instance
+  methods, and the error-code namespace exports `AuthErrorCodes`,
+  `ClientAuthErrorCodes`, `InteractionRequiredAuthErrorCodes`,
+  `ClientConfigurationErrorCodes`, `BrowserConfigurationAuthErrorCodes` +
+  `BrowserConfigurationAuthError` class. Extend init.exported-surface (or
+  add init.exported-surface-2) per the findings' suggested tests.
+  Context: findings in audit json; `packages/browser/src/index.ts` (logger
+  + error classes), `packages/compat/src/index.ts` (export packing),
+  `test/conformance/scenarios/07-init.mjs`.
+- [ ] **C13** `pending` — Redirect navigation seams. Findings:
+  `navigate-to-login-request-url` (HIGH — default-config deep-link return
+  broken: cache the origin URI, replay navigation post-redirect),
+  `on-redirect-navigate` / `on-redirect-navigate-hook` (auth.
+  onRedirectNavigate callback incl. cancel-navigation), `navigation-client`
+  + `set-navigation-client` (NavigationClient class export,
+  system.navigationClient, setNavigationClient()). These share one seam:
+  route ALL redirect navigations through a navigation client + the
+  onRedirectNavigate hook, like real. Scenarios per findings' tests
+  (deep-link start URL, cancel-navigation probe, custom client recorder).
+  Context: audit json; `packages/browser/src/index.ts` (redirect flow +
+  processRedirect), `test/conformance/scenarios/01-core.mjs`.
+- [ ] **C14** `pending` — Popup behaviors. Findings: `navigate-popups`
+  (real opens `about:blank` SYNCHRONOUSLY in the call stack then navigates
+  it — popup-blocker-visible; mini opens late), `logout-popup-main-window-
+  redirect` (mainWindowRedirectUri navigation after popup logout +
+  popupWindowAttributes size/position). Scenarios: window.open wrapper
+  recording call timing/args; logoutPopup with mainWindowRedirectUri
+  asserting main-window URL. Context: audit json;
+  `packages/browser/src/popup.ts`, scenarios 01-core/03-accounts.
+- [ ] **C15** `pending` — React bindings parity. Findings:
+  `msalprovider-initialize` (provider must initialize() the instance),
+  `inprogress-interaction-statuses` (full InteractionStatus state machine
+  incl. acquireToken/logout/handleRedirect/startup),
+  `usemsalauthentication-acquiretoken` (missing acquireToken callback +
+  auto-acquire for signed-in users), `template-render-prop-children-and-
+  account-props`, `msal-authentication-template-error-contract` (full
+  {login, result, error} props + rethrow without ErrorComponent),
+  `account-identifier-matching` (useIsAuthenticated(identifiers), casing
+  rules, empty-filter fallback). NOTE: the conformance harness is
+  react-less — add a react harness page (dual-built like harness-real/
+  harness-mini, real msal-react vs mini react) or extend e2e with dual-run
+  checks; either way tests must run against BOTH stacks and diff.
+  Context: audit json; `packages/react/src/index.tsx`,
+  `node_modules/@azure/msal-react/dist/`, `test/e2e/e2e.mjs`,
+  `test/infra/rspack.config.mjs` (if adding a harness variant).
+- [ ] **C16** `pending` — Cache entity semantics. Findings:
+  `access-token-scope-dedupe` (delete intersecting-scope ATs on save,
+  clear multi-matches on lookup — stale-token bug),
+  `tenant-profile-merge` (guest-tenant tokens merge into ONE base account
+  entity with tenantProfiles; mini writes per-realm entities),
+  `cache-schema-migration` (migrate msal.1/msal.2 schemas + retention
+  cleanup at initialize), `kmsi-plaintext-storage` (HIGH: KMSI accounts
+  stay PLAINTEXT in localStorage mode). Scenarios per findings.
+  Context: audit json; `packages/browser/src/index.ts` (cache write/read),
+  `packages/browser/src/local-storage.ts`, scenarios 02-silent/03-accounts.
+- [ ] **C17** `pending` — Programmatic token APIs. Findings: `clear-cache`
+  (clearCache(logoutRequest) — local sign-out, no navigation),
+  `hydrate-cache` (hydrateCache(result, request) — SSR seeding),
+  `load-external-tokens` (top-level loadExternalTokens export),
+  `acquire-token-by-code-hybrid-spa` (== `hybrid-spa-acquire-token-by-
+  code`): acquireTokenByCode({code}) redeems a spa auth code (deduped,
+  no code_verifier). Scenarios per findings (mock IdP can mint codes
+  out-of-band). Context: audit json; `packages/browser/src/index.ts`,
+  `packages/browser/src/broker.ts` (existing byCode path),
+  `test/infra/mock-idp.mjs` (out-of-band code minting).
+- [ ] **C18** `pending` — Authority modes & discovery. Findings:
+  `known-authorities-validation` (untrusted_authority ClientConfigurationError
+  + AAD instance discovery), `oidc-discovery-endpoint-path` (protocolMode
+  OIDC omits /v2.0/ in discovery URL — mini 404s on generic IdPs),
+  `hardcoded-authority-metadata` + `authority-metadata-config`
+  (auth.authorityMetadata inline metadata skips the discovery GET; known-
+  cloud hardcoded metadata; NOTE real does LAZY discovery — mini fetches
+  eagerly at initialize), `instance-aware-cloud-instance` (instance_aware /
+  cloud_instance_host_name / result.cloudGraphHostName/msGraphHost).
+  Scenarios per findings; mock IdP may need an authorize-fragment extension
+  for the instance-aware case. Context: audit json;
+  `packages/browser/src/index.ts` (discovery), `test/infra/mock-idp.mjs`.
+- [ ] **C19** `pending` — Config knobs + logout params. Findings:
+  `allow-redirect-in-iframe` (honor the flag inside iframes),
+  `token-renewal-offset-seconds` (expiry buffer configurable, not
+  hardcoded 300s), `logout-hint-param` (logoutHint / id_token-derived
+  logout_hint / idTokenHint / eQP on end_session URL),
+  `server-telemetry-enabled` (LOW: x-client-current/last-telemetry
+  populated + server-telemetry cache entry when enabled). Scenarios per
+  findings. Context: audit json; `packages/browser/src/index.ts`.
+- [ ] **C20** `pending` — Perf-event emission semantics (C11's sibling —
+  do AFTER C11). Findings: `handle-redirect-perf-event` (root
+  acquireTokenRedirect event from handleRedirectPromise; NOTE
+  verdict.corrections: clean loads never start the measurement),
+  `failure-event-correlation-id` (failure event cid = library-generated
+  request cid = error.correlationId = wire client-request-id),
+  `duplicate-perf-callback-dedupe` (dedupe registrations by callback
+  source text), `preflight-failure-no-perf-event` (preflight failures
+  emit NOTHING), `init-perf-event-once` (initializeClientApplication at
+  most once), `performance-marks-session-flag` (LOW:
+  msal.browser.performance.enabled='1' → performance.mark/measure
+  timeline entries). Scenarios per findings. Context: audit json;
+  `packages/browser/src/telemetry.ts`, scenarios 08-telemetry.mjs.
+- [ ] **C21** `pending` — authenticationScheme "pop"/"ssh" (PoP binding).
+  Finding: `authentication-scheme-pop` — real sends req_cnf (JWK
+  thumbprint), caches with kid in the key, returns tokenType "pop" +
+  SignedHttpRequest; mini silently downgrades to Bearer. This was
+  previously listed as a non-goal in docs — the audit confirmed it's an
+  observable wire + result difference. Implement OBSERVABLE parity
+  (req_cnf param, pop tokenType/cache shape, SHR signing via WebCrypto)
+  if it fits a session; if the size cost is disproportionate (>~3 KB
+  min on compat), STOP and ask the user whether to descope to a
+  documented non-goal instead — that is a user decision. Context: audit
+  json; `node_modules/@azure/msal-common/dist/crypto/PopTokenGenerator.mjs`,
+  `packages/browser/src/index.ts`.
 
 ### Phase D — à-la-carte DX, docs & examples (after C-gaps)
 
