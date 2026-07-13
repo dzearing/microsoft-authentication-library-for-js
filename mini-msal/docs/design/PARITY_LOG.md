@@ -375,6 +375,48 @@ Entries (append as you go):
   broker/NAA/LS/telemetry, final size matrix in Status), root README
   (75/75 + new sizes), bundle-size-experiment.md (final results table +
   variant rows; old 2026-07-01 numbers kept as historical note).
+- **C11 (2026-07-13)**: perf-event field parity. Two new scenarios
+  (`telemetry.perf-event-shape`, `-shape-silent`) pin real's FULL emitted
+  event shape for six flows: initialize, popup login, silent cache-hit,
+  silent RT-refresh, ssoSilent, silent failure (RT invalid_grant → iframe
+  login_required — chosen over the first capture's 10s
+  redirect_bridge_timeout for speed/determinism). Digest rules: harness now
+  keeps raw clones in `__cap.perfRaw` (undefined-valued keys preserved as
+  null); scenario-side normalizer types-out volatile values (ids, clocks,
+  networkRtt/effectiveType, logs, errorStack), compares `ext` by KEY SET
+  (values → `<number>`), and `context` by string presence only — decision:
+  real's context is a JSON dump of its internal call tree; replicating that
+  tree in mini is bytes with no consumer value (pipelines key on fields,
+  not the debug blob). Everything else — ~40 top-level keys AND values per
+  flow — must match exactly. Gotcha for future ext work: the runner's
+  B64_43_RE normalizes ANY 43-char key name (`generateCodeChallengeFrom-
+  VerifierDurationMs`, `silentFlowClientAcquireCachedTokenCallCount`,
+  `silentHandlerMonitorIframeForHashDurationMs` are all 43 chars →
+  `<b64-43>`, colliding keys collapse — first capture read misled exactly
+  this way). Implementation (telemetry.ts rewrite): per-flow shape tables —
+  ext name groups as compact strings (DISC/PKCE/CODE/STD/SIL/RT/IFRAME +
+  `!` = CallCount-only marker), field sets per flow with live values: token
+  sizes from result + cache (`ctx.findToken`, incl. RT secret length),
+  account type from claims (B2C/MSA/AAD like real's getAccountType),
+  cacheMatchedAccounts/accessTokensRemoved from pre-call cache snapshots
+  (absent on cache hits / when 0, like real), accountCachedBy via in-memory
+  homeAccountId→API map (popup → `acquireTokenPopup`, silent refresh →
+  `acquireTokenSilent_silentFlow`), authorityEndpointSource via a
+  first-resolve-per-instance flag (first acquire event = `network` + ext
+  gains authorityGetEndpointMetadataFromNetwork, then `cache`), migration/
+  instance counters on initialize, `navigator.connection` for
+  networkRtt/effectiveType. New core seam: silent ladder attaches
+  `silentRefreshReason` (the RT error code that triggered the iframe
+  fallback) to the error the iframe leg throws. Identity: `LIB_NAME =
+  "@azure/msal-browser"` exported from the index.ts impersonation block.
+  Approximations where the suite can't observe (recorded, not tested):
+  visibilityChangeCount/onlineStatusChangeCount constant 0, deduped
+  constant false, popup/sso failure shapes + non-iframe silent failures
+  approximated, context string is mini-shaped. acquireTokenPreRedirect NOT
+  emitted: it fires only via the onRedirectNavigate hook pre-navigation
+  (unobservable until C13's seam exists; C20 owns redirect perf events).
+  Size: compat 32.5 → 39.7 KB min (+7.2 KB = the shape tables; pay-to-play
+  holds — mini-core unchanged at 19.5, only /telemetry composers pay).
 
 ## Completed task list (Phases A0, A, B, C — all done)
 
@@ -620,3 +662,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | C8 | done 2026-07-12 | 70/75 | 38.8 KB min / 13.3 gz | +2 pass (broker.extension-handshake-capture, extension-fake-e2e — both first try; ALL broker.* green). Extension transport in ./broker behind a Provider seam: Handshake via window.postMessage + MessageChannel (bounce-back detection + nativeBrokerHandshakeTimeout), GetToken sends the full initRequest verbatim over the port, snake_case result mapped to the shared handleResponse, per-transport x-client-xtra-sku (chrome\|<version> from HandshakeResponse). GAP_REPORT: 70 pass, 5 missing-feature (C9 naa only). e2e 25/25; mini-core 18.8 min / 7.0 gz (unchanged — feature-module bytes only) |
 | C9 | done 2026-07-12 | 75/75 | 39.5 KB min / 13.4 gz | +5 pass (ALL naa.* green, first try — 75/75 TOTAL, GAP_REPORT all-pass). New `@mini-msal/browser/naa`: createNestableClient(config, fallback) — GetInitContext handshake, GetTokenPopup/GetToken over the bridge, browser-cache-first silent via new core seams findToken/writeTokens, real's error-status mapping, unsupported APIs sync-throw unsupported_method. Compat's createNestablePublicClientApplication now = createNestableClient(config, createAuth). e2e 25/25; mini-core 19.5 min / 7.1 gz (+0.7 seams) |
 | C10 | done 2026-07-12 | 75/75 | 39.5 KB min / 13.4 gz | FINAL SWEEP all green: conformance mini 75/75, check 75/75, e2e 25/25, GAP_REPORT all-pass. New `mini-compat` variant (compat, no React) 32.5 min / 11.0 gz / 9.9 br vs msal-browser-core 220.5/55.4/46.4 (6.8×); stack 39.5/13.4/12.0 vs 248.8/64.9/53.9 (6.3×); mini-core 19.5/7.1/6.3 (verified: still exercises sign-out + multi-account). READMEs + bundle-size-experiment.md updated to final matrix. C-series COMPLETE — D-series next |
+| C11 | done 2026-07-13 | 77/77 | 46.8 KB min / 15.5 gz | +2 scenarios (suite 75→77: telemetry.perf-event-shape, -shape-silent — both green first mini run after 2 table fixes). Full per-flow perf-event shapes (6 flows), ext sub-measurement key sets, live sizes/counters; core seam err.silentRefreshReason; harness __cap.perfRaw. compat 39.7 min (+7.2 — shape tables), mini-core UNCHANGED 19.5 (pay-to-play holds). e2e 25/25 |

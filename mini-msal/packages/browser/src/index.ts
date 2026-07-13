@@ -159,6 +159,8 @@ const TOKEN_TELEMETRY = {
 
 /** exported version string = real's (Decision Log: impersonation) */
 export const version = WIRE_ID["x-client-VER"];
+/** libraryName as emitted on perf events (./telemetry) — same impersonation block */
+export const LIB_NAME = "@azure/msal-browser";
 
 export class AuthError extends Error {
     name = "AuthError";
@@ -1291,6 +1293,7 @@ export function createClient(
     ): Promise<AuthenticationResult> => {
         const pol = req.cacheLookupPolicy ?? CacheLookupPolicy.Default;
         const reqAuthority = authorityFor(req);
+        let frameReason: string | undefined;
         const useAT =
             !req.forceRefresh &&
             pol <= CacheLookupPolicy.AccessTokenAndRefreshToken;
@@ -1385,16 +1388,27 @@ export function createClient(
                     if (!useFrame || !resolvable) {
                         throw e;
                     }
+                    frameReason = err.errorCode;
                 }
             } else if (!useFrame) {
                 throw new InteractionRequiredAuthError("no_tokens_found");
             }
         }
         // last resort: hidden iframe with prompt=none
-        const result = await silentFrame(
-            { ...req, account, loginHint: account.username },
-            864 // ApiId.acquireTokenSilent_authCode
-        );
+        let result: AuthenticationResult;
+        try {
+            result = await silentFrame(
+                { ...req, account, loginHint: account.username },
+                864 // ApiId.acquireTokenSilent_authCode
+            );
+        } catch (e) {
+            // ./telemetry reads this off the error: real's perf events carry
+            // the RT error that triggered the iframe fallback
+            if (frameReason) {
+                (e as any).silentRefreshReason = frameReason;
+            }
+            throw e;
+        }
         // real's acquireTokenSilent results carry state: undefined (the key
         // exists — event payloads expose it — but interactive/ssoSilent
         // results are the only ones with a value)

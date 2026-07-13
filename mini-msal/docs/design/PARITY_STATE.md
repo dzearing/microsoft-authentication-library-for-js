@@ -24,11 +24,11 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-13)**: Phases A0–C10 COMPLETE — conformance 75/75,
-determinism check 75/75, e2e 25/25, GAP_REPORT all-pass. Final size matrix:
-compat-no-react 32.5 KB min (real: 220.5), compat+react stack 39.5 KB
-(real: 248.8), core-only 19.5 KB. Remaining: C-gaps (post-audit parity
-gaps beyond the suite) then D-series (à-la-carte DX/docs/examples).
+**Status (2026-07-13)**: Phases A0–C11 COMPLETE — conformance 77/77,
+e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 39.7 KB min
+(real: 220.5), compat+react stack 46.8 KB (real: 248.8), core-only
+19.5 KB. Remaining: C-gaps C12–C21 (post-audit parity gaps beyond the
+suite) then D-series (à-la-carte DX/docs/examples).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
 ## Context budget (user-required 2026-07-13)
@@ -174,25 +174,16 @@ implement mini to match. Suite growth means pass counts read
 substantially larger than its session budget, split it: land the
 scenarios + a partial implementation, add a follow-up task, note it here.
 
-- [ ] **C11** `pending` — Perf-event field parity. Mini's PerformanceEvent
-  carries only `{name, correlationId, durationMs, success, errorCode}`;
-  real's BrowserPerformanceClient events carry the full msal-common
-  PerformanceEvent shape — ~40 numeric fields (accessTokenSize/idTokenSize/
-  refreshTokenSize, networkRtt, cache match/expiry counters,
-  redirectBridgeTimeoutMs, startTimeMs, status…) plus string fields and
-  aggregated sub-measurement data from ~26 instrumented internal operations,
-  emitted via PerformanceClient.endMeasurement — study real's emission model
-  (which fields appear on which event names, what a discarded/incomplete
-  event does) before coding. Consumers piping events into telemetry
-  pipelines would break on missing fields. Test first: extend 08-telemetry
-  scenarios (or add telemetry.perf-event-shape) to compare Object.keys of
-  each emitted event + values that are deterministic under the mock IdP
-  (sizes yes, durations normalize to hasDuration); re-capture real; then
-  implement. Also wrap acquireTokenPreRedirect if observable.
-  Context: `packages/browser/src/telemetry.ts`,
-  `node_modules/@azure/msal-common/dist/telemetry/performance/*.mjs`,
-  `node_modules/@azure/msal-browser/dist/telemetry/BrowserPerformanceClient.mjs`,
-  `test/conformance/scenarios/08-telemetry.mjs`.
+- [x] **C11** `done 2026-07-13 — pass 77/77, mini-stack 46.8 KB` — Perf-event
+  field parity. Suite grew 75→77 (telemetry.perf-event-shape,
+  -shape-silent): full per-flow event shapes pinned for initialize / popup /
+  silent cache-hit / silent refresh / ssoSilent / silent failure — top-level
+  keys AND deterministic values exact, ext compared by key set, context by
+  string presence (decision: real's internal call-tree blob not replicated).
+  telemetry.ts rewritten table-driven; core seam `err.silentRefreshReason`;
+  compat 39.7 KB min (+7.2), mini-core unchanged 19.5. acquireTokenPreRedirect
+  not observable pre-C13; redirect perf events are C20's. Details/gotchas
+  (43-char ext-key normalization collision!): PARITY_LOG C11 entry.
 
 - [ ] **C12** `pending` — API surface: logger + error-code namespaces.
   Findings: `get-logger`, `error-code-namespace-exports`. Missing exports

@@ -122,6 +122,15 @@ All cleared by `/reset`:
 12. mini's `PublicClientApplication` lacks several APIs (acquireTokenByCode,
     getConfiguration, addPerformanceCallback…) — scenarios use tryEval/tryResult
     everywhere so mini's TypeErrors are captured as observations, never crashes.
+13. The runner's `B64_43_RE` normalizes ANY 43-char `[\w-]` token — including
+    OBJECT KEY NAMES. Three real perf-event ext keys are exactly 43 chars
+    (`generateCodeChallengeFromVerifierDurationMs`,
+    `silentFlowClientAcquireCachedTokenCallCount`,
+    `silentHandlerMonitorIframeForHashDurationMs`) and show up as `<b64-43>`
+    in snapshots; two such keys in one object COLLAPSE to a single key. Do
+    not conclude a key is missing because you only see `<b64-43>` (this
+    misled C11's first read). Perf-event raw shapes: `__cap.perfRaw` in the
+    harness (undefined-valued keys preserved as null).
 
 ## Key real-MSAL behavioral facts captured (basis for GAP_REPORT)
 

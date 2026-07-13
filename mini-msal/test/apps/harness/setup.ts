@@ -15,6 +15,7 @@ export function setupHarness(lib: any, target: string): void {
     const cap = {
         events: [] as any[],
         perf: [] as any[],
+        perfRaw: [] as any[],
         logs: [] as any[],
         seq: 0,
     };
@@ -69,6 +70,13 @@ export function setupHarness(lib: any, target: string): void {
         try {
             pca.addPerformanceCallback?.((events: any[]) => {
                 for (const e of events) {
+                    // full-shape clone for perf-event-shape scenarios; keys
+                    // with undefined values survive as null (JSON drops them)
+                    const raw: any = {};
+                    for (const k of Object.keys(e)) {
+                        raw[k] = e[k] === undefined ? null : e[k];
+                    }
+                    cap.perfRaw.push(raw);
                     cap.perf.push({
                         name: e.name,
                         success: e.success,

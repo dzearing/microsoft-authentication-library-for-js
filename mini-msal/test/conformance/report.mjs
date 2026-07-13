@@ -389,6 +389,18 @@ const C = {
         mini: "None.",
         cost: 0,
     },
+    "telemetry.perf-event-shape": {
+        class: "missing-feature",
+        real: "Full emitted perf-event shape (C11): init + popup events carry real's complete field set (sizes, cache/migration counters, instance counts, redirect-bridge config) plus the ext sub-measurement aggregate keyed by real's internal operation names.",
+        mini: "Events carried only {name, correlationId, durationMs, success, errorCode}.",
+        cost: 1.0,
+    },
+    "telemetry.perf-event-shape-silent": {
+        class: "missing-feature",
+        real: "Full perf-event shape for acquireTokenSilent cache hit / network refresh / ssoSilent / RT+iframe failure: per-flow field sets incl. cacheOutcome, accountCachedBy, accessTokensRemoved, silentRefreshReason and flow-specific ext key sets.",
+        mini: "Same 5-field minimal events for every silent flow.",
+        cost: 1.0,
+    },
     "telemetry.token-request-headers": {
         class: "missing-feature",
         real: "Server telemetry travels as token BODY params (not HTTP headers): x-client-SKU=msal.js.browser, x-client-VER, x-client-current-telemetry, x-client-last-telemetry, x-ms-lib-capability='retry-after, h429'.",

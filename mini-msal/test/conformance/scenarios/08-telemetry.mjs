@@ -16,6 +16,53 @@ import {
 
 export const area = "telemetry";
 
+/**
+ * C11: full-shape perf-event digest. Values that cannot be deterministic
+ * across runs (ids, clocks, network timing) are reduced to `<typeof>`;
+ * `ext` (aggregated sub-measurement data) is compared by its key set;
+ * `context` (real's internal call-tree debug blob) by string presence;
+ * every other key AND value must match real exactly.
+ */
+const VOLATILE = new Set([
+    "eventId",
+    "correlationId",
+    "startTimeMs",
+    "durationMs",
+    "networkRtt",
+    "networkEffectiveType",
+    "logs",
+    "errorStack",
+    "context",
+]);
+function normPerfEvent(e) {
+    const out = {};
+    for (const k of Object.keys(e).sort()) {
+        const v = e[k];
+        if (v === null) {
+            out[k] = null;
+        } else if (VOLATILE.has(k)) {
+            out[k] = `<${typeof v}>`;
+        } else if (k === "ext" && typeof v === "object") {
+            const ext = {};
+            for (const ek of Object.keys(v).sort()) {
+                ext[ek] = typeof v[ek] === "number" ? "<number>" : v[ek];
+            }
+            out.ext = ext;
+        } else {
+            out[k] = v;
+        }
+    }
+    return out;
+}
+const clearPerfRaw = (ctx) =>
+    ctx.page.evaluate(() => {
+        globalThis.__cap.perfRaw.length = 0;
+    });
+async function perfShapes(ctx) {
+    await ctx.page.waitForTimeout(500);
+    return (await capture(ctx)).perfRaw.map(normPerfEvent);
+}
+
 export const scenarios = [
     {
         id: "telemetry.perf-events-popup-login",
@@ -84,6 +131,100 @@ export const scenarios = [
             await ctx.page.waitForTimeout(500);
             const refreshPerf = (await capture(ctx)).perf;
             return { cacheHitPerf, refreshPerf };
+        },
+    },
+    {
+        id: "telemetry.perf-event-shape",
+        note: "full field shape of emitted perf events: initialize + popup login (C11)",
+        async run(ctx) {
+            await gotoHarness(ctx);
+            await create(ctx, stdConfig(ctx), { perfClient: true });
+            await tryResult(
+                ctx,
+                (popupUrl) =>
+                    globalThis.__msal.loginPopup({
+                        scopes: ["User.Read"],
+                        redirectUri: popupUrl,
+                    }),
+                ctx.popupUrl
+            );
+            return { shapes: await perfShapes(ctx) };
+        },
+    },
+    {
+        id: "telemetry.perf-event-shape-silent",
+        note: "full perf-event shape: silent cache hit, network refresh, ssoSilent, failed refresh (C11)",
+        async run(ctx) {
+            const config = stdConfig(ctx);
+            await gotoHarness(ctx);
+            await create(ctx, config, { perfClient: true });
+            await tryResult(
+                ctx,
+                (popupUrl) =>
+                    globalThis.__msal.loginPopup({
+                        scopes: ["User.Read"],
+                        redirectUri: popupUrl,
+                    }),
+                ctx.popupUrl
+            );
+            const silentCall = () => {
+                const account = globalThis.__msal.getAllAccounts()[0];
+                return globalThis.__msal.acquireTokenSilent({
+                    scopes: ["User.Read"],
+                    account,
+                });
+            };
+            await clearPerfRaw(ctx);
+            await tryResult(ctx, silentCall);
+            const cacheHit = await perfShapes(ctx);
+            const past = String(Math.floor(Date.now() / 1000) - 600);
+            await patchAccessTokens(ctx, {
+                expiresOn: past,
+                extendedExpiresOn: past,
+            });
+            await clearPerfRaw(ctx);
+            await tryResult(ctx, silentCall);
+            const refresh = await perfShapes(ctx);
+            await idp.session({ active: "1", user: "0" });
+            await clearPerfRaw(ctx);
+            await tryResult(
+                ctx,
+                (popupUrl) =>
+                    globalThis.__msal.ssoSilent({
+                        scopes: ["User.Read"],
+                        loginHint: "ada@contoso.com",
+                        redirectUri: popupUrl,
+                    }),
+                ctx.popupUrl
+            );
+            const sso = await perfShapes(ctx);
+            // failure shape: RT redemption fails (invalid_grant), iframe
+            // fallback fails fast with login_required (no IdP session)
+            await patchAccessTokens(ctx, {
+                expiresOn: past,
+                extendedExpiresOn: past,
+            });
+            await idp.session({ active: "0" });
+            await idp.inject({
+                endpoint: "token",
+                error: "invalid_grant",
+                count: "1",
+            });
+            await clearPerfRaw(ctx);
+            await tryResult(
+                ctx,
+                (popupUrl) => {
+                    const account = globalThis.__msal.getAllAccounts()[0];
+                    return globalThis.__msal.acquireTokenSilent({
+                        scopes: ["User.Read"],
+                        account,
+                        redirectUri: popupUrl,
+                    });
+                },
+                ctx.popupUrl
+            );
+            const failure = await perfShapes(ctx);
+            return { cacheHit, refresh, sso, failure };
         },
     },
     {
