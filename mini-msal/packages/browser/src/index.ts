@@ -422,6 +422,15 @@ export const InteractionType = {
 export type InteractionKind =
     (typeof InteractionType)[keyof typeof InteractionType];
 
+/** real's InteractionStatus (wrapper libraries derive it from events) */
+export const InteractionStatus = {
+    Startup: "startup",
+    Logout: "logout",
+    AcquireToken: "acquireToken",
+    HandleRedirect: "handleRedirect",
+    None: "none",
+} as const;
+
 export const CacheLookupPolicy = {
     Default: 0,
     AccessToken: 1,

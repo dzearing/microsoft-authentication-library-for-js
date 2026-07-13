@@ -38,6 +38,7 @@ export {
     NestedAppAuthError,
     EventType,
     InteractionType,
+    InteractionStatus,
     CacheLookupPolicy,
     NavigationClient,
     type NavigationOptions,

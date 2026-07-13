@@ -20,9 +20,13 @@ for (const app of [
     "real-mock-app",
     "conformance-real",
     "conformance-mini",
+    "conformance-react-real",
+    "conformance-react-mini",
 ]) {
     writeFileSync(`dist/${app}/index.html`, appHtml(app));
 }
+writeFileSync("dist/conformance-react-real/popup.html", BRIDGE_HTML);
+writeFileSync("dist/conformance-react-mini/popup.html", MINI_BRIDGE_HTML);
 // per-harness popup redirect pages (both stacks complete popup/silent via
 // their redirect-bridge page); popup2 is a second registered redirect page
 // for per-request redirectUri tests

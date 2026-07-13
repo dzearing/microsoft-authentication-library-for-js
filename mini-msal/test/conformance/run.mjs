@@ -107,6 +107,8 @@ try {
             target: TARGET,
             harnessUrl: `${BASE}/conformance-${TARGET}/`,
             popupUrl: `${BASE}/conformance-${TARGET}/popup.html`,
+            reactHarnessUrl: `${BASE}/conformance-react-${TARGET}/`,
+            reactPopupUrl: `${BASE}/conformance-react-${TARGET}/popup.html`,
             navs,
             pageErrors,
             idp,

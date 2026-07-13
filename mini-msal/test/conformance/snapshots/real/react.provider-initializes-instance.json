@@ -1,0 +1,19 @@
+{
+  "accounts": {
+    "ok": [
+      "ada@contoso.com"
+    ]
+  },
+  "hashAfter": "",
+  "idpEndpoints": [
+    "discovery",
+    "token"
+  ],
+  "inProgressLog": [
+    "startup",
+    "handleRedirect",
+    "none"
+  ],
+  "rendered": "|status:none;accounts:1;logger:object|",
+  "sawSignedIn": true
+}

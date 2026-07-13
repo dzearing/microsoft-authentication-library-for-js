@@ -516,6 +516,50 @@ Entries (append as you go):
   `navigatePopups === false` instead of hardcoded. Size: compat 44.6 →
   45.9 KB min (+1.3), mini-core 22.5 → 22.6 (+0.1 — ctx.navigate seam).
 
+- **C15 (2026-07-13)**: React bindings parity (audit findings
+  `msalprovider-initialize`, `inprogress-interaction-statuses`,
+  `usemsalauthentication-acquiretoken`,
+  `template-render-prop-children-and-account-props`,
+  `msal-authentication-template-error-contract`,
+  `account-identifier-matching`). NEW test surface: react harness pages
+  `conformance-react-{real,mini}` (React BUNDLED — not size targets),
+  shared glue `test/apps/harness/react-setup.tsx` on top of setup.ts.
+  Because page.evaluate can't pass components, fixtures live in the
+  harness and scenarios `__mount(name, props)`: an always-mounted
+  `<Status>` recorder renders `|status:<inProgress>;accounts:<n>|` into
+  #root and appends distinct inProgress values to `__renderLog`; other
+  fixtures expose `__probeLog`/`__hook`. Scenarios (new area 12-react)
+  retarget ctx at `ctx.reactHarnessUrl` and wait on #root textContent
+  with a tolerate-timeout helper so a diverging stack yields a stable
+  diff, not a scenario error. Six scenarios, deterministic (real --check
+  ×2), ALL green on the first mini run after the rewrite.
+  `packages/react/src/index.tsx` rewritten as a compact port of
+  @azure/msal-react 5.5.1 (exports `version` "5.5.1", clones the logger
+  as "@azure/msal-react" — identity-impersonation decision): provider
+  `initialize()` → `handleRedirectPromise()` → UNBLOCK fallback,
+  `initializeWrapperLibrary(WrapperSKU.React, version)`, reducer ports
+  EventMessageUtils.getInteractionStatusFromEvent (clear-guards,
+  interactive-only AcquireToken, RESTORE_FROM_BFCACHE) and keeps accounts
+  `[]` until startup completes (kills the cached-user startup flash);
+  hooks/templates as in real (case-insensitive id matching, empty
+  filter → getActiveAccount, accountInfoIsEqual iat/nonce, acquireToken
+  callback with OIDC default scopes + correlationId + IRAE fallback +
+  ReactAuthError codes, result reset when the account disappears, throw
+  error without ErrorComponent, spread contract into Error/Loading
+  components, function-as-children). Core gained the 5-value
+  `InteractionStatus` export (re-exported by compat). Gotchas learned:
+  (1) logout POPUPS complete via the bridge — `logoutPopup` in a react
+  scenario must pass `postLogoutRedirectUri: ctx.popupUrl` or it never
+  resolves; (2) NEITHER stack auto-sets the active account after
+  loginPopup, so useMsalAuthentication auto-acquire tests must
+  setActiveAccount first; (3) hook requests need `redirectUri:
+  ctx.popupUrl` too, else real's silent iframe lands bridge-less and
+  fails timed_out (nondeterministic) instead of login_required; (4)
+  scrubString needed a `conformance-react-(real|mini)` rule BEFORE the
+  existing one (substring wouldn't match). Size: mini-msal-stack 53.0 →
+  55.8 KB min (+2.8 — the react port), compat UNCHANGED 45.9, mini-core
+  UNCHANGED 22.6 (InteractionStatus tree-shakes out of non-react builds).
+
 ## Completed task list (Phases A0, A, B, C — all done)
 
 ## Task list (execute strictly top-to-bottom)
@@ -764,3 +808,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | C12 | done 2026-07-13 | 78/78 | 50.0 KB min / 16.6 gz | +1 scenario (suite 77→78: init.exported-surface-2 — mini green first run). Core: Logger class (real clone/gate/format), LogLevel + reverse mappings, WrapperSKU, getLogger/setLogger/initializeWrapperLibrary (wrapper meta stored; headers stay stub-empty until C19). Compat: 5 *ErrorCodes namespaces (exact keys+values) + BrowserConfigurationAuthError via shared pack() w/ key=code irregulars. compat 42.9 min (+3.2), mini-core 20.9 (+1.4 core Logger). e2e 25/25 |
 | C13 | done 2026-07-13 | 83/83 | 51.6 KB min / 17.0 gz | +5 scenarios (suite 78→83, new area 11-navigation — ALL green first mini run). NavigationClient class + setNavigationClient + system.navigationClient; auth.onRedirectNavigate cancel hook (acquire keeps lock, logout releases + logoutEnd); navigateToLoginRequestUrl deep-link replay via real's msal.{cid}.request.origin / urlHash temp keys, redirectStartPage, in-place #hash restore, doc-title swap; redirect logoutStart payload = raw request (real). e2e cancelled-login seed gained request.origin. compat 44.6 min (+1.7), mini-core 22.5 (+1.6 — redirect is core). e2e 25/25 |
 | C14 | done 2026-07-13 | 87/87 | 53.0 KB min / 17.5 gz | +4 scenarios (suite 83→87, all green first mini run). system.navigatePopups default-true sync about:blank open in the user-gesture stack + location.assign navigate; openSizedPopup features/geometry + popupWindowAttributes/popupWindowParent; real popup name formats (token + logout); blocked sync open fails late as popup_window_error like real; logoutPopup mainWindowRedirectUri via new core ctx.navigate seam (ApiId 962, lock survives navigation); telemetry isAsyncPopup wired. compat 45.9 min (+1.3), mini-core 22.6 (+0.1). e2e 25/25 |
+| C15 | done 2026-07-13 | 93/93 | 55.8 KB min / 18.4 gz | +6 scenarios (suite 87→93, NEW area 12-react on NEW dual react harness pages conformance-react-{real,mini}; all green first mini run). packages/react rewritten as a port of msal-react 5.5.1: provider initialize() + initializeWrapperLibrary + full InteractionStatus reducer (real's event mapping w/ clear-guards; accounts [] during startup); useMsalAuthentication {login, acquireToken, result, error} w/ auto-acquire + IRAE fallback + logout reset; useIsAuthenticated(ids)/useAccount case-insensitive + active-account fallback; templates w/ identifier props + function children; MsalAuthenticationTemplate spread/throw error contract. Core +InteractionStatus export. compat UNCHANGED 45.9, mini-core UNCHANGED 22.6. e2e 25/25 |

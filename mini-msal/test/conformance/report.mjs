@@ -561,6 +561,42 @@ const C = {
         mini: "Pre-C13: no NavigationClient export; setNavigationClient threw TypeError.",
         cost: 0.3,
     },
+    "react.provider-initializes-instance": {
+        class: "missing-feature",
+        real: "MsalProvider initialize()s an un-initialized instance, then handleRedirectPromise processes the response hash (accounts populate, code redeemed); initializeWrapperLibrary on mount.",
+        mini: "Pre-C15: provider never called initialize(); handleRedirectPromise rejected uninitialized_public_client_application (swallowed) — signed-out UI, redirect response lost.",
+        cost: 0.5,
+    },
+    "react.inprogress-status-sequence": {
+        class: "missing-feature",
+        real: "inProgress walks the full InteractionStatus machine per event: startup → none, acquireToken during popup interaction, logout during logoutPopup, with real's clear-guards.",
+        mini: "Pre-C15: 3-value union stuck at 'none' during popup interaction and logout — `disabled={inProgress !== 'none'}` gating never engaged.",
+        cost: 0.5,
+    },
+    "react.use-msal-authentication": {
+        class: "missing-feature",
+        real: "useMsalAuthentication returns {login, acquireToken, result, error}; auto-acquires silently for a signed-in user (active account attached) and resets result when the account disappears after logout.",
+        mini: "Pre-C15: no acquireToken callback (undefined), no auto-acquire for signed-in users (result stayed null), stale result kept after logout.",
+        cost: 0.5,
+    },
+    "react.template-render-props-identifiers": {
+        class: "missing-feature",
+        real: "Templates invoke function-as-children with the msal context and scope on username/homeAccountId/localAccountId props (case-insensitive).",
+        mini: "Pre-C15: function children rendered as nothing (React warning); identifier props silently ignored — any signed-in account matched.",
+        cost: 0.3,
+    },
+    "react.auth-template-error-contract": {
+        class: "missing-feature",
+        real: "MsalAuthenticationTemplate renders ErrorComponent with the ENTIRE auth result spread ({login, acquireToken, result, error}); without one the error is THROWN so an app error boundary catches it; LoadingComponent gets the msal context as props.",
+        mini: "Pre-C15: ErrorComponent got only {error}; errors without an ErrorComponent were swallowed (loading/null rendered); LoadingComponent got no props.",
+        cost: 0.3,
+    },
+    "react.account-identifier-matching": {
+        class: "missing-feature",
+        real: "useIsAuthenticated(identifiers) matches a specific user (case-insensitive on all three ids, false during startup); useAccount({}) falls back to the active account.",
+        mini: "Pre-C15: useIsAuthenticated took no argument (any account = authenticated, true during startup); homeAccountId/localAccountId compared case-sensitively; empty filter returned accounts[0] instead of the active account.",
+        cost: 0.4,
+    },
 };
 
 // ---- generate ---------------------------------------------------------------
@@ -576,6 +612,7 @@ const areaOrder = [
     "resilience",
     "init",
     "navigation",
+    "react",
 ];
 const areaTitles = {
     core: "1. Core flows",
@@ -589,6 +626,7 @@ const areaTitles = {
     resilience: "9. Resilience",
     init: "10. Init & misc",
     navigation: "11. Redirect navigation",
+    react: "12. React bindings",
 };
 
 const rows = results.map((r) => {

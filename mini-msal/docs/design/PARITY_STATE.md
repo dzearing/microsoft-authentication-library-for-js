@@ -24,10 +24,10 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-13)**: Phases A0–C14 COMPLETE — conformance 87/87,
+**Status (2026-07-13)**: Phases A0–C15 COMPLETE — conformance 93/93,
 e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 45.9 KB min
-(real: 220.5), compat+react stack 53.0 KB (real: 248.8), core-only
-22.6 KB. Remaining: C-gaps C15–C21 (post-audit parity gaps beyond the
+(real: 220.5), compat+react stack 55.8 KB (real: 248.8), core-only
+22.6 KB. Remaining: C-gaps C16–C21 (post-audit parity gaps beyond the
 suite) then D-series (à-la-carte DX/docs/examples).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
@@ -221,22 +221,25 @@ scenarios + a partial implementation, add a follow-up task, note it here.
   window via new ctx.navigate seam (ApiId 962; lock survives navigation,
   like real); telemetry isAsyncPopup wired. compat 45.9 KB min (+1.3),
   core 22.6 (+0.1). Details: PARITY_LOG C14 entry.
-- [ ] **C15** `pending` — React bindings parity. Findings:
-  `msalprovider-initialize` (provider must initialize() the instance),
-  `inprogress-interaction-statuses` (full InteractionStatus state machine
-  incl. acquireToken/logout/handleRedirect/startup),
-  `usemsalauthentication-acquiretoken` (missing acquireToken callback +
-  auto-acquire for signed-in users), `template-render-prop-children-and-
-  account-props`, `msal-authentication-template-error-contract` (full
-  {login, result, error} props + rethrow without ErrorComponent),
-  `account-identifier-matching` (useIsAuthenticated(identifiers), casing
-  rules, empty-filter fallback). NOTE: the conformance harness is
-  react-less — add a react harness page (dual-built like harness-real/
-  harness-mini, real msal-react vs mini react) or extend e2e with dual-run
-  checks; either way tests must run against BOTH stacks and diff.
-  Context: audit json; `packages/react/src/index.tsx`,
-  `node_modules/@azure/msal-react/dist/`, `test/e2e/e2e.mjs`,
-  `test/infra/rspack.config.mjs` (if adding a harness variant).
+- [x] **C15** `done 2026-07-13 — pass 93/93, mini-stack 55.8 KB` — React
+  bindings parity. Suite grew 87→93 (new area 12-react, run against NEW
+  dual-built react harness pages `conformance-react-{real,mini}` — React
+  bundled, fixtures + `__mount` in `test/apps/harness/react-setup.tsx`;
+  all 6 green first mini run). `packages/react` rewritten as a port of
+  msal-react 5.5.1: provider initialize()s the instance +
+  initializeWrapperLibrary + full 5-value InteractionStatus reducer
+  (real's event mapping incl. clear-guards + RESTORE_FROM_BFCACHE, accounts
+  frozen [] during startup), context logger, useMsalAuthentication
+  {login, acquireToken, result, error} (auto-acquire for signed-in active
+  account, IRAE→interaction fallback, result reset on logout),
+  useIsAuthenticated(identifiers)/useAccount (case-insensitive ids,
+  empty-filter→active account, iat/nonce equality), templates with
+  identifier props + function-as-children, MsalAuthenticationTemplate
+  full error contract (spread result into ErrorComponent, THROW without
+  one, LoadingComponent gets context). Core/compat: + InteractionStatus
+  export. compat unchanged 45.9, core 22.6. Gotchas (logout popups need
+  bridge postLogoutRedirectUri; neither stack auto-sets active account):
+  PARITY_LOG C15 entry.
 - [ ] **C16** `pending` — Cache entity semantics. Findings:
   `access-token-scope-dedupe` (delete intersecting-scope ATs on save,
   clear multi-matches on lookup — stale-token bug),

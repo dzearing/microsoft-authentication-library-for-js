@@ -1,7 +1,7 @@
 [
   {
-    "id": "accounts.logout-popup-main-window-redirect",
-    "area": "accounts",
+    "id": "react.auth-template-error-contract",
+    "area": "react",
     "status": "captured"
   }
 ]

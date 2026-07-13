@@ -136,6 +136,17 @@ export default [
     makeConfig("conformance-real", "./test/apps/harness/harness-real.ts"),
     makeConfig("conformance-mini", "./test/apps/harness/harness-mini.ts"),
 
+    // React-bindings conformance harnesses (area 12-react): same globals as
+    // above plus __mount/fixtures; React is bundled (not a size target).
+    makeConfig(
+        "conformance-react-real",
+        "./test/apps/harness/harness-react-real.tsx"
+    ),
+    makeConfig(
+        "conformance-react-mini",
+        "./test/apps/harness/harness-react-mini.tsx"
+    ),
+
     // Real Entra ID test builds (authConfig.ts clientId), served at the site
     // root via dist/index.html. React bundled; not measurement targets.
     makeConfig("real-aad-app", "./test/apps/app.tsx"),

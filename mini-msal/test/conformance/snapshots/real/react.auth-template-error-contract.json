@@ -1,0 +1,6 @@
+{
+  "sawBoundary": true,
+  "sawErrorComp": true,
+  "withErrorComponent": "|status:none;accounts:0;logger:object||error-comp:login=function;acquireToken=function;hasResultProp=true;error=login_required|",
+  "withoutErrorComponent": "|status:none;accounts:0;logger:object||boundary:login_required|"
+}

@@ -1,0 +1,5 @@
+{
+  "fnChildren": "|status:none;accounts:1;logger:object|[auth-fn:1]",
+  "matchingIdUppercased": "|status:none;accounts:1;logger:object|[auth-plain]",
+  "wrongId": "|status:none;accounts:1;logger:object|"
+}

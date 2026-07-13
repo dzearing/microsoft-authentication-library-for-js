@@ -1,0 +1,23 @@
+{
+  "hookAfterLogout": {
+    "error": null,
+    "hasAccessToken": null,
+    "resultScopes": null,
+    "typeofAcquireToken": "function",
+    "typeofLogin": "function"
+  },
+  "hookSignedIn": {
+    "error": null,
+    "hasAccessToken": true,
+    "resultScopes": [
+      "User.Read",
+      "openid",
+      "profile"
+    ],
+    "typeofAcquireToken": "function",
+    "typeofLogin": "function"
+  },
+  "rendered": "|status:none;accounts:0;logger:object||hook:result=no;error=no|",
+  "sawReset": true,
+  "sawResult": true
+}

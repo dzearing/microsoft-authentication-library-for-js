@@ -349,6 +349,7 @@ const VOLATILE_KEYS = new Set([
 
 function scrubString(s) {
     return s
+        .replace(/conformance-react-(real|mini)/g, "conformance-react-app")
         .replace(/conformance-(real|mini)/g, "conformance-app")
         .replace(GUID_RE, "<guid>")
         .replace(JWT_RE, "<jwt>")

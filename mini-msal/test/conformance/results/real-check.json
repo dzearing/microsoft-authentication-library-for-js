@@ -1,22 +1,114 @@
 [
   {
-    "id": "accounts.logout-popup-main-window-redirect",
-    "area": "accounts",
+    "id": "react.provider-initializes-instance",
+    "area": "react",
     "status": "pass",
     "observed": {
-      "accountsAfter": {
-        "ok": 0
+      "accounts": {
+        "ok": [
+          "ada@contoso.com"
+        ]
       },
-      "lockAfter": "{\"clientId\":\"<guid>\",\"type\":\"signout\"}",
-      "mainWindowUrl": "/conformance-app/index.html?logged-out=1",
-      "openCalls": [
-        {
-          "features": "width=300, height=300, top=82, left=420.5, scrollbars=yes",
-          "name": "msal.<guid>.oid-123.tenant-123.<guid>",
-          "sync": true,
-          "url": "about:blank"
-        }
-      ]
+      "hashAfter": "",
+      "idpEndpoints": [
+        "discovery",
+        "token"
+      ],
+      "inProgressLog": [
+        "startup",
+        "handleRedirect",
+        "none"
+      ],
+      "rendered": "|status:none;accounts:1;logger:object|",
+      "sawSignedIn": true
+    }
+  },
+  {
+    "id": "react.inprogress-status-sequence",
+    "area": "react",
+    "status": "pass",
+    "observed": {
+      "acquireOk": true,
+      "inProgressLog": [
+        "startup",
+        "none",
+        "acquireToken",
+        "none",
+        "acquireToken",
+        "none",
+        "logout",
+        "none"
+      ],
+      "loginOk": true,
+      "rendered": "|status:none;accounts:0;logger:object|",
+      "sawLoggedIn": true,
+      "sawLoggedOut": true
+    }
+  },
+  {
+    "id": "react.use-msal-authentication",
+    "area": "react",
+    "status": "pass",
+    "observed": {
+      "hookAfterLogout": {
+        "error": null,
+        "hasAccessToken": null,
+        "resultScopes": null,
+        "typeofAcquireToken": "function",
+        "typeofLogin": "function"
+      },
+      "hookSignedIn": {
+        "error": null,
+        "hasAccessToken": true,
+        "resultScopes": [
+          "User.Read",
+          "openid",
+          "profile"
+        ],
+        "typeofAcquireToken": "function",
+        "typeofLogin": "function"
+      },
+      "rendered": "|status:none;accounts:0;logger:object||hook:result=no;error=no|",
+      "sawReset": true,
+      "sawResult": true
+    }
+  },
+  {
+    "id": "react.template-render-props-identifiers",
+    "area": "react",
+    "status": "pass",
+    "observed": {
+      "fnChildren": "|status:none;accounts:1;logger:object|[auth-fn:1]",
+      "matchingIdUppercased": "|status:none;accounts:1;logger:object|[auth-plain]",
+      "wrongId": "|status:none;accounts:1;logger:object|"
+    }
+  },
+  {
+    "id": "react.auth-template-error-contract",
+    "area": "react",
+    "status": "pass",
+    "observed": {
+      "sawBoundary": true,
+      "sawErrorComp": true,
+      "withErrorComponent": "|status:none;accounts:0;logger:object||error-comp:login=function;acquireToken=function;hasResultProp=true;error=login_required|",
+      "withoutErrorComponent": "|status:none;accounts:0;logger:object||boundary:login_required|"
+    }
+  },
+  {
+    "id": "react.account-identifier-matching",
+    "area": "react",
+    "status": "pass",
+    "observed": {
+      "accountOrder": [
+        "ada@contoso.com",
+        "grace@contoso.com"
+      ],
+      "isAuthLog": [
+        "false",
+        "true"
+      ],
+      "missAndEmptyFilter": "|status:none;accounts:2;logger:object||probe:isAuth=false;account=grace@contoso.com|",
+      "uppercasedId": "|status:none;accounts:2;logger:object||probe:isAuth=true;account=ada@contoso.com|"
     }
   }
 ]

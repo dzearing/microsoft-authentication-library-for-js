@@ -1,0 +1,17 @@
+{
+  "acquireOk": true,
+  "inProgressLog": [
+    "startup",
+    "none",
+    "acquireToken",
+    "none",
+    "acquireToken",
+    "none",
+    "logout",
+    "none"
+  ],
+  "loginOk": true,
+  "rendered": "|status:none;accounts:0;logger:object|",
+  "sawLoggedIn": true,
+  "sawLoggedOut": true
+}

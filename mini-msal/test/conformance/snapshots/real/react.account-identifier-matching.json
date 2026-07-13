@@ -1,0 +1,12 @@
+{
+  "accountOrder": [
+    "ada@contoso.com",
+    "grace@contoso.com"
+  ],
+  "isAuthLog": [
+    "false",
+    "true"
+  ],
+  "missAndEmptyFilter": "|status:none;accounts:2;logger:object||probe:isAuth=false;account=grace@contoso.com|",
+  "uppercasedId": "|status:none;accounts:2;logger:object||probe:isAuth=true;account=ada@contoso.com|"
+}
