@@ -24,14 +24,14 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-14)**: Phases A0–C21 + D1 COMPLETE — conformance
+**Status (2026-07-14)**: Phases A0–C21 + D1–D2 COMPLETE — conformance
 121/121, e2e 25/25, seams 10/10, pack:check green, GAP_REPORT all-pass.
 Size matrix: compat-no-react 61.7 KB min (real: 220.5), compat+react
-stack 71.7 (real: 248.8), core-only 31.3. Packages now consumer-ready:
-tsc dist + types, verified via npm-pack → throwaway consumer
-(`npm run pack:check`); non-composed feature APIs throw documented
-feature_not_configured errors (`npm run seams`). Remaining: D2–D4
-(docs, examples, requirements audit).
+stack 71.7 (real: 248.8), core-only 31.3. Packages consumer-ready (tsc
+dist + types, npm-pack-verified); consumer docs shipped: UPGRADING.md,
+ALACARTE.md (measured per-feature deltas), README rewrites — all doc
+code samples mechanically type-checked against dist. Remaining: D3–D4
+(examples, requirements audit).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
 ## Context budget (user-required 2026-07-13)
@@ -381,8 +381,23 @@ push → reset). "Consumer" below means someone who has never read this repo.
   subpath export + rspack tree-shake gates (core 29.9 / popup 32.5 /
   compat 59.5 / react 65.1 KB min). Stub bytes: core 31.3 (+0.4), compat
   61.7 (+0.5). e2e 25/25. Details: PARITY_LOG D1 entry.
-- [ ] **D2** `pending` — Consumer docs (user-required deliverables named
-  2026-07-13). Two NEW standalone guides plus the README rewrite:
+- [x] **D2** `done 2026-07-14 — pass 121/121, mini-stack 71.7 KB` — Consumer
+  docs (user-required deliverables named 2026-07-13). Shipped: (a)
+  `docs/UPGRADING.md` — drop-in migration (import swap, bridge swap, cache
+  carry-over/KMSI/msal.0-2 migration, verification checklist, non-goals:
+  B2C/ADFS only — PoP + CIAM are in); (b) `docs/ALACARTE.md` — step-down
+  61.7 compat → 56.3 explicit-composition → 32.6 core+popup → 29.7 core,
+  feature catalog with NEWLY MEASURED per-feature deltas (popup +2.9 /
+  pop +2.0 / local-storage +2.6 / cache-migration +3.0 / broker +6.9 /
+  telemetry +9.4 / naa +8.4 / react +10.0; same minify settings as the
+  matrix), bridge-page rule (needed for popup/ssoSilent/silent-iframe,
+  not pure-redirect); (c) README.md + docs/README.md rewritten as consumer
+  guides (per-profile quick-starts, feature-catalog table, bridge
+  requirement) with the stale 75/75-era numbers corrected. All 14 doc code
+  samples extracted + strict-type-checked against the packages' dist types
+  (caught: MsalProvider instance needs AuthClient & PopupClient cast for
+  à-la-carte). Zero package-code changes — sizes unchanged. e2e 25/25,
+  seams 10/10. Original spec:
   (a) `docs/UPGRADING.md` — basic drop-in usage/upgrade doc: migrating from
   `@azure/msal-browser`/`@azure/msal-react` to `@mini-msal/compat` +
   `@mini-msal/react` (change one import; cache carries over — signed-in

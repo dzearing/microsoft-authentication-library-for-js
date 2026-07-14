@@ -1242,6 +1242,45 @@ Decisions/details:
   PARITY_STATE (cheap, catches seam regressions); `npm run pack:check` on
   demand for packaging-affecting tasks (needs network).
 
+### D2 — 2026-07-14 — consumer docs (UPGRADING, ALACARTE, README rewrites)
+
+- **New standalone guides**: `docs/UPGRADING.md` (drop-in migration from
+  `@azure/msal-browser`/`@azure/msal-react`: import swap, bridge-page swap,
+  cache carry-over/KMSI/migration, post-switch verification checklist,
+  non-goals) and `docs/ALACARTE.md` (step-down guide compat 61.7 →
+  explicit-composition 56.3 → core+popup 32.6 → core 29.7 KB min, feature
+  catalog with measured per-feature deltas, bridge-page rule, methodology).
+  `README.md` + `docs/README.md` rewritten as consumer guides: quick-start
+  per profile (compat / core-redirect / core+popup / react), feature-catalog
+  table, bridge requirement — and stale 75/75-era numbers (compat 32.5,
+  core 19.5) updated to the current 121/121 matrix.
+- **Per-feature size deltas measured** (not previously known): one minimal
+  app bundled with a single feature composed at a time, exact
+  test/infra/rspack.config.mjs minify settings (swc passes:3, es2022,
+  mini-msal-src condition). Base 29.7 KB min; deltas: popup +2.9, pop +2.0,
+  local-storage +2.6, cache-migration +3.0, broker +6.9, telemetry +9.4,
+  naa +8.4 (standalone `createNestableClient` entry incl. bridge handshake);
+  full 6-feature explicit composition 56.3 (compat's constant/error-code
+  namespaces account for most of the remaining 5.4 to 61.7); react +10.0
+  (stack 71.7 − compat 61.7, React external). Docs note deltas are
+  approximately additive. Measurement script was session-scratch (not
+  committed) — D3's examples will make per-profile sizes a permanent
+  `npm run measure` fixture.
+- **Copy-paste-runnable enforced mechanically**: all 14 `ts`/`tsx` fenced
+  blocks across the four docs extracted and type-checked (strict,
+  moduleResolution bundler, jsx react-jsx) against the packages' built
+  `dist` types — clean. Two real sample bugs this caught: `MsalProvider`'s
+  `instance` prop is `IPublicClientApplication = AuthClient & PopupClient`,
+  so an à-la-carte client needs `[popup]` + a cast (docs now say so), and an
+  undeclared `config` in the full-composition sample.
+- **Doc-content decisions**: à-la-carte typing pattern documented as
+  `createClient(...) as AuthClient & PopupClient` (pack:check's
+  `as unknown as PopupClient` works but reads worse); bridge page documented
+  as required for popup/ssoSilent/silent-iframe and NOT for pure-redirect
+  apps; prototype/not-on-npm caveat stated in both guides; B2C/ADFS stay
+  the only authority non-goals (CIAM is implemented since C18, PoP since
+  C21 — the old README wrongly listed PoP as unimplemented).
+
 ## Progress log
 
 | Task | Status | Pass | mini-stack size | Notes |
@@ -1282,3 +1321,4 @@ Decisions/details:
 | C20 | done 2026-07-14 | 119/119 | 68.0 KB min / 22.0 gz | +6 scenarios (suite 113→119, 08-telemetry — all green first mini run). Root acquireTokenRedirect event from handleRedirectPromise (cached-request cid, redemption-half ext incl. both networkClientSendPostRequestAsync keys, previousLibraryVersion from pre-init msal.version; clean loads + memoized re-calls emit nothing); failure-event cid joins (AuthError.correlationId stamped by silent/redirect flows — KEY FACT: real's RT token cid is a QUERY param, absent from the body); addPerformanceCallback toString-dedupe + "" stub id (NOT callback-id); no_account_error abandons the measurement (no event) while uninitialized preflight fails DO emit; initialize measured at most once; msal.browser.performance.enabled=1 → mark/measure timeline entries synthesized from the ext tables (real's measure set === C11 ext DurationMs keys + root). compat 58.0 min (+1.6), mini-core 29.5 (+0.1). e2e 25/25 |
 | C21 | done 2026-07-14 | 121/121 | 71.2 KB min / 23.3 gz | +2 scenarios (suite 119→121, NEW area 17-pop — green first mini run + 1 fix). NEW ./pop feature (RSA-2048 RS256 keypair — real is RSASSA-PKCS1-v1_5 NOT ECDSA; kid = b64url(sha256(sorted {e,kty,n})); IndexedDB msal.db keystore, unextractable private key) + core scheme plumbing: token_type/req_cnf on auth-code + RT grants, AccessToken_With_AuthScheme entity w/ keyId (pop: from the server AT's cnf.kid, required; ssh: response key_id) + scheme cache-key suffix, scheme-aware AT lookup/save-dedupe, SHR result signing incl. cache-hit RE-sign (header typ,alg,kid; payload at,ts,m,u,nonce,p,q,cnf w/ full sorted public JWK), popKid skips keygen+signing, ssh-cert missing_ssh_jwk/missing_ssh_kid config errors, scheme in throttle + silent-dedupe thumbprints. EXTRA FIX exposed by full-body digest: RT grant redirect_uri only when the request has one (mini sent the config default). Compat +AuthenticationScheme export. compat 61.2 min (+3.2 — judged within the task's ~3 KB gate; descope = drop pop from compose), mini-core 30.9 (+1.4). e2e 25/25 |
 | D1 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Seam hardening + consumer packaging. Core stubs for all 6 feature-owned APIs → BrowserAuthError feature_not_configured naming the "@mini-msal/browser/<feature>" import (features overwrite; pop seam guard shares featureError()); NEW `npm run seams` 10/10 vs new conformance-mini-core harness. Packages get tsc dist (JS+d.ts, typescript@7) + 3-condition exports (types/mini-msal-src/default) — internal builds keep compiling from src via resolve.conditionNames; `npm run pack:check` proves npm-pack → throwaway consumer: strict tsc types across all subpaths + rspack tree-shake core 29.9 / popup 32.5 / compat 59.5 / react 65.1 KB min. Stub cost: mini-core 31.3 (+0.4), compat 61.7 (+0.5). e2e 25/25 |
+| D2 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Consumer docs. NEW docs/UPGRADING.md (drop-in migration: import swap, 0.6 KB bridge-page swap, cache carry-over incl. msal.0/1/2 migration + KMSI, verification checklist, non-goals) + NEW docs/ALACARTE.md (step-down 61.7 compat → 56.3 explicit → 32.6 core+popup → 29.7 core; per-feature deltas measured: popup +2.9 / pop +2.0 / local-storage +2.6 / cache-migration +3.0 / broker +6.9 / telemetry +9.4 / naa +8.4 / react +10.0). README.md + docs/README.md rewritten as consumer guides (per-profile quick-starts, feature catalog, bridge rule) — stale 75/75-era numbers fixed. All 14 doc code samples mechanically type-checked against dist types (caught 2 sample bugs: MsalProvider instance needs AuthClient & PopupClient; undeclared config). Zero package-code changes: sizes unchanged. e2e 25/25, seams 10/10 |
