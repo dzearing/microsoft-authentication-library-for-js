@@ -43,6 +43,10 @@ bindings. Two standalone guides cover the details:
   swap; signed-in users stay signed in).
 - **[ALACARTE.md](./ALACARTE.md)** — step the bundle down profile by profile
   with measured sizes and the exact composition for each.
+- **[../examples/](../examples/)** — a runnable minimal app per profile
+  (core-redirect, core+popup, compat drop-in, react), each size-tracked in
+  `npm run measure` and smoke-tested against the mock IdP
+  (`npm run examples:smoke`).
 
 > **Prototype note**: the packages are not published to npm — consume them
 > from this repo as workspace dependencies or via `npm pack` (that path is
@@ -314,6 +318,8 @@ mini-msal/
 │   │                     GAP_REPORT, design/)
 │   └── design/           deep-dives: conformance suite internals, wire
 │                         protocols, bundle-size experiment, original spec
+├── examples/             one minimal consumer app per profile
+│                         (size-tracked + smoke-tested)
 ├── packages/
 │   ├── browser/          @mini-msal/browser  (core + feature subpaths)
 │   ├── compat/           @mini-msal/compat   (the drop-in)
@@ -322,6 +328,7 @@ mini-msal/
     ├── infra/            mock OIDC IdP, static server, build config
     ├── apps/             the shared demo/e2e app + conformance harness pages
     ├── e2e/              25-check dual-stack E2E
+    ├── examples/         examples smoke check (sign-in per example)
     ├── unit/             seam-hardening checks
     ├── packaging/        npm-pack consumer check
     ├── conformance/      121-scenario conformance runner + snapshots
@@ -334,6 +341,7 @@ mini-msal/
 npm install
 npm run build              # generate app variants + build all bundles
 npm run e2e                # 25-check E2E against the local mock IdP
+npm run examples:smoke     # each examples/ profile signs in vs the mock IdP
 npm run conformance        # capture real → replay mini → regenerate GAP_REPORT.md
 npm run conformance:check  # determinism check (real vs its own snapshots)
 npm run seams              # feature-seam checks (core-only + partial compositions)
@@ -350,9 +358,10 @@ Current conformance standing (121 scenarios): **121 identical · 0 missing
 features · 0 behavioral diffs · 0 bugs** — the C-series (full compat parity,
 including the post-audit C11–C21 gap closure) is complete; the D-series
 (consumer packaging, docs) is underway. e2e 25/25, seams 10/10, packaging
-check green. The work is driven task-by-task from
-[design/PARITY_STATE.md](./design/PARITY_STATE.md); remaining: runnable
-examples (D3) and the final requirements audit (D4).
+check green, and each [examples/](../examples/) profile is size-tracked and
+smoke-tested. The work is driven task-by-task from
+[design/PARITY_STATE.md](./design/PARITY_STATE.md); remaining: the final
+requirements audit (D4).
 
 Measured size matrix (2026-07-14, msal-browser 5.16.0, `npm run measure`):
 

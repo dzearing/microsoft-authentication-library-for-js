@@ -39,6 +39,19 @@ writeFileSync("dist/conformance-mini/popup2.html", MINI_BRIDGE_HTML);
 writeFileSync("dist/real-mock-app/popup.html", BRIDGE_HTML);
 writeFileSync("dist/mini-mock-app/popup.html", MINI_BRIDGE_HTML);
 
+// D3 example smoke apps (test/examples/smoke.mjs); popup-using examples get
+// a bridge page next to index.html, matching their popupRequest.redirectUri
+for (const app of [
+    "example-core-redirect-smoke",
+    "example-core-popup-smoke",
+    "example-compat-smoke",
+    "example-react-smoke",
+]) {
+    writeFileSync(`dist/${app}/index.html`, appHtml(app));
+}
+writeFileSync("dist/example-core-popup-smoke/popup.html", MINI_BRIDGE_HTML);
+writeFileSync("dist/example-compat-smoke/popup.html", MINI_BRIDGE_HTML);
+
 // root-level pages: the apps' internal popup/silent flows redirect here
 // (/popup.html = v5 redirect-bridge for real msal, /mini-popup.html = mini's
 // bridge; for real AAD register both as SPA redirect URIs). /blank.html has

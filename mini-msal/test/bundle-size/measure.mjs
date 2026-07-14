@@ -13,7 +13,7 @@ function fmt(bytes) {
 const rows = [];
 for (const variant of readdirSync(distDir)) {
     const bundle = path.join(distDir, variant, "bundle.js");
-    if (!existsSync(bundle) || variant.includes("mock") || variant.includes("aad")) continue;
+    if (!existsSync(bundle) || variant.includes("mock") || variant.includes("aad") || variant.includes("smoke")) continue;
     const code = readFileSync(bundle);
     const gz = gzipSync(code, { level: 9 });
     const br = brotliCompressSync(code, {

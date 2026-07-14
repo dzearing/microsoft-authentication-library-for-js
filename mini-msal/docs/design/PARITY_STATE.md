@@ -24,14 +24,14 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-14)**: Phases A0–C21 + D1–D2 COMPLETE — conformance
-121/121, e2e 25/25, seams 10/10, pack:check green, GAP_REPORT all-pass.
-Size matrix: compat-no-react 61.7 KB min (real: 220.5), compat+react
-stack 71.7 (real: 248.8), core-only 31.3. Packages consumer-ready (tsc
-dist + types, npm-pack-verified); consumer docs shipped: UPGRADING.md,
-ALACARTE.md (measured per-feature deltas), README rewrites — all doc
-code samples mechanically type-checked against dist. Remaining: D3–D4
-(examples, requirements audit).
+**Status (2026-07-14)**: Phases A0–C21 + D1–D3 COMPLETE — conformance
+121/121, e2e 25/25, seams 10/10, examples:smoke 8/8, pack:check green,
+GAP_REPORT all-pass. Size matrix: compat-no-react 61.7 KB min (real:
+220.5), compat+react stack 71.7 (real: 248.8), core-only 31.3. Packages
+consumer-ready (tsc dist + types, npm-pack-verified); consumer docs
+shipped (UPGRADING.md, ALACARTE.md, README rewrites, doc samples
+type-checked against dist); runnable size-tracked examples/ per profile,
+smoke-tested. Remaining: D4 (requirements audit).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
 ## Context budget (user-required 2026-07-13)
@@ -418,15 +418,19 @@ push → reset). "Consumer" below means someone who has never read this repo.
   exist.
   Context: `docs/README.md`, `README.md`, size numbers from
   `bundle-size-experiment.md` (final matrix) or `npm run measure`.
-- [ ] **D3** `pending` — Runnable examples with measured sizes. `examples/`
-  with one minimal app per profile (core-redirect, core+popup, compat
-  drop-in, react), built via the existing rspack infra and added to
-  `npm run measure` so each example doubles as a size regression check;
-  per-example README states what it composes and its measured size. Wire a
-  smoke check (reuse e2e harness) proving each example signs in against the
-  mock IdP.
-  Context: `test/infra/rspack.config.mjs`, `test/apps/mini-core.ts` (model
-  entry), `test/e2e/e2e.mjs` (harness to reuse).
+- [x] **D3** `done 2026-07-14 — pass 121/121, mini-stack 71.7 KB` — Runnable
+  examples with measured sizes. NEW `examples/{core-redirect,core-popup,
+  compat,react}` — one minimal self-contained app per profile (main +
+  placeholder authConfig + README stating composition/size/bridge rule) —
+  measured 30.3 / 33.2 / 61.1 / 66.4 KB min (react = React-external, matrix
+  methodology); each is a permanent `npm run measure` variant (size
+  regression fixture) with an `example-*-smoke` twin (authConfig swapped to
+  the mock IdP via rspack NormalModuleReplacementPlugin, React bundled).
+  NEW `npm run examples:smoke` (test/examples/smoke.mjs, e2e-harness
+  pattern): drives each example's real UI — #signin click, redirect or
+  popup+bridge roundtrip — asserts greeting + silently-acquired token;
+  8/8 first run. README/docs link examples. Zero package-code changes —
+  sizes unchanged. e2e 25/25, seams 10/10. Details: PARITY_LOG D3 entry.
 - [ ] **D4** `pending` — Requirements audit vs this Mission. Walk the four
   definition-of-done bullets as a skeptic; for each, cite the evidence
   (conformance counts, size matrix, packaging check, docs/examples). File any

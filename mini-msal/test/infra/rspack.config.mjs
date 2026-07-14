@@ -86,6 +86,22 @@ function makeConfig(name, entry, { externals } = {}) {
     };
 }
 
+// D3 example smoke builds: same example sources pointed at the local mock
+// IdP by swapping each example's ./authConfig.js module (React bundled so
+// they run standalone). Driven by test/examples/smoke.mjs; not size targets
+// (measure.mjs excludes "*smoke*").
+const MOCK_AUTH_CONFIG = path.resolve(ROOT, "test/apps/authConfig.mock.ts");
+function makeSmokeConfig(name, entry) {
+    const config = makeConfig(name, entry);
+    config.plugins = [
+        new rspack.NormalModuleReplacementPlugin(
+            /[\\/]authConfig(\.js)?$/,
+            MOCK_AUTH_CONFIG
+        ),
+    ];
+    return config;
+}
+
 // React is always external in measured variants: we're measuring what the
 // MSAL stack adds to an app that already ships React.
 const reactExternals = {
@@ -161,4 +177,24 @@ export default [
     // root via dist/index.html. React bundled; not measurement targets.
     makeConfig("real-aad-app", "./test/apps/app.tsx"),
     makeConfig("mini-aad-app", "./test/apps/mini-app.tsx"),
+
+    // Consumer examples (examples/*), one per consumption profile, measured
+    // with the size-matrix settings (React external where present) so each
+    // doubles as a size regression check in `npm run measure`.
+    makeConfig("example-core-redirect", "./examples/core-redirect/main.ts"),
+    makeConfig("example-core-popup", "./examples/core-popup/main.ts"),
+    makeConfig("example-compat", "./examples/compat/main.ts"),
+    makeConfig("example-react", "./examples/react/main.tsx", {
+        externals: reactExternals,
+    }),
+
+    // The same examples runnable against the mock IdP (smoke check:
+    // `npm run examples:smoke`).
+    makeSmokeConfig(
+        "example-core-redirect-smoke",
+        "./examples/core-redirect/main.ts"
+    ),
+    makeSmokeConfig("example-core-popup-smoke", "./examples/core-popup/main.ts"),
+    makeSmokeConfig("example-compat-smoke", "./examples/compat/main.ts"),
+    makeSmokeConfig("example-react-smoke", "./examples/react/main.tsx"),
 ];

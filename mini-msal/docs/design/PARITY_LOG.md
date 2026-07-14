@@ -1281,6 +1281,40 @@ Decisions/details:
   the only authority non-goals (CIAM is implemented since C18, PoP since
   C21 — the old README wrongly listed PoP as unimplemented).
 
+### D3 — 2026-07-14 — runnable examples with measured sizes
+
+- **NEW `examples/`** — one minimal, self-contained app per consumption
+  profile, each a `main.ts(x)` + placeholder `authConfig.ts` + README
+  (what it composes, measured size, bridge rule, how to run):
+  core-redirect (`createClient` only, 30.3 KB min / 10.6 gz), core-popup
+  (core + `./popup`, popup.html bridge, 33.2 / 11.5), compat
+  (`PublicClientApplication` drop-in, 61.1 / 19.9), react (compat under
+  `MsalProvider` + templates + hooks, 66.4 / 21.8 — React external, same
+  methodology as the matrix). `examples/README.md` indexes them.
+- **Permanent size fixture**: the examples build as rspack variants
+  `example-*` with the exact size-matrix settings, so `npm run measure`
+  now reports per-profile consumer sizes permanently (D2 had noted these
+  numbers were session-scratch).
+- **Smoke check**: NEW `npm run examples:smoke`
+  (`test/examples/smoke.mjs`, e2e-harness pattern: spawns mock IdP +
+  static server, headless system Chrome). Each example also builds an
+  `example-*-smoke` variant whose `./authConfig.js` import is swapped for
+  `test/apps/authConfig.mock.ts` via rspack
+  `NormalModuleReplacementPlugin` (React bundled so the react smoke runs
+  standalone); postbuild writes their index.html + bridge popup.html
+  pages. The check drives the real UI — click `#signin`, complete the
+  redirect or popup roundtrip — and asserts the greeting plus a
+  silently-acquired token render. **8/8 first run.**
+- **Decisions**: measured builds bake the placeholder AAD config (that's
+  what consumers copy); smoke variants exist because config is baked at
+  bundle time. Popup-using examples pass an explicit `popup.html`
+  redirectUri (the documented bridge pattern); core-redirect ships no
+  bridge. The react example composes compat under the provider (the
+  documented default; the à-la-carte cast is ALACARTE's job to teach).
+- Zero package-code changes — sizes unchanged (compat 61.7, core 31.3,
+  stack 71.7). Docs link the examples (README table, docs/README
+  consuming/map/status sections).
+
 ## Progress log
 
 | Task | Status | Pass | mini-stack size | Notes |
@@ -1322,3 +1356,4 @@ Decisions/details:
 | C21 | done 2026-07-14 | 121/121 | 71.2 KB min / 23.3 gz | +2 scenarios (suite 119→121, NEW area 17-pop — green first mini run + 1 fix). NEW ./pop feature (RSA-2048 RS256 keypair — real is RSASSA-PKCS1-v1_5 NOT ECDSA; kid = b64url(sha256(sorted {e,kty,n})); IndexedDB msal.db keystore, unextractable private key) + core scheme plumbing: token_type/req_cnf on auth-code + RT grants, AccessToken_With_AuthScheme entity w/ keyId (pop: from the server AT's cnf.kid, required; ssh: response key_id) + scheme cache-key suffix, scheme-aware AT lookup/save-dedupe, SHR result signing incl. cache-hit RE-sign (header typ,alg,kid; payload at,ts,m,u,nonce,p,q,cnf w/ full sorted public JWK), popKid skips keygen+signing, ssh-cert missing_ssh_jwk/missing_ssh_kid config errors, scheme in throttle + silent-dedupe thumbprints. EXTRA FIX exposed by full-body digest: RT grant redirect_uri only when the request has one (mini sent the config default). Compat +AuthenticationScheme export. compat 61.2 min (+3.2 — judged within the task's ~3 KB gate; descope = drop pop from compose), mini-core 30.9 (+1.4). e2e 25/25 |
 | D1 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Seam hardening + consumer packaging. Core stubs for all 6 feature-owned APIs → BrowserAuthError feature_not_configured naming the "@mini-msal/browser/<feature>" import (features overwrite; pop seam guard shares featureError()); NEW `npm run seams` 10/10 vs new conformance-mini-core harness. Packages get tsc dist (JS+d.ts, typescript@7) + 3-condition exports (types/mini-msal-src/default) — internal builds keep compiling from src via resolve.conditionNames; `npm run pack:check` proves npm-pack → throwaway consumer: strict tsc types across all subpaths + rspack tree-shake core 29.9 / popup 32.5 / compat 59.5 / react 65.1 KB min. Stub cost: mini-core 31.3 (+0.4), compat 61.7 (+0.5). e2e 25/25 |
 | D2 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Consumer docs. NEW docs/UPGRADING.md (drop-in migration: import swap, 0.6 KB bridge-page swap, cache carry-over incl. msal.0/1/2 migration + KMSI, verification checklist, non-goals) + NEW docs/ALACARTE.md (step-down 61.7 compat → 56.3 explicit → 32.6 core+popup → 29.7 core; per-feature deltas measured: popup +2.9 / pop +2.0 / local-storage +2.6 / cache-migration +3.0 / broker +6.9 / telemetry +9.4 / naa +8.4 / react +10.0). README.md + docs/README.md rewritten as consumer guides (per-profile quick-starts, feature catalog, bridge rule) — stale 75/75-era numbers fixed. All 14 doc code samples mechanically type-checked against dist types (caught 2 sample bugs: MsalProvider instance needs AuthClient & PopupClient; undeclared config). Zero package-code changes: sizes unchanged. e2e 25/25, seams 10/10 |
+| D3 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Runnable examples. NEW examples/{core-redirect,core-popup,compat,react} — minimal app + placeholder authConfig + README each, with measured sizes 30.3 / 33.2 / 61.1 / 66.4 KB min (react = React-external, matrix methodology); built as permanent `npm run measure` variants (size regression fixture) plus *-smoke twins (authConfig swapped to the mock IdP via NormalModuleReplacementPlugin, React bundled). NEW `npm run examples:smoke`: headless sign-in per example via real UI clicks (redirect + popup roundtrips + silent token render) — 8/8 first run. READMEs link examples. Zero package-code changes; sizes unchanged. e2e 25/25, seams 10/10 |

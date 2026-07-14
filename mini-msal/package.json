@@ -11,6 +11,7 @@
         "measure": "node test/bundle-size/measure.mjs",
         "analyze": "node test/bundle-size/analyze.mjs",
         "e2e": "node test/e2e/e2e.mjs",
+        "examples:smoke": "node test/examples/smoke.mjs",
         "seams": "node test/unit/seams.mjs",
         "pack:check": "node test/packaging/check.mjs",
         "conformance": "npm run conformance:real && npm run conformance:mini && node test/conformance/report.mjs",
