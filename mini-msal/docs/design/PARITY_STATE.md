@@ -24,14 +24,15 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-14)**: Phases A0–C21 + D1–D3 COMPLETE — conformance
+**Status (2026-07-14)**: Phases A0–C21 + D1–D4 COMPLETE — conformance
 121/121, e2e 25/25, seams 10/10, examples:smoke 8/8, pack:check green,
 GAP_REPORT all-pass. Size matrix: compat-no-react 61.7 KB min (real:
 220.5), compat+react stack 71.7 (real: 248.8), core-only 31.3. Packages
-consumer-ready (tsc dist + types, npm-pack-verified); consumer docs
-shipped (UPGRADING.md, ALACARTE.md, README rewrites, doc samples
-type-checked against dist); runnable size-tracked examples/ per profile,
-smoke-tested. Remaining: D4 (requirements audit).
+consumer-ready (tsc dist + types, npm-pack-verified); consumer docs +
+runnable size-tracked examples shipped. D4 requirements audit: bullets
+2+3 pass; found 18 module exports missing from compat + a Node/SSR
+construction crash (→ D5) and no committed doc-sample check (→ D6).
+Remaining: D5, D6, D7 (close-out re-audit).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
 ## Context budget (user-required 2026-07-13)
@@ -431,10 +432,68 @@ push → reset). "Consumer" below means someone who has never read this repo.
   popup+bridge roundtrip — asserts greeting + silently-acquired token;
   8/8 first run. README/docs link examples. Zero package-code changes —
   sizes unchanged. e2e 25/25, seams 10/10. Details: PARITY_LOG D3 entry.
-- [ ] **D4** `pending` — Requirements audit vs this Mission. Walk the four
-  definition-of-done bullets as a skeptic; for each, cite the evidence
-  (conformance counts, size matrix, packaging check, docs/examples). File any
-  gap found as a new task before this one is marked done. When no gaps
-  remain: final summary for the user, do NOT reset-context.
-  Context: this file's Mission section, `PARITY_LOG.md` progress table,
-  `docs/README.md`, `examples/`.
+- [x] **D4** `done 2026-07-14 — pass 121/121, mini-stack 71.7 KB` —
+  Requirements audit vs this Mission. All gates re-run fresh this session
+  (conformance 121/121, e2e 25/25, seams 10/10, examples:smoke 8/8,
+  pack:check OK, report 0-gap, measure matches all recorded sizes).
+  Bullets 2 (pay-to-play) + 3 (effortless consumption) PASS with evidence.
+  Bullet 1 GAPS → filed D5: exhaustive module-export diff found 18 real
+  exports missing from compat, and mini's PCA construction throws a raw
+  ReferenceError in Node where real supports SSR construction. Bullet 4
+  GAP → filed D6: doc-sample type-checking was D2 session-scratch, not a
+  committed check. D7 filed as the close-out re-audit. Zero code changes.
+  Details/evidence: PARITY_LOG D4 entry.
+
+- [ ] **D5** `pending` — Compat export-surface completion + SSR-safe
+  construction (D4 audit, Mission bullet 1). Test-first:
+  (a) NEW scenario `init.exported-surface-full` — in the harness, pin the
+  FULL sorted `Object.keys(lib)` list (real snapshot is ground truth) so
+  the export surface can never silently diverge again; (b) NEW node-side
+  check (extend `test/unit/seams.mjs` or a small `test/unit/ssr.mjs` wired
+  into `npm run seams`): `new PublicClientApplication({auth:{clientId}})`
+  in plain Node must construct without throwing (real does — SSR/Next.js
+  drop-in; ops may fail later), currently mini throws
+  `ReferenceError: location is not defined` from createClient's eager
+  `new URL(..., location.href)`. Then implement the 18 missing compat
+  exports: ApiId, AuthenticationHeaderParser, AzureCloudInstance,
+  BrowserPerformanceMeasurement, BrowserRootPerformanceEvents,
+  BrowserUtils, DEFAULT_IFRAME_TIMEOUT_MS, EventHandler,
+  EventMessageUtils, JsonWebTokenTypes, LocalStorage, MemoryStorage,
+  SessionStorage, ResponseMode, SignedHttpRequest (reuse ./pop's SHR
+  machinery), StubPerformanceClient, enforceResourceParameter,
+  stubbedPublicClientApplication. Match real's observable behavior for
+  each (grep real dist per symbol); enums/constants exact; classes may be
+  thin ports as long as scenario-observable behavior matches. Runtime-only
+  `waitForIframeResponse`/`waitForPopupResponse` (absent from real .d.ts)
+  are descoped unless trivial — record the decision either way. Compat
+  extras (NativeAuthError, NestedAppAuthError, createAuth) stay. Track the
+  compat size delta; if implementation balloons past the session budget,
+  land scenarios + partial impl and file a follow-up.
+  Context: PARITY_LOG D4 entry; diff PCA construction in real:
+  `node_modules/@azure/msal-browser/dist/app/PublicClientApplication.mjs`
+  + `controllers/StandardController.mjs`; per-symbol source under
+  `node_modules/@azure/msal-browser/dist/`.
+
+- [ ] **D6** `pending` — Committed doc-sample check (D4 audit, Mission
+  bullet 4). NEW `npm run docs:check` (e.g. `test/docs/check.mjs`):
+  extract fenced ts/tsx code samples from `README.md`, `docs/README.md`,
+  `docs/UPGRADING.md`, `docs/ALACARTE.md` and strict-tsc them against the
+  packages' built dist types (same approach D2 ran as session scratch —
+  re-derive it; D2's log entry notes the two sample bugs it caught, use
+  them as the check's self-test by temporarily breaking a sample). Samples
+  that are intentionally partial can opt out via an HTML comment marker —
+  keep the marker count low and justified. Wire it into the SOP validate
+  list (cheap, docs-affecting tasks only). Zero package-code changes
+  expected.
+  Context: the four doc files; PARITY_LOG D2 entry (what was checked and
+  how); `test/packaging/check.mjs` (existing strict-tsc consumer pattern
+  to crib).
+
+- [ ] **D7** `pending` — Close-out re-audit + final summary. Re-run the D4
+  skeptic pass over the four Mission bullets now that D5/D6 landed
+  (re-run all gates fresh; re-run the export/method/SSR diffs from the D4
+  entry; spot-check docs:check). File any new gap as a task before this
+  one; when clean, write the final summary for the user and do NOT
+  reset-context.
+  Context: PARITY_LOG D4 entry (the exact diffs/checks to repeat), this
+  file's Mission section.

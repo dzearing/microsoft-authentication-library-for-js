@@ -1315,6 +1315,57 @@ Decisions/details:
   stack 71.7). Docs link the examples (README table, docs/README
   consuming/map/status sections).
 
+### D4 — 2026-07-14 — requirements audit vs Mission (skeptic pass)
+
+Every validation gate re-run fresh this session (not trusted from docs):
+build clean, conformance:mini **121/121**, e2e **25/25**, seams **10/10**,
+examples:smoke **8/8**, pack:check OK (types + tree-shake gates 29.9 /
+32.5 / 59.5 / 65.1), report regenerated (0 behavioral-diff / 0
+missing-feature / 0 bug), measure matches every recorded number (compat
+61.7, core 31.3, stack 71.7, examples 30.3/33.2/61.1/66.4).
+
+Verdict per Mission bullet:
+
+1. **100% compat — GAPS FOUND (filed D5).** The suite proves behavioral
+   parity, but an exhaustive module-export diff (real ESM keys vs
+   compat dist) found **18 exports real has and compat lacks**: ApiId,
+   AuthenticationHeaderParser, AzureCloudInstance,
+   BrowserPerformanceMeasurement, BrowserRootPerformanceEvents,
+   BrowserUtils, DEFAULT_IFRAME_TIMEOUT_MS, EventHandler,
+   EventMessageUtils, JsonWebTokenTypes, LocalStorage, MemoryStorage,
+   SessionStorage, ResponseMode, SignedHttpRequest,
+   StubPerformanceClient, enforceResourceParameter,
+   stubbedPublicClientApplication. Compat extras (NativeAuthError,
+   NestedAppAuthError, createAuth) are harmless. Also: real's PCA
+   **constructs fine in plain Node** (SSR/Next.js drop-in — verified:
+   `new PublicClientApplication({auth:{clientId}})` succeeds in node,
+   ops fail later); mini's compat throws raw
+   `ReferenceError: location is not defined` from createClient at
+   construction time. React surface is complete (msal-react keys ⊆ mini
+   react; extra ReactAuthError harmless). PCA instance methods: only
+   runtime-extras `waitForIframeResponse`/`waitForPopupResponse` differ —
+   they are NOT in real's .d.ts (internal, untyped), descoped unless
+   trivial during D5.
+2. **Pay-to-play — PASS.** pack:check tree-shake gates prove uncomposed
+   features cost zero bytes (core 29.9 vs compat 59.5); every subpath
+   export strict-type-checks from a real npm-pack consumer; seams 10/10
+   cover partial compositions.
+3. **Effortless consumption — PASS.** feature_not_configured stubs name
+   the exact import (seams-verified); ALACARTE step-down + per-feature
+   measured deltas; consumer POV proven by pack:check's throwaway
+   consumer.
+4. **Docs & examples — GAP FOUND (filed D6).** Deliverables exist, sizes
+   verified fresh against `npm run measure` (all match). But D2's "14 doc
+   samples type-checked" was a **session-scratch one-off** — nothing in
+   the repo re-checks doc samples (confirmed: D2 commit a542eb133 is
+   docs-only; no docs:check script exists), so samples can rot silently.
+
+Filed: **D5** (compat export-surface completion + SSR-safe construction,
+test-first via an exhaustive exported-surface-full scenario + node
+construction check), **D6** (committed `npm run docs:check`), **D7**
+(re-audit close-out — final summary gate). Audit is evidence-only: zero
+package-code changes, sizes unchanged.
+
 ## Progress log
 
 | Task | Status | Pass | mini-stack size | Notes |
@@ -1357,3 +1408,4 @@ Decisions/details:
 | D1 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Seam hardening + consumer packaging. Core stubs for all 6 feature-owned APIs → BrowserAuthError feature_not_configured naming the "@mini-msal/browser/<feature>" import (features overwrite; pop seam guard shares featureError()); NEW `npm run seams` 10/10 vs new conformance-mini-core harness. Packages get tsc dist (JS+d.ts, typescript@7) + 3-condition exports (types/mini-msal-src/default) — internal builds keep compiling from src via resolve.conditionNames; `npm run pack:check` proves npm-pack → throwaway consumer: strict tsc types across all subpaths + rspack tree-shake core 29.9 / popup 32.5 / compat 59.5 / react 65.1 KB min. Stub cost: mini-core 31.3 (+0.4), compat 61.7 (+0.5). e2e 25/25 |
 | D2 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Consumer docs. NEW docs/UPGRADING.md (drop-in migration: import swap, 0.6 KB bridge-page swap, cache carry-over incl. msal.0/1/2 migration + KMSI, verification checklist, non-goals) + NEW docs/ALACARTE.md (step-down 61.7 compat → 56.3 explicit → 32.6 core+popup → 29.7 core; per-feature deltas measured: popup +2.9 / pop +2.0 / local-storage +2.6 / cache-migration +3.0 / broker +6.9 / telemetry +9.4 / naa +8.4 / react +10.0). README.md + docs/README.md rewritten as consumer guides (per-profile quick-starts, feature catalog, bridge rule) — stale 75/75-era numbers fixed. All 14 doc code samples mechanically type-checked against dist types (caught 2 sample bugs: MsalProvider instance needs AuthClient & PopupClient; undeclared config). Zero package-code changes: sizes unchanged. e2e 25/25, seams 10/10 |
 | D3 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Runnable examples. NEW examples/{core-redirect,core-popup,compat,react} — minimal app + placeholder authConfig + README each, with measured sizes 30.3 / 33.2 / 61.1 / 66.4 KB min (react = React-external, matrix methodology); built as permanent `npm run measure` variants (size regression fixture) plus *-smoke twins (authConfig swapped to the mock IdP via NormalModuleReplacementPlugin, React bundled). NEW `npm run examples:smoke`: headless sign-in per example via real UI clicks (redirect + popup roundtrips + silent token render) — 8/8 first run. READMEs link examples. Zero package-code changes; sizes unchanged. e2e 25/25, seams 10/10 |
+| D4 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Requirements audit (skeptic pass). All gates re-run fresh: 121/121, e2e 25/25, seams 10/10, smoke 8/8, pack:check OK, report 0-gap, sizes verified. Bullet 2 + 3 PASS. Bullet 1 GAPS → D5: 18 module exports missing from compat (SignedHttpRequest, stubbedPublicClientApplication, BrowserUtils, ResponseMode, AzureCloudInstance, storage classes, perf/event utils…) found by exhaustive export diff; PCA construction throws raw ReferenceError in Node while real supports SSR construction. Bullet 4 GAP → D6: doc-sample type-check was session-scratch, no committed docs:check. D7 filed as re-audit close-out. Zero code changes |
