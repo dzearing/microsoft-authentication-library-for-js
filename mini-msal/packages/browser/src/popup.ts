@@ -134,12 +134,12 @@ export function popup(ctx: ClientContext): void {
             const win = navigatePopup(url, p);
             ctx.emit(EventType.POPUP_OPENED, "popup", { popupWindow: win });
             try {
-                const code = await ctx.waitForCode(
+                const auth = await ctx.waitForCode(
                     state,
                     ctx.config.system?.popupBridgeTimeout ?? 60_000
                 );
                 const result = await ctx.redeem({
-                    code,
+                    ...auth,
                     verifier,
                     scopes: req.scopes,
                     redirectUri,
@@ -215,7 +215,10 @@ export function popup(ctx: ClientContext): void {
             ctx.clearAccount(req?.account);
             validRequest.state = crypto.randomUUID();
             ctx.emit(EventType.LOGOUT_SUCCESS, "popup", validRequest);
-            const win = navigatePopup(ctx.logoutUrl(validRequest, "popup"), p);
+            const win = navigatePopup(
+                await ctx.logoutUrl(validRequest, "popup"),
+                p
+            );
             ctx.emit(EventType.POPUP_OPENED, "popup", { popupWindow: win });
             // wait for the popup to land back on the post-logout page (server
             // session cleared), then close

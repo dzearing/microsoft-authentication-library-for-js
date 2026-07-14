@@ -1,27 +1,32 @@
 [
   {
-    "id": "token-apis.clear-cache",
-    "area": "token-apis",
+    "id": "authority.lazy-discovery-default-path",
+    "area": "authority",
     "status": "captured"
   },
   {
-    "id": "token-apis.hydrate-cache",
-    "area": "token-apis",
+    "id": "authority.oidc-discovery-endpoint-path",
+    "area": "authority",
     "status": "captured"
   },
   {
-    "id": "token-apis.load-external-tokens",
-    "area": "token-apis",
+    "id": "authority.authority-metadata-config",
+    "area": "authority",
     "status": "captured"
   },
   {
-    "id": "token-apis.acquire-token-by-code",
-    "area": "token-apis",
+    "id": "authority.known-authorities-validation",
+    "area": "authority",
     "status": "captured"
   },
   {
-    "id": "token-apis.acquire-token-by-code-errors",
-    "area": "token-apis",
+    "id": "authority.hardcoded-cloud-metadata",
+    "area": "authority",
+    "status": "captured"
+  },
+  {
+    "id": "authority.instance-aware-cloud-instance",
+    "area": "authority",
     "status": "captured"
   }
 ]

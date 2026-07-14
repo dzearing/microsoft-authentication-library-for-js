@@ -24,10 +24,10 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-13)**: Phases A0–C17 COMPLETE — conformance 103/103,
-e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 52.5 KB min
-(real: 220.5), compat+react stack 62.5 KB (real: 248.8), core-only
-25.6 KB. Remaining: C-gaps C18–C21 (post-audit parity gaps beyond the
+**Status (2026-07-13)**: Phases A0–C18 COMPLETE — conformance 109/109,
+e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 55.0 KB min
+(real: 220.5), compat+react stack 64.9 KB (real: 248.8), core-only
+28.0 KB. Remaining: C-gaps C19–C21 (post-audit parity gaps beyond the
 suite) then D-series (à-la-carte DX/docs/examples).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
@@ -273,18 +273,27 @@ scenarios + a partial implementation, add a follow-up task, note it here.
   redemption without code_verifier/redirect_uri, same-code promise
   dedupe, spa_code_and_nativeAccountId_present. compat 52.5 min (+1.9),
   core 25.6 (+1.5). e2e 25/25. Details: PARITY_LOG C17 entry.
-- [ ] **C18** `pending` — Authority modes & discovery. Findings:
-  `known-authorities-validation` (untrusted_authority ClientConfigurationError
-  + AAD instance discovery), `oidc-discovery-endpoint-path` (protocolMode
-  OIDC omits /v2.0/ in discovery URL — mini 404s on generic IdPs),
-  `hardcoded-authority-metadata` + `authority-metadata-config`
-  (auth.authorityMetadata inline metadata skips the discovery GET; known-
-  cloud hardcoded metadata; NOTE real does LAZY discovery — mini fetches
-  eagerly at initialize), `instance-aware-cloud-instance` (instance_aware /
-  cloud_instance_host_name / result.cloudGraphHostName/msGraphHost).
-  Scenarios per findings; mock IdP may need an authorize-fragment extension
-  for the instance-aware case. Context: audit json;
-  `packages/browser/src/index.ts` (discovery), `test/infra/mock-idp.mjs`.
+- [x] **C18** `done 2026-07-13 — pass 109/109, mini-stack 64.9 KB` —
+  Authority modes & discovery. Suite grew 103→109 (new area 15-authority:
+  lazy-discovery-default-path, oidc-discovery-endpoint-path,
+  authority-metadata-config, known-authorities-validation,
+  hardcoded-cloud-metadata, instance-aware-cloud-instance — all green
+  first mini run; 3 silent.* snapshots then forced resolveEndpoints into
+  silentLadder — real discovers even on cache hits). Lazy discovery
+  (initialize = zero network), trust chain (cloudDiscoveryMetadata /
+  knownAuthorities / 13 hardcoded cloud aliases / .ciamlogin.com / AAD
+  instance-discovery probe), endpoint sources auth.authorityMetadata →
+  hardcoded 6-host templates → network with real's /v2.0/ path rule.
+  KEY CAPTURE FACTS: real reads protocolMode from config.SYSTEM (ignores
+  stdConfig's auth.protocolMode — suite always ran AAD mode), and ALL
+  resolution failures surface as ClientAuthError
+  `endpoints_resolution_error` (createDiscoveredInstance wraps
+  untrusted_authority etc.). Instance-aware: waitForCode → {code,
+  cloud*} object (ctx seam change), token-endpoint host swap, cloud
+  graph fields cached on new base accounts + read from entity on ALL
+  result paths; logoutUrl now async. Mock IdP: instance_aware fragment
+  extension. compat 55.0 min (+2.5), core 28.0 (+2.4 — discovery is
+  core). e2e 25/25. Details: PARITY_LOG C18 entry.
 - [ ] **C19** `pending` — Config knobs + logout params. Findings:
   `allow-redirect-in-iframe` (honor the flag inside iframes),
   `token-renewal-offset-seconds` (expiry buffer configurable, not

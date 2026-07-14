@@ -920,6 +920,90 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
   bundle-size-experiment results table if size changed materially; final
   commit; write user-facing summary (do NOT reset-context after this one).
 
+### C18 — 2026-07-13 — authority modes & discovery (lazy discovery, trust validation, metadata sources, instance-aware)
+
+Suite 103→109 (new area 15-authority, 6 scenarios, deterministic — two
+identical real captures — all green on the first mini run after
+implementation, plus one follow-up fix for 3 regressed silent snapshots).
+Mock IdP gained an `/authorize` instance-aware extension: when the request
+carries `instance_aware`, the success fragment appends
+`cloud_instance_host_name=localhost:4599`, `cloud_graph_host_name=
+graph.cloud.test`, `msgraph_host=graph.test`.
+
+Decisions/details:
+- **protocolMode lives under config.SYSTEM, not auth** (real 5.16's
+  buildConfiguration: `system.protocolMode`, default "AAD"; the
+  `auth.protocolMode: "OIDC"` the suite's stdConfig always passed is
+  silently ignored by real — so the whole existing suite actually ran in
+  AAD protocol mode). Mini reads `config.system.protocolMode` only, and
+  getConfiguration() now reports the "AAD" default. Snapshot-pinned by
+  authority.oidc-discovery-endpoint-path (system.protocolMode OIDC +
+  non-Microsoft host → discovery URL WITHOUT /v2.0/; AAD default → with).
+- **Lazy discovery**: initialize() no longer fetches openid-configuration
+  (real's initialize issues zero network requests). New per-instance
+  memoized resolveEndpoints() runs at every flow entry: authorizeUrl,
+  tokenRequest, logoutUrl, AND silentLadder — real's SilentCacheClient
+  resolves the authority even for pure cache hits (three silent.*
+  snapshots pin a discovery call before a cache-hit result; mini regressed
+  on exactly those until silentLadder awaited it). Failed discovery clears
+  the memo (next request retries, like real's uncached failure).
+- **Every endpoint-resolution failure surfaces as ClientAuthError
+  `endpoints_resolution_error`** — real's AuthorityFactory
+  .createDiscoveredInstance catches everything from resolveEndpointsAsync
+  (untrusted_authority, openid_config_error, invalid metadata JSON…) and
+  rethrows that one wrap. The audit finding predicted
+  ClientConfigurationError untrusted_authority; the capture proved the
+  wrap. Mini keeps the inner untrusted_authority throw for fidelity but
+  the observable error is always the wrap.
+- **Trust validation (real's updateCloudDiscoveryMetadata order)**:
+  cloudDiscoveryMetadata config (host-substring check on the raw JSON
+  string — real parses + matches aliases; equivalent in practice, bytes
+  matter) → knownAuthorities (host compare, URL or bare-host entries) →
+  hardcoded MS_CLOUD_ALIASES (all 13 alias hosts from real's
+  InstanceDiscoveryMetadataAliases) → `.ciamlogin.com` suffix (CIAM
+  short-circuit) → network AAD instance discovery GET
+  `login.microsoftonline.com/common/discovery/instance?api-version=1.1&
+  authorization_endpoint=<authority>/oauth2/v2.0/authorize`. Untrusted iff
+  the response has no `metadata` and no error other than
+  `invalid_instance` (a non-invalid_instance error response is real's
+  trusted custom-domain path), or the fetch throws. Pinned by
+  authority.known-authorities-validation (Playwright route blocks the
+  probe host; real: 1 probe, exact query, zero IdP contact,
+  endpoints_resolution_error).
+- **Endpoint metadata sources (real's order)**: auth.authorityMetadata
+  JSON (skips discovery entirely — authority.authority-metadata-config
+  pins zero discovery requests) → hardcoded endpoint templates for the 6
+  HARDCODED_ENDPOINT_HOSTS (`https://<host>/<tenant>/oauth2/v2.0/…` —
+  authority.hardcoded-cloud-metadata pins logoutRedirect building the
+  end_session URL with login.microsoftonline.com fully blocked and zero
+  probes) → network openid-configuration with real's
+  defaultOpenIdConfigurationEndpoint path rule (/v2.0/ inserted except:
+  authority already ends in /v2.0, first path segment "adfs", or OIDC
+  protocolMode + non-Microsoft host).
+- **Instance-aware multi-cloud fields**: waitForCode now resolves
+  `{code, cloudInstanceHostName?, cloudGraphHostName?, msGraphHost?}`
+  (ctx seam type change; popup.ts + silentFrame spread it into redeem;
+  processRedirect reads the same fragment params). cloud_instance_host_name
+  swaps the token-endpoint HOST before redemption (real's
+  updateTokenEndpointAuthority; no re-discovery — real serves the swapped
+  authority from its host-keyed metadata cache). cloud_graph_host_name/
+  msgraph_host are cached on the account entity ONLY when the base account
+  is newly created (real's buildAccountToCache; mergeAccount already keeps
+  the cached entity's fields) and surfaced on results from the CACHED
+  entity — interactive, RT-refresh, and AT-cache-hit paths all read the
+  entity now (hardcoded "" removed). Pinned end-to-end by
+  authority.instance-aware-cloud-instance (result + entity + silent
+  cache-hit + EQP passthrough on the authorize wire).
+- **auth.instanceAware config + EQP domain-replace**: implemented in
+  authorizeUrl (request account + instance_aware → authority domain
+  replaced with account.environment, real's getDiscoveredAuthority). The
+  domain-replace leg is UNOBSERVABLE under the mock (account.environment
+  == authority host already) — implemented for fidelity, not
+  snapshot-pinned; revisit only if a real-world report flags it.
+- **logoutUrl is now async** (awaits resolveEndpoints) — ctx seam type
+  change, logoutPopup awaits it after the sync about:blank open, so popup
+  timing semantics are unchanged.
+
 ## Progress log
 
 | Task | Status | Pass | mini-stack size | Notes |
@@ -955,3 +1039,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | C15 | done 2026-07-13 | 93/93 | 55.8 KB min / 18.4 gz | +6 scenarios (suite 87→93, NEW area 12-react on NEW dual react harness pages conformance-react-{real,mini}; all green first mini run). packages/react rewritten as a port of msal-react 5.5.1: provider initialize() + initializeWrapperLibrary + full InteractionStatus reducer (real's event mapping w/ clear-guards; accounts [] during startup); useMsalAuthentication {login, acquireToken, result, error} w/ auto-acquire + IRAE fallback + logout reset; useIsAuthenticated(ids)/useAccount case-insensitive + active-account fallback; templates w/ identifier props + function children; MsalAuthenticationTemplate spread/throw error contract. Core +InteractionStatus export. compat UNCHANGED 45.9, mini-core UNCHANGED 22.6. e2e 25/25 |
 | C16 | done 2026-07-13 | 98/98 | 60.6 KB min / 19.9 gz | +5 scenarios (suite 93→98, NEW area 13-cache — all green first mini run). AT intersecting-scope dedupe on save + multi-match clear on lookup (+realm filter on the silent AT rung); mergeAccount = buildAccountToCache (one base entity per homeAccountId+env, profiles appended, isHomeTenant computed, shared by web/broker/naa); getAllAccounts expands tenantProfiles (Map) into per-tenant AccountInfos; Store.setUser kmsi seam → plaintext KMSI entities in localStorage mode + real AccountInfo.kmsi; NEW /cache-migration feature (msal.0/1/2→3, 5-day TTL) via new ctx.onInit/getStore seams; mock IdP claims.* overrides. compat 50.6 min (+4.7), mini-core 24.1 (+1.5). e2e 25/25 |
 | C17 | done 2026-07-13 | 103/103 | 62.5 KB min / 20.4 gz | +5 scenarios (suite 98→103, NEW area 14-token-apis — all green first mini run). Core clearCache (local sign-out: clearAccount + real's clear-all-msal-keys, activeAccountChanged via setActiveAccount(null)) + hydrateCache (entityFromAccountInfo ApiId 963, id+AT only, KMSI-aware) + top-level loadExternalTokens export (ApiId 964, id/AT/RT per presence, compat re-export composes local-storage+migration); ./broker hybrid acquireTokenByCode({code}) — ApiId 866 redemption w/o code_verifier/redirect_uri, same-code promise dedupe, spa_code_and_nativeAccountId_present; ctx.writeTokens generalized (optional creds, extExpiresOn, RT+foci, kmsi); setActiveAccount event payload dropped (real emits none); post() drops undefined body values. compat 52.5 min (+1.9), mini-core 25.6 (+1.5). e2e 25/25 |
+| C18 | done 2026-07-13 | 109/109 | 64.9 KB min / 21.1 gz | +6 scenarios (suite 103→109, NEW area 15-authority — all green first mini run; 3 silent.* snapshots then pinned that real discovers even on cache hits → silentLadder awaits resolveEndpoints). Lazy discovery (initialize does zero network), trust validation (knownAuthorities/cloudDiscoveryMetadata/hardcoded clouds/CIAM/AAD instance-discovery probe → endpoints_resolution_error wrap), endpoint sources config→hardcoded→network with real's /v2.0/ path rule, system.protocolMode (NOT auth — real ignores auth.protocolMode!), instance-aware cloud_instance_host_name token-host swap + cloud_graph_host_name/msgraph_host entity+result fields. Mock IdP: instance_aware fragment extension. compat 55.0 min (+2.5), mini-core 28.0 (+2.4 — discovery is core). e2e 25/25 |

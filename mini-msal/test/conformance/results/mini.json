@@ -6487,5 +6487,141 @@
       },
       "network": []
     }
+  },
+  {
+    "id": "authority.lazy-discovery-default-path",
+    "area": "authority",
+    "status": "pass",
+    "observed": {
+      "afterInit": [],
+      "afterLogin": [
+        "/tenant/v2.0/.well-known/openid-configuration"
+      ],
+      "login": {
+        "ok": {
+          "username": "ada@contoso.com"
+        }
+      }
+    }
+  },
+  {
+    "id": "authority.oidc-discovery-endpoint-path",
+    "area": "authority",
+    "status": "pass",
+    "observed": {
+      "afterInit": [],
+      "afterLogin": [
+        "/tenant/.well-known/openid-configuration"
+      ],
+      "login": {
+        "ok": {
+          "username": "ada@contoso.com"
+        }
+      }
+    }
+  },
+  {
+    "id": "authority.authority-metadata-config",
+    "area": "authority",
+    "status": "pass",
+    "observed": {
+      "endpoints": [
+        "authorize",
+        "token"
+      ],
+      "login": {
+        "ok": {
+          "username": "ada@contoso.com"
+        }
+      }
+    }
+  },
+  {
+    "id": "authority.known-authorities-validation",
+    "area": "authority",
+    "status": "pass",
+    "observed": {
+      "err": {
+        "err": {
+          "errorCode": "endpoints_resolution_error",
+          "message": "See https://aka.ms/msal.js.errors#endpoints_resolution_error for details",
+          "name": "ClientAuthError",
+          "subError": null
+        }
+      },
+      "idpEndpoints": [],
+      "probes": [
+        {
+          "query": {
+            "api-version": "1.1",
+            "authorization_endpoint": "https://localhost:4599/tenant/oauth2/v2.0/authorize"
+          },
+          "url": "https://login.microsoftonline.com/common/discovery/instance"
+        }
+      ]
+    }
+  },
+  {
+    "id": "authority.hardcoded-cloud-metadata",
+    "area": "authority",
+    "status": "pass",
+    "observed": {
+      "logout": {
+        "ok": null
+      },
+      "navCalls": {
+        "ok": [
+          {
+            "call": "onRedirectNavigate",
+            "url": {
+              "page": "https://login.microsoftonline.com/common/oauth2/v2.0/logout",
+              "queryKeys": [
+                "client-request-id",
+                "post_logout_redirect_uri",
+                "state"
+              ]
+            }
+          }
+        ]
+      },
+      "probes": []
+    }
+  },
+  {
+    "id": "authority.instance-aware-cloud-instance",
+    "area": "authority",
+    "status": "pass",
+    "observed": {
+      "endpoints": [
+        {
+          "endpoint": "discovery"
+        },
+        {
+          "endpoint": "authorize",
+          "instanceAware": "true"
+        },
+        {
+          "endpoint": "token"
+        }
+      ],
+      "entity": {
+        "cloudGraphHostName": "graph.cloud.test",
+        "msGraphHost": "graph.test"
+      },
+      "login": {
+        "ok": {
+          "cloudGraphHostName": "graph.cloud.test",
+          "msGraphHost": "graph.test",
+          "username": "ada@contoso.com"
+        }
+      },
+      "silent": {
+        "ok": {
+          "cloudGraphHostName": "graph.cloud.test",
+          "fromCache": true,
+          "msGraphHost": "graph.test"
+        }
+      }
+    }
   }
 ]

@@ -1,0 +1,20 @@
+{
+  "err": {
+    "err": {
+      "errorCode": "endpoints_resolution_error",
+      "message": "See https://aka.ms/msal.js.errors#endpoints_resolution_error for details",
+      "name": "ClientAuthError",
+      "subError": null
+    }
+  },
+  "idpEndpoints": [],
+  "probes": [
+    {
+      "query": {
+        "api-version": "1.1",
+        "authorization_endpoint": "https://localhost:4599/tenant/oauth2/v2.0/authorize"
+      },
+      "url": "https://login.microsoftonline.com/common/discovery/instance"
+    }
+  ]
+}

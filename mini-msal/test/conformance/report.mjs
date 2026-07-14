@@ -657,6 +657,42 @@ const C = {
         mini: "Pre-C17: the both-present case silently took the platform-broker path on nativeAccountId instead of throwing the dedicated error.",
         cost: 0.2,
     },
+    "authority.lazy-discovery-default-path": {
+        class: "behavior-diff",
+        real: "initialize() issues zero network requests; the openid-configuration fetch happens lazily at the first token flow (AAD-mode path includes /v2.0/).",
+        mini: "Pre-C18: initialize() eagerly awaited the discovery fetch — an extra startup request, and initialize() rejected outright when the IdP was unreachable (real defers failures to per-request errors).",
+        cost: 0.4,
+    },
+    "authority.oidc-discovery-endpoint-path": {
+        class: "behavior-diff",
+        real: "system.protocolMode 'OIDC' + non-Microsoft host: the discovery URL omits /v2.0/ (<authority>/.well-known/openid-configuration) — the documented mode for Auth0/Okta/IdentityServer authorities. NOTE protocolMode lives under config.system; auth.protocolMode is ignored.",
+        mini: "Pre-C18: always inserted /v2.0/ regardless of protocolMode — generic OIDC IdPs 404 that path, so initialize() failed where real works.",
+        cost: 0.5,
+    },
+    "authority.authority-metadata-config": {
+        class: "missing-feature",
+        real: "auth.authorityMetadata inline endpoint JSON resolves endpoints from config — the openid-configuration request is never sent (documented startup-latency optimization).",
+        mini: "Pre-C18: the option was never read; the discovery GET fired on every instance regardless.",
+        cost: 0.4,
+    },
+    "authority.known-authorities-validation": {
+        class: "missing-feature",
+        real: "Default (AAD) mode with an unknown host: AAD instance-discovery GET to login.microsoftonline.com must vouch for the authority; a network error / invalid_instance rejects the flow with ClientAuthError endpoints_resolution_error before any IdP contact.",
+        mini: "Pre-C18: no trust validation at all — mini silently completed flows against any authority host, and never sent the instance-discovery probe.",
+        cost: 0.6,
+    },
+    "authority.hardcoded-cloud-metadata": {
+        class: "behavior-diff",
+        real: "Known Microsoft cloud hosts (login.microsoftonline.com et al.) resolve endpoints from hardcoded metadata — a default-authority app never sends a well-known request in its lifetime; logout URLs build offline.",
+        mini: "Pre-C18: fetched openid-configuration from login.microsoftonline.com at initialize — extra request, and bootstrap broke offline where real works.",
+        cost: 0.4,
+    },
+    "authority.instance-aware-cloud-instance": {
+        class: "missing-feature",
+        real: "instance_aware flows: cloud_instance_host_name in the authorize response switches the token-redemption host; cloud_graph_host_name/msgraph_host are cached on the account entity and surfaced as result.cloudGraphHostName/msGraphHost on interactive AND cache-hit results.",
+        mini: "Pre-C18: the fragment fields were dropped (hash parse read only code/state/error) and both result fields were hardcoded '' — multi-cloud guest apps would call the wrong Graph cloud.",
+        cost: 0.5,
+    },
 };
 
 // ---- generate ---------------------------------------------------------------
@@ -675,6 +711,7 @@ const areaOrder = [
     "react",
     "cache",
     "token-apis",
+    "authority",
 ];
 const areaTitles = {
     core: "1. Core flows",
@@ -691,6 +728,7 @@ const areaTitles = {
     react: "12. React bindings",
     cache: "13. Cache entity semantics",
     "token-apis": "14. Programmatic token APIs",
+    authority: "15. Authority modes & discovery",
 };
 
 const rows = results.map((r) => {

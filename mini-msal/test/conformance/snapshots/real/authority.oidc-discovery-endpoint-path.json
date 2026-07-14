@@ -1,0 +1,11 @@
+{
+  "afterInit": [],
+  "afterLogin": [
+    "/tenant/.well-known/openid-configuration"
+  ],
+  "login": {
+    "ok": {
+      "username": "ada@contoso.com"
+    }
+  }
+}

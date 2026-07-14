@@ -1,0 +1,32 @@
+{
+  "endpoints": [
+    {
+      "endpoint": "discovery"
+    },
+    {
+      "endpoint": "authorize",
+      "instanceAware": "true"
+    },
+    {
+      "endpoint": "token"
+    }
+  ],
+  "entity": {
+    "cloudGraphHostName": "graph.cloud.test",
+    "msGraphHost": "graph.test"
+  },
+  "login": {
+    "ok": {
+      "cloudGraphHostName": "graph.cloud.test",
+      "msGraphHost": "graph.test",
+      "username": "ada@contoso.com"
+    }
+  },
+  "silent": {
+    "ok": {
+      "cloudGraphHostName": "graph.cloud.test",
+      "fromCache": true,
+      "msGraphHost": "graph.test"
+    }
+  }
+}

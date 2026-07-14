@@ -111,6 +111,20 @@ export interface Config {
         redirectUri?: string;
         postLogoutRedirectUri?: string;
         clientCapabilities?: string[];
+        /** trusted non-Microsoft authority hosts (B2C/CIAM/custom domains);
+         * an unknown host triggers real's AAD instance-discovery probe and
+         * endpoints_resolution_error when it can't vouch for the host */
+        knownAuthorities?: string[];
+        /** instance-discovery network response JSON, inlined to skip the
+         * trust probe */
+        cloudDiscoveryMetadata?: string;
+        /** openid-configuration document JSON, inlined to skip the
+         * discovery request entirely */
+        authorityMetadata?: string;
+        /** multi-cloud: replace the authority domain with the request
+         * account's environment (also per-request via
+         * extraQueryParameters.instance_aware) */
+        instanceAware?: boolean;
         /** return to the initiating page after a redirect (default true) */
         navigateToLoginRequestUrl?: boolean;
         /** called with the URL before any redirect navigation; return false
@@ -118,6 +132,10 @@ export interface Config {
         onRedirectNavigate?: (url: string) => boolean | void;
     };
     system?: {
+        /** "AAD" (default) or "OIDC" — like real 5.x this lives under
+         * SYSTEM; OIDC mode drops /v2.0/ from the discovery URL for
+         * non-Microsoft hosts */
+        protocolMode?: string;
         /** open popups synchronously on about:blank inside the user gesture,
          * then navigate them (real's default true); false defers the open
          * until the authorize URL is ready */
@@ -506,6 +524,44 @@ const preferredEnv = (authority: string): string => {
         : host;
 };
 
+/** every alias in real's hardcoded instance-discovery metadata: trusted
+ * Microsoft cloud hosts (also its isAliasOfKnownMicrosoftAuthority set) */
+const MS_CLOUD_ALIASES = [
+    "login.microsoftonline.com",
+    "login.windows.net",
+    "login.microsoft.com",
+    "sts.windows.net",
+    "login.partner.microsoftonline.cn",
+    "login.chinacloudapi.cn",
+    "login.microsoftonline.de",
+    "login.microsoftonline.us",
+    "login.usgovcloudapi.net",
+    "login-us.microsoftonline.com",
+    "login.sovcloud-identity.fr",
+    "login.sovcloud-identity.de",
+    "login.sovcloud-identity.sg",
+];
+
+/** hosts real ships hardcoded endpoint metadata for (no discovery request
+ * ever leaves the app for these) */
+const HARDCODED_ENDPOINT_HOSTS = [
+    "login.microsoftonline.com",
+    "login.chinacloudapi.cn",
+    "login.microsoftonline.us",
+    "login.sovcloud-identity.fr",
+    "login.sovcloud-identity.de",
+    "login.sovcloud-identity.sg",
+];
+
+/** multi-cloud fields of an authorize response fragment (real's
+ * AuthCodePayload extras) */
+const cloudFields = (params: URLSearchParams) => ({
+    cloudInstanceHostName:
+        params.get("cloud_instance_host_name") ?? undefined,
+    cloudGraphHostName: params.get("cloud_graph_host_name") ?? undefined,
+    msGraphHost: params.get("msgraph_host") ?? undefined,
+});
+
 /** real's createAccountEntityFromAccountInfo (hydrateCache,
  * loadExternalTokens with request.account) */
 const entityFromAccountInfo = (
@@ -664,6 +720,13 @@ export interface AuthCodeResponse {
     eqp?: Record<string, string>;
     /** per-request authority override */
     authority?: string;
+    /** authorize-response cloud_instance_host_name: redeem against this
+     * cloud's token endpoint (real's updateTokenEndpointAuthority) */
+    cloudInstanceHostName?: string;
+    /** authorize-response cloud_graph_host_name, cached on the account */
+    cloudGraphHostName?: string;
+    /** authorize-response msgraph_host, cached on the account */
+    msGraphHost?: string;
 }
 
 /**
@@ -748,8 +811,17 @@ export interface ClientContext {
         nonce: string;
         ccs?: string;
     }>;
-    /** await the response the redirect-bridge page broadcasts for this state */
-    waitForCode(state: string, timeoutMs: number): Promise<string>;
+    /** await the response the redirect-bridge page broadcasts for this
+     * state; resolves the code + any multi-cloud response fields */
+    waitForCode(
+        state: string,
+        timeoutMs: number
+    ): Promise<{
+        code: string;
+        cloudInstanceHostName?: string;
+        cloudGraphHostName?: string;
+        msGraphHost?: string;
+    }>;
     redeem(res: AuthCodeResponse): Promise<AuthenticationResult>;
     clearAccount(account?: AccountInfo | null): void;
     /** replace the cache backend (./local-storage); call before initialize */
@@ -794,7 +866,7 @@ export interface ClientContext {
     logoutUrl(
         req?: { postLogoutRedirectUri?: string; correlationId?: string },
         interactionType?: string
-    ): string;
+    ): Promise<string>;
     /** main-window navigation through the NavigationClient seam
      * (./popup's logoutPopup mainWindowRedirectUri) */
     navigate(url: string, apiId: number): Promise<boolean | void>;
@@ -819,6 +891,83 @@ export function createClient(
               end_session_endpoint: string;
           }
         | undefined;
+    let metadataPromise: Promise<void> | undefined;
+
+    /**
+     * Real's lazy resolveEndpointsAsync: runs per flow (NEVER at
+     * initialize), validates authority trust (cloud discovery), then
+     * resolves endpoints config -> hardcoded -> network.
+     */
+    const discover = async (): Promise<void> => {
+        const u = new URL(`${authority}/`);
+        const host = u.host;
+        const tenant = u.pathname.split("/")[1] || "common";
+        // ---- trust (real's updateCloudDiscoveryMetadata) ----
+        const trusted =
+            (config.auth.cloudDiscoveryMetadata ?? "").includes(host) ||
+            (config.auth.knownAuthorities ?? []).some(
+                (a) =>
+                    (a.includes("://")
+                        ? new URL(a).host
+                        : a.split("/")[0]
+                    ).toLowerCase() === host.toLowerCase()
+            ) ||
+            MS_CLOUD_ALIASES.includes(host) ||
+            host.endsWith(".ciamlogin.com");
+        if (!trusted) {
+            // AAD instance discovery is the last trust source; a network
+            // error, invalid_instance, or malformed body all mean the host
+            // is untrusted (real: untrusted_authority, wrapped below)
+            const j = await (
+                await fetch(
+                    "https://login.microsoftonline.com/common/discovery/instance" +
+                        `?api-version=1.1&authorization_endpoint=${authority}/oauth2/v2.0/authorize`
+                )
+            ).json();
+            if (!j.metadata && (!j.error || j.error === "invalid_instance")) {
+                throw new ClientConfigurationError("untrusted_authority");
+            }
+        }
+        // ---- endpoints: config -> hardcoded -> network ----
+        if (config.auth.authorityMetadata) {
+            metadata = JSON.parse(config.auth.authorityMetadata);
+            return;
+        }
+        if (HARDCODED_ENDPOINT_HOSTS.includes(host)) {
+            metadata = {
+                authorization_endpoint: `https://${host}/${tenant}/oauth2/v2.0/authorize`,
+                token_endpoint: `https://${host}/${tenant}/oauth2/v2.0/token`,
+                end_session_endpoint: `https://${host}/${tenant}/oauth2/v2.0/logout`,
+            };
+            return;
+        }
+        // real's defaultOpenIdConfigurationEndpoint: /v2.0/ inserted except
+        // for already-versioned authorities, ADFS, and OIDC-mode
+        // non-Microsoft hosts
+        const plain =
+            authority.endsWith("/v2.0") ||
+            tenant === "adfs" ||
+            (config.system?.protocolMode === "OIDC" &&
+                !MS_CLOUD_ALIASES.includes(host));
+        metadata = await (
+            await fetch(
+                `${authority}${plain ? "" : "/v2.0"}/.well-known/openid-configuration`
+            )
+        ).json();
+    };
+
+    const resolveEndpoints = (): Promise<void> => {
+        if (!metadataPromise) {
+            // memoized per instance (real caches per authority host);
+            // failures clear the memo so the next request retries, and
+            // surface as real's createDiscoveredInstance wrap
+            metadataPromise = discover().catch(() => {
+                metadataPromise = undefined;
+                throw new ClientAuthError("endpoints_resolution_error");
+            });
+        }
+        return metadataPromise;
+    };
     const listeners = new Map<string, EventCallback>();
     let nextListenerId = 0;
     let redirectResult: Promise<AuthenticationResult | null> | null = null;
@@ -1253,6 +1402,7 @@ export function createClient(
         nonce: string;
         ccs?: string;
     }> => {
+        await resolveEndpoints();
         const { verifier, challenge } = await pkce();
         // real's wire state: base64 lib state {id, meta}, "|<custom>" appended
         // when the request carries one (result.state echoes only the custom
@@ -1278,11 +1428,19 @@ export function createClient(
         const reqRedirectUri = req.redirectUri
             ? new URL(req.redirectUri, location.href).href
             : redirectUri;
+        // real's instance-aware seam (getDiscoveredAuthority): EQP
+        // instance_aware / auth.instanceAware + a request account swap the
+        // authority domain for the account's environment
+        const iaEQ = req.extraQueryParameters?.instance_aware;
+        let reqAuthority = authorityFor(req);
+        if (req.account && (iaEQ ? iaEQ === "true" : !!config.auth.instanceAware)) {
+            reqAuthority = authority.replace(
+                new URL(`${reqAuthority}/`).host,
+                req.account.environment
+            );
+        }
         const url = new URL(
-            metadata!.authorization_endpoint.replace(
-                authority,
-                authorityFor(req)
-            )
+            metadata!.authorization_endpoint.replace(authority, reqAuthority)
         );
         const p = url.searchParams;
         p.set("client_id", clientId);
@@ -1326,7 +1484,15 @@ export function createClient(
      * no popup-close detection — a redirect page without the bridge (or a
      * closed popup) simply times out.
      */
-    const waitForCode = (state: string, timeoutMs: number): Promise<string> =>
+    const waitForCode = (
+        state: string,
+        timeoutMs: number
+    ): Promise<{
+        code: string;
+        cloudInstanceHostName?: string;
+        cloudGraphHostName?: string;
+        msGraphHost?: string;
+    }> =>
         new Promise((resolve, reject) => {
             log(3, "waiting for bridge response");
             const { id } = JSON.parse(atob(state.split("|")[0]));
@@ -1363,7 +1529,7 @@ export function createClient(
                     } else if (params.get("state") !== state) {
                         reject(new ClientAuthError("state_mismatch"));
                     } else if (code) {
-                        resolve(code);
+                        resolve({ code, ...cloudFields(params) });
                     } else {
                         reject(
                             new BrowserAuthError(
@@ -1390,8 +1556,12 @@ export function createClient(
             eqp?: Record<string, string>;
             authority?: string;
             homeAccountId?: string;
+            cloudInstanceHostName?: string;
+            cloudGraphHostName?: string;
+            msGraphHost?: string;
         }
     ): Promise<AuthenticationResult> => {
+        await resolveEndpoints();
         const correlationId = meta?.correlationId ?? crypto.randomUUID();
         const reqAuthority = authorityFor(meta);
         // throttle key mirrors real's RequestThumbprint (undefined fields
@@ -1409,8 +1579,19 @@ export function createClient(
         const q = new URLSearchParams(meta?.eqp);
         q.set("client-request-id", correlationId);
         log(2, "sending token request");
+        let tokenEndpoint = metadata!.token_endpoint.replace(
+            authority,
+            reqAuthority
+        );
+        if (meta?.cloudInstanceHostName) {
+            // real's updateTokenEndpointAuthority: cloud_instance_host_name
+            // in the authorize response switches the redemption host
+            const te = new URL(tokenEndpoint);
+            te.host = meta.cloudInstanceHostName;
+            tokenEndpoint = te.href;
+        }
         const json = await post(
-            `${metadata!.token_endpoint.replace(authority, reqAuthority)}?${q}`,
+            `${tokenEndpoint}?${q}`,
             {
                 redirect_uri: redirectUri,
                 ...grant,
@@ -1487,6 +1668,12 @@ export function createClient(
                 ],
                 lastUpdatedAt: ts,
                 cachedByApiId: meta?.apiId,
+                // real caches these only when creating a NEW base account
+                // (mergeAccount keeps the cached entity's values otherwise)
+                ...(meta?.cloudGraphHostName && {
+                    cloudGraphHostName: meta.cloudGraphHostName,
+                }),
+                ...(meta?.msGraphHost && { msGraphHost: meta.msGraphHost }),
             },
             kmsi
         );
@@ -1565,8 +1752,9 @@ export function createClient(
             familyId: json.foci ?? "",
             tokenType: "Bearer",
             state: meta?.state,
-            cloudGraphHostName: "",
-            msGraphHost: "",
+            // like real, sourced from the cached account entity
+            cloudGraphHostName: entity.cloudGraphHostName ?? "",
+            msGraphHost: entity.msGraphHost ?? "",
             code: undefined,
             fromPlatformBroker: false,
         };
@@ -1599,6 +1787,9 @@ export function createClient(
                 claims: res.claims,
                 eqp: res.eqp,
                 authority: res.authority,
+                cloudInstanceHostName: res.cloudInstanceHostName,
+                cloudGraphHostName: res.cloudGraphHostName,
+                msGraphHost: res.msGraphHost,
             }
         );
 
@@ -1730,6 +1921,7 @@ export function createClient(
             }
             const result = await redeem({
                 code: params.get("code")!,
+                ...cloudFields(params),
                 verifier,
                 scopes,
                 correlationId,
@@ -1778,12 +1970,12 @@ export function createClient(
         document.body.append(frame);
         try {
             frame.src = url;
-            const code = await waitForCode(
+            const auth = await waitForCode(
                 state,
                 config.system?.iframeBridgeTimeout ?? 10_000
             );
             return await redeem({
-                code,
+                ...auth,
                 verifier,
                 scopes: req.scopes,
                 redirectUri: ru,
@@ -1830,6 +2022,10 @@ export function createClient(
         req: TokenRequest,
         account: AccountInfo
     ): Promise<AuthenticationResult> => {
+        // real resolves the authority before the cache lookup (its
+        // SilentCacheClient discovers too), so even cache hits trigger the
+        // lazy discovery fetch
+        await resolveEndpoints();
         const pol = req.cacheLookupPolicy ?? CacheLookupPolicy.Default;
         const reqAuthority = authorityFor(req);
         let frameReason: string | undefined;
@@ -1878,6 +2074,10 @@ export function createClient(
                 keys.idToken,
                 (t) => t.homeAccountId === account.homeAccountId
             );
+            // real reads cloud hosts off the cached account entity
+            const base = accountKeys()
+                .map((k) => readUser<AccountEntity>(k))
+                .find((e) => e?.homeAccountId === account.homeAccountId);
             return {
                 authority: `${reqAuthority}/`,
                 uniqueId: account.localAccountId,
@@ -1898,8 +2098,8 @@ export function createClient(
                 familyId: "",
                 tokenType: "Bearer",
                 state: undefined,
-                cloudGraphHostName: "",
-                msGraphHost: "",
+                cloudGraphHostName: base?.cloudGraphHostName ?? "",
+                msGraphHost: base?.msGraphHost ?? "",
                 code: undefined,
                 fromPlatformBroker: false,
             };
@@ -1975,10 +2175,11 @@ export function createClient(
     };
 
     // ---- logout ----
-    const logoutUrl = (
+    const logoutUrl = async (
         req?: { postLogoutRedirectUri?: string; correlationId?: string },
         interactionType = "redirect"
-    ): string => {
+    ): Promise<string> => {
+        await resolveEndpoints();
         const url = new URL(metadata!.end_session_endpoint);
         const p = url.searchParams;
         p.set(
@@ -2057,13 +2258,8 @@ export function createClient(
                 eventBus.onmessage = (ev) =>
                     listeners.forEach((l) => l(ev.data));
             }
-            // per-instance memory only: real MSAL re-fetches discovery for
-            // every new instance and leaves no such key in storage
-            metadata ??= await (
-                await fetch(
-                    `${authority}/v2.0/.well-known/openid-configuration`
-                )
-            ).json();
+            // endpoint discovery is LAZY (resolveEndpoints, per flow) —
+            // real's initialize() issues no network requests at all
             // real tracks lib up/downgrades via this key (trackVersionChanges)
             store.set("msal.version", WIRE_ID["x-client-VER"]);
             initialized = true;
@@ -2115,6 +2311,7 @@ export function createClient(
             cache: { cacheLocation: "sessionStorage", ...config.cache },
             system: {
                 allowPlatformBroker: false,
+                protocolMode: "AAD",
                 nativeBrokerHandshakeTimeout: 2000,
                 redirectNavigationTimeout: 30_000,
                 tokenRenewalOffsetSeconds: 300,
@@ -2263,7 +2460,7 @@ export function createClient(
             // (null payload for logoutRedirect())
             emit(EventType.LOGOUT_START, "redirect", req);
             clearAccount(req?.account);
-            const url = logoutUrl(validRequest);
+            const url = await logoutUrl(validRequest);
             if (config.auth.onRedirectNavigate?.(url) === false) {
                 // cancelled logout: real releases the interaction lock and a
                 // same-page listener does see logoutEnd

@@ -1,0 +1,11 @@
+{
+  "endpoints": [
+    "authorize",
+    "token"
+  ],
+  "login": {
+    "ok": {
+      "username": "ada@contoso.com"
+    }
+  }
+}

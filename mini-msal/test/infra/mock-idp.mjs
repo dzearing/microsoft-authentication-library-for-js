@@ -165,6 +165,15 @@ const server = createServer(tls, (req, res) => {
                 redirect.hash = `code=mock-code-${idx}&state=${encodeURIComponent(
                     q.get("state")
                 )}`;
+                if (q.get("instance_aware")) {
+                    // multi-cloud response fields (AAD sends these when the
+                    // request is instance-aware) — same host so the token
+                    // redemption stays local
+                    redirect.hash +=
+                        `&cloud_instance_host_name=localhost%3A${PORT}` +
+                        `&cloud_graph_host_name=graph.cloud.test` +
+                        `&msgraph_host=graph.test`;
+                }
             }
             res.writeHead(302, { Location: redirect.href });
             res.end();

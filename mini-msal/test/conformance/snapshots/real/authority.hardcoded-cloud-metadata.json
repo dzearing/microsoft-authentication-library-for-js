@@ -1,0 +1,21 @@
+{
+  "logout": {
+    "ok": null
+  },
+  "navCalls": {
+    "ok": [
+      {
+        "call": "onRedirectNavigate",
+        "url": {
+          "page": "https://login.microsoftonline.com/common/oauth2/v2.0/logout",
+          "queryKeys": [
+            "client-request-id",
+            "post_logout_redirect_uri",
+            "state"
+          ]
+        }
+      }
+    ]
+  },
+  "probes": []
+}
