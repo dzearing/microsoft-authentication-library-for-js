@@ -1136,6 +1136,60 @@ Decisions/details (several audit claims corrected by capture):
   AuthError property + two cid stamps are core; everything else is the
   telemetry feature). e2e 25/25.
 
+### C21 — 2026-07-14 — authenticationScheme "pop"/"ssh-cert" (PoP binding, SHR signing)
+
+Suite 119→121 (new area 17-pop: pop.silent-shr, pop.ssh-scheme-and-errors —
+deterministic, captured twice byte-identical; both green on the first mini
+run after implementation + one extra fix below). Audit finding:
+`authentication-scheme-pop`.
+
+Decisions/details:
+
+- **Architecture**: crypto lives in a NEW pay-to-play `./pop` feature
+  (RSA-2048 RS256 keygen — real uses RSASSA-PKCS1-v1_5, NOT the audit
+  summary's "ECDSA" — kid = b64url(sha256(sorted {e,kty,n})), SHR signing,
+  keypairs in real's IndexedDB keystore `msal.db`/`msal.db.keys` with the
+  private key re-imported unextractable, in-memory map first). Core carries
+  the scheme plumbing: `ctx.pop` seam, req_cnf/token_type body params,
+  scheme-aware AT lookup + save-dedupe (pop/ssh ATs never evict bearer ones
+  and vice versa), `AccessToken_With_AuthScheme` entity + `keyId` + scheme
+  cache-key suffix, result tokenType/SHR, ssh config validation. Scheme/SHR
+  request fields ride an `shr` member on AuthCodeResponse (popup/iframe) and
+  inside the cached `msal.request` (redirect roundtrip). A "pop" request on
+  a client without `./pop` composed throws
+  BrowserAuthError `feature_not_configured` (D1 will generalize).
+- **Capture facts**: SHR header key order is `typ, alg, kid` (JoseHeader
+  class-field order — kid itself is b64url({kid})); payload order
+  `at, ts, m, u, nonce, p, q, [client_claims,] cnf` with undefineds
+  dropped; cnf.jwk is the FULL exported public JWK, keys sorted
+  (alg,e,ext,key_ops,kty,n); m is uppercased; q = [[], "<query>"]. Entity
+  keyId comes from the SERVER AT's own cnf.kid claim (missing →
+  ClientAuthError token_claims_cnf_required_for_signedjwt); ssh keyId from
+  response `key_id`; entity tokenType from response `token_type`. Cache
+  hits RE-SIGN a fresh SHR (new nonce/ts, same embedded AT) unless
+  request.popKid — popKid also skips keygen (req_cnf = b64url({kid}) only)
+  and returns the raw secret. ssh-cert without sshJwk/sshKid throws
+  ClientConfigurationError missing_ssh_jwk/missing_ssh_kid. The silent
+  dedupe thumbprint gained the scheme/SHR fields (real's includes them).
+- **Extra parity fix exposed by the new full-body digest**: real's RT grant
+  carries `redirect_uri` ONLY when the request passes one; mini was always
+  sending the config default on the refresh leg (existing scenarios only
+  digested grant names, so 119/119 never saw it). redeemRefresh now
+  overrides the base with undefined (post() drops undefined values).
+- **Mock IdP**: pop/ssh extension — echoes the requested token_type; for
+  pop mints the AT as an alg-none JWT embedding req_cnf's kid as cnf.kid
+  (AAD's contract, required by real's cache write); for ssh echoes the
+  req_cnf JWK's kid as `key_id`.
+- **Compat**: composes `pop` + exports the AuthenticationScheme constant
+  (Bearer/pop/ssh-cert).
+- **Size call (borderline vs the task's ~3 KB gate)**: compat 61.2 KB min
+  (+3.2 vs C20's 58.0) — +1.4 is core scheme plumbing (incl. the RT
+  redirect_uri fix), ~+1.8 the ./pop feature. Judged within the "~3 KB"
+  tolerance rather than stopping the loop: the gap was audit-confirmed
+  observable, everything is scenario-pinned, and descoping is a one-line
+  revert (drop `pop` from the compat compose list) if the bytes matter
+  more. mini-core 30.9 (+1.4). e2e 25/25.
+
 ## Progress log
 
 | Task | Status | Pass | mini-stack size | Notes |
@@ -1174,3 +1228,4 @@ Decisions/details (several audit claims corrected by capture):
 | C18 | done 2026-07-13 | 109/109 | 64.9 KB min / 21.1 gz | +6 scenarios (suite 103→109, NEW area 15-authority — all green first mini run; 3 silent.* snapshots then pinned that real discovers even on cache hits → silentLadder awaits resolveEndpoints). Lazy discovery (initialize does zero network), trust validation (knownAuthorities/cloudDiscoveryMetadata/hardcoded clouds/CIAM/AAD instance-discovery probe → endpoints_resolution_error wrap), endpoint sources config→hardcoded→network with real's /v2.0/ path rule, system.protocolMode (NOT auth — real ignores auth.protocolMode!), instance-aware cloud_instance_host_name token-host swap + cloud_graph_host_name/msgraph_host entity+result fields. Mock IdP: instance_aware fragment extension. compat 55.0 min (+2.5), mini-core 28.0 (+2.4 — discovery is core). e2e 25/25 |
 | C19 | done 2026-07-14 | 113/113 | 66.4 KB min / 21.6 gz | +4 scenarios (suite 109→113, NEW area 16-config — all green first mini run). system.allowRedirectInIframe gates acquireTokenRedirect guard + processRedirect bail-out (scenario completes a FULL redirect login in an iframe; iframe src === redirectUri pins real's in-place hRP — navigateToLoginRequestUrl is an hRP OPTION in real 5.16, not config); system.tokenRenewalOffsetSeconds replaces the hardcoded 300s AT buffer (real: now+offset>expiresOn); LogoutRequest logout_hint (explicit/derived login_hint claim) + id_token_hint + eQP on end_session URLs (redirect + popup); serverTelemetryEnabled ports ServerTelemetryManager (current/last wire format, server-telemetry-<clientId> entry, 330B flush cap, 50-error FIFO, clear-on-success, cacheHits; stFail hooks 61/863-always/865/862 via new ctx.stFail). compat 56.4 min (+1.4), mini-core 29.4 (+1.4). e2e 25/25 |
 | C20 | done 2026-07-14 | 119/119 | 68.0 KB min / 22.0 gz | +6 scenarios (suite 113→119, 08-telemetry — all green first mini run). Root acquireTokenRedirect event from handleRedirectPromise (cached-request cid, redemption-half ext incl. both networkClientSendPostRequestAsync keys, previousLibraryVersion from pre-init msal.version; clean loads + memoized re-calls emit nothing); failure-event cid joins (AuthError.correlationId stamped by silent/redirect flows — KEY FACT: real's RT token cid is a QUERY param, absent from the body); addPerformanceCallback toString-dedupe + "" stub id (NOT callback-id); no_account_error abandons the measurement (no event) while uninitialized preflight fails DO emit; initialize measured at most once; msal.browser.performance.enabled=1 → mark/measure timeline entries synthesized from the ext tables (real's measure set === C11 ext DurationMs keys + root). compat 58.0 min (+1.6), mini-core 29.5 (+0.1). e2e 25/25 |
+| C21 | done 2026-07-14 | 121/121 | 71.2 KB min / 23.3 gz | +2 scenarios (suite 119→121, NEW area 17-pop — green first mini run + 1 fix). NEW ./pop feature (RSA-2048 RS256 keypair — real is RSASSA-PKCS1-v1_5 NOT ECDSA; kid = b64url(sha256(sorted {e,kty,n})); IndexedDB msal.db keystore, unextractable private key) + core scheme plumbing: token_type/req_cnf on auth-code + RT grants, AccessToken_With_AuthScheme entity w/ keyId (pop: from the server AT's cnf.kid, required; ssh: response key_id) + scheme cache-key suffix, scheme-aware AT lookup/save-dedupe, SHR result signing incl. cache-hit RE-sign (header typ,alg,kid; payload at,ts,m,u,nonce,p,q,cnf w/ full sorted public JWK), popKid skips keygen+signing, ssh-cert missing_ssh_jwk/missing_ssh_kid config errors, scheme in throttle + silent-dedupe thumbprints. EXTRA FIX exposed by full-body digest: RT grant redirect_uri only when the request has one (mini sent the config default). Compat +AuthenticationScheme export. compat 61.2 min (+3.2 — judged within the task's ~3 KB gate; descope = drop pop from compose), mini-core 30.9 (+1.4). e2e 25/25 |

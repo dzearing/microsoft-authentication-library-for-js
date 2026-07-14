@@ -1,0 +1,193 @@
+{
+  "hit": {
+    "ok": {
+      "accessToken": "mock-access-token-0",
+      "account": {
+        "homeAccountId": "oid-123.tenant-123",
+        "tenantId": "tenant-123",
+        "username": "ada@contoso.com"
+      },
+      "authority": "https://localhost:4599/tenant/",
+      "correlationIdPresent": true,
+      "expiresInFuture": true,
+      "expiresOnType": "Date",
+      "fromCache": true,
+      "fromPlatformBroker": false,
+      "idToken": "<jwt>",
+      "scopes": [
+        "User.Read",
+        "openid",
+        "profile"
+      ],
+      "state": null,
+      "tokenType": "ssh-cert"
+    }
+  },
+  "missingJwk": {
+    "err": {
+      "errorCode": "missing_ssh_jwk",
+      "message": "See https://aka.ms/msal.js.errors#missing_ssh_jwk for details",
+      "name": "ClientConfigurationError",
+      "subError": null
+    }
+  },
+  "missingKid": {
+    "err": {
+      "errorCode": "missing_ssh_kid",
+      "message": "See https://aka.ms/msal.js.errors#missing_ssh_kid for details",
+      "name": "ClientConfigurationError",
+      "subError": null
+    }
+  },
+  "ok": {
+    "ok": {
+      "accessToken": "mock-access-token-0",
+      "account": {
+        "homeAccountId": "oid-123.tenant-123",
+        "tenantId": "tenant-123",
+        "username": "ada@contoso.com"
+      },
+      "authority": "https://localhost:4599/tenant/",
+      "correlationIdPresent": true,
+      "expiresInFuture": true,
+      "expiresOnType": "Date",
+      "fromCache": false,
+      "fromPlatformBroker": false,
+      "idToken": "<jwt>",
+      "scopes": [
+        "User.Read",
+        "openid",
+        "profile"
+      ],
+      "state": null,
+      "tokenType": "ssh-cert"
+    }
+  },
+  "sshEntity": {
+    "credentialType": "AccessToken_With_AuthScheme",
+    "keyHasSchemeCredType": true,
+    "keyId": "test-ssh-kid",
+    "keySuffix": "ssh-cert",
+    "tokenType": "ssh-cert"
+  },
+  "storage": {
+    "localStorage": {},
+    "sessionStorage": {
+      "msal.3.account.keys": [
+        "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
+      ],
+      "msal.3.token.keys.<guid>": {
+        "accessToken": [
+          "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|",
+          "msal.3|oid-123.tenant-123|localhost:4599|accesstoken_with_authscheme|<guid>|tenant-123|openid profile user.read|ssh-cert"
+        ],
+        "idToken": [
+          "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||"
+        ],
+        "refreshToken": [
+          "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||"
+        ]
+      },
+      "msal.3|oid-123.tenant-123|localhost:4599|accesstoken_with_authscheme|<guid>|tenant-123|openid profile user.read|ssh-cert": {
+        "cachedAt": "<dynamic>",
+        "clientId": "<guid>",
+        "credentialType": "AccessToken_With_AuthScheme",
+        "environment": "localhost:4599",
+        "expiresOn": "<dynamic>",
+        "extendedExpiresOn": "<dynamic>",
+        "homeAccountId": "oid-123.tenant-123",
+        "keyId": "test-ssh-kid",
+        "lastUpdatedAt": "<epoch-ms>",
+        "realm": "tenant-123",
+        "secret": "mock-access-token-0",
+        "target": "openid profile User.Read",
+        "tokenType": "ssh-cert"
+      },
+      "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|": {
+        "cachedAt": "<dynamic>",
+        "clientId": "<guid>",
+        "credentialType": "AccessToken",
+        "environment": "localhost:4599",
+        "expiresOn": "<dynamic>",
+        "extendedExpiresOn": "<dynamic>",
+        "homeAccountId": "oid-123.tenant-123",
+        "lastUpdatedAt": "<epoch-ms>",
+        "realm": "tenant-123",
+        "secret": "mock-access-token-0",
+        "target": "openid profile User.Read",
+        "tokenType": "Bearer"
+      },
+      "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||": {
+        "clientId": "<guid>",
+        "credentialType": "IdToken",
+        "environment": "localhost:4599",
+        "homeAccountId": "oid-123.tenant-123",
+        "lastUpdatedAt": "<epoch-ms>",
+        "realm": "tenant-123",
+        "secret": "<jwt>"
+      },
+      "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||": {
+        "clientId": "<guid>",
+        "credentialType": "RefreshToken",
+        "environment": "localhost:4599",
+        "homeAccountId": "oid-123.tenant-123",
+        "lastUpdatedAt": "<epoch-ms>",
+        "secret": "mock-rt-0"
+      },
+      "msal.3|oid-123.tenant-123|localhost:4599|tenant-123": {
+        "authorityType": "MSSTS",
+        "cachedByApiId": 61,
+        "clientInfo": "eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ",
+        "environment": "localhost:4599",
+        "homeAccountId": "oid-123.tenant-123",
+        "lastUpdatedAt": "<epoch-ms>",
+        "localAccountId": "oid-123",
+        "name": "Ada Lovelace",
+        "realm": "tenant-123",
+        "tenantProfiles": [
+          {
+            "isHomeTenant": true,
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          }
+        ],
+        "username": "ada@contoso.com"
+      },
+      "msal.version": "5.16.0"
+    }
+  },
+  "tokenCalls": [
+    {
+      "bodyKeys": [
+        "X-AnchorMailbox",
+        "claims",
+        "client_id",
+        "client_info",
+        "grant_type",
+        "refresh_token",
+        "req_cnf",
+        "scope",
+        "token_type",
+        "x-client-SKU",
+        "x-client-VER",
+        "x-client-current-telemetry",
+        "x-client-last-telemetry",
+        "x-ms-lib-capability"
+      ],
+      "grant": "refresh_token",
+      "reqCnf": {
+        "keys": [
+          "e",
+          "kid",
+          "kty",
+          "n"
+        ],
+        "kidLen": 12,
+        "xms_ksl": null
+      },
+      "token_type": "ssh-cert"
+    }
+  ]
+}

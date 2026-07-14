@@ -97,6 +97,20 @@ export interface TokenRequest {
     cacheLookupPolicy?: number;
     forceRefresh?: boolean;
     correlationId?: string;
+    /** "Bearer" (default) | "pop" | "ssh-cert"; pop needs ./pop composed */
+    authenticationScheme?: string;
+    /** pop: http method/uri bound into the SignedHttpRequest (m/u/p/q) */
+    resourceRequestMethod?: string;
+    resourceRequestUri?: string;
+    /** pop: extra client_claims / fixed nonce / typ override on the SHR */
+    shrClaims?: string;
+    shrNonce?: string;
+    shrOptions?: { header?: { typ?: string } };
+    /** pop: reuse an existing key id — skips keygen AND result signing */
+    popKid?: string;
+    /** ssh-cert: public JWK (JSON string) sent as req_cnf, and its key id */
+    sshJwk?: string;
+    sshKid?: string;
     /** redirect flows: page to return to after the roundtrip (defaults to
      * the current page when navigateToLoginRequestUrl is on) */
     redirectStartPage?: string;
@@ -500,10 +514,11 @@ export interface AccountFilter {
 
 // ---- small utils ----------------------------------------------------------
 
-const enc = new TextEncoder();
+export const enc = new TextEncoder();
 
-function b64url(bytes: ArrayBuffer): string {
-    return btoa(String.fromCharCode(...new Uint8Array(bytes)))
+/** base64url encode (shared with ./pop) */
+export function b64url(bytes: ArrayBuffer | Uint8Array): string {
+    return btoa(String.fromCharCode(...new Uint8Array(bytes as ArrayBuffer)))
         .replace(/\+/g, "-")
         .replace(/\//g, "_")
         .replace(/=+$/, "");
@@ -695,6 +710,8 @@ export interface TokenEntity {
     extendedExpiresOn?: string;
     refreshOn?: string;
     tokenType?: string;
+    /** pop: the AT's cnf.kid claim; ssh: the response key_id */
+    keyId?: string;
     familyId?: string;
     lastUpdatedAt?: string;
 }
@@ -750,6 +767,8 @@ export interface AuthCodeResponse {
     cloudGraphHostName?: string;
     /** authorize-response msgraph_host, cached on the account */
     msGraphHost?: string;
+    /** scheme/SHR fields of the originating request (pop/ssh redemptions) */
+    shr?: TokenRequest;
 }
 
 /**
@@ -886,6 +905,12 @@ export interface ClientContext {
         req: TokenRequest,
         account: AccountInfo
     ) => Promise<AuthenticationResult> | undefined;
+    /** ./pop: req_cnf generation + SignedHttpRequest signing for
+     * authenticationScheme "pop" */
+    pop?: {
+        cnf(req: TokenRequest): Promise<{ kid: string; reqCnf: string }>;
+        sign(at: string, kid: string, req: TokenRequest): Promise<string>;
+    };
     logoutUrl(req?: LogoutRequest, interactionType?: string): Promise<string>;
     /** main-window navigation through the NavigationClient seam
      * (./popup's logoutPopup mainWindowRedirectUri) */
@@ -1321,6 +1346,7 @@ export function createClient(
             environment: string;
             realm: string;
             target: string;
+            tokenType?: string;
         }
     ): string[] => {
         const scopes = t.target.toLowerCase().split(" ").filter(Boolean);
@@ -1337,7 +1363,9 @@ export function createClient(
                 c.homeAccountId === t.homeAccountId &&
                 c.environment === t.environment &&
                 c.realm === t.realm &&
-                (c.tokenType ?? "Bearer") === "Bearer" &&
+                // real's filter matches the NEW token's scheme: pop/ssh ATs
+                // never evict bearer ones (and vice versa)
+                (c.tokenType ?? "Bearer") === (t.tokenType ?? "Bearer") &&
                 (c.target ?? "")
                     .toLowerCase()
                     .split(" ")
@@ -1504,6 +1532,7 @@ export function createClient(
         nonce: string;
         ccs?: string;
     }> => {
+        validateScheme(req);
         await resolveEndpoints();
         const { verifier, challenge } = await pkce();
         // real's wire state: base64 lib state {id, meta}, "|<custom>" appended
@@ -1643,6 +1672,26 @@ export function createClient(
         });
 
     // ---- token redemption ----
+    // pop crypto lives in ./pop; a "pop" request without it is a config gap
+    const popApi = () => {
+        if (!ctx.pop) {
+            throw new BrowserAuthError("feature_not_configured");
+        }
+        return ctx.pop;
+    };
+
+    // real's initializeBaseRequest: ssh-cert requests must carry jwk + kid
+    const validateScheme = (req: TokenRequest) => {
+        if (req.authenticationScheme === "ssh-cert") {
+            if (!req.sshJwk) {
+                throw new ClientConfigurationError("missing_ssh_jwk");
+            }
+            if (!req.sshKid) {
+                throw new ClientConfigurationError("missing_ssh_kid");
+            }
+        }
+    };
+
     const tokenRequest = async (
         scopes: string[],
         grant: Record<string, string | undefined>,
@@ -1661,11 +1710,14 @@ export function createClient(
             cloudInstanceHostName?: string;
             cloudGraphHostName?: string;
             msGraphHost?: string;
+            shr?: TokenRequest;
         }
     ): Promise<AuthenticationResult> => {
         await resolveEndpoints();
         const correlationId = meta?.correlationId ?? crypto.randomUUID();
         const reqAuthority = authorityFor(meta);
+        const shr = meta?.shr;
+        const scheme = shr?.authenticationScheme ?? "Bearer";
         // throttle key mirrors real's RequestThumbprint (undefined fields
         // dropped by JSON.stringify)
         const throttleKey = `throttling.${JSON.stringify({
@@ -1674,7 +1726,7 @@ export function createClient(
             scopes,
             homeAccountIdentifier: meta?.homeAccountId,
             claims: meta?.claims,
-            authenticationScheme: "Bearer",
+            authenticationScheme: scheme,
         })}`;
         // extraQueryParameters + client-request-id ride the token endpoint
         // QUERY string (real 5.16's createTokenQueryParameters)
@@ -1701,6 +1753,22 @@ export function createClient(
                 scope: normScopes(scopes),
                 client_info: "1",
                 claims: mergedClaims(meta?.claims),
+                // real's addPopToken/addSshJwk: PoP sends the full req_cnf
+                // (b64url {kid, xms_ksl}) or the bare popKid; ssh sends the
+                // request's public JWK verbatim
+                ...(scheme === "pop" && {
+                    token_type: "pop",
+                    req_cnf: shr!.popKid
+                        ? b64url(
+                              enc.encode(JSON.stringify({ kid: shr!.popKid }))
+                                  .buffer as ArrayBuffer
+                          )
+                        : (await popApi().cnf(shr!)).reqCnf,
+                }),
+                ...(scheme === "ssh-cert" && {
+                    token_type: "ssh-cert",
+                    req_cnf: shr!.sshJwk,
+                }),
                 ...(meta?.ccs && { "X-AnchorMailbox": meta.ccs }),
                 ...TOKEN_TELEMETRY,
                 ...stParams(meta?.apiId),
@@ -1746,8 +1814,34 @@ export function createClient(
         const realm = claims.tid ?? "";
         const base = `${P}|${homeAccountId}|${environment}`;
 
+        // real caches by the RESPONSE token_type: non-Bearer ATs become
+        // AccessToken_With_AuthScheme entities with a keyId (pop: the AT's
+        // own cnf.kid claim — required; ssh: the response key_id) and the
+        // scheme joins the cache key as a final segment
+        const tokenType: string = json.token_type ?? "Bearer";
+        const nonBearer = tokenType.toLowerCase() !== "bearer";
+        let keyId: string | undefined;
+        if (tokenType === "pop") {
+            try {
+                keyId = decodeJwt(json.access_token).cnf?.kid;
+            } catch {
+                /* opaque AT: no cnf */
+            }
+            if (!keyId) {
+                throw new ClientAuthError(
+                    "token_claims_cnf_required_for_signedjwt"
+                );
+            }
+        } else if (tokenType === "ssh-cert") {
+            keyId = json.key_id;
+        }
+
         const idKey = `${base}|idtoken|${clientId}|${realm}||`;
-        const atKey = `${base}|accesstoken|${clientId}|${realm}|${grantedStr.toLowerCase()}|`;
+        const atKey = `${base}|accesstoken${
+            nonBearer ? "_with_authscheme" : ""
+        }|${clientId}|${realm}|${grantedStr.toLowerCase()}|${
+            nonBearer ? tokenType.toLowerCase() : ""
+        }`;
         const rtKey = `${base}|refreshtoken|${clientId}|||`;
         const kmsi = isKmsi(claims);
 
@@ -1791,7 +1885,9 @@ export function createClient(
             lastUpdatedAt: ts,
         } satisfies TokenEntity, kmsi);
         await writeUser(atKey, {
-            credentialType: "AccessToken",
+            credentialType: nonBearer
+                ? "AccessToken_With_AuthScheme"
+                : "AccessToken",
             homeAccountId,
             environment,
             clientId,
@@ -1802,7 +1898,8 @@ export function createClient(
             expiresOn: String(expiresOn),
             extendedExpiresOn: String(expiresOn),
             ...(refreshOn ? { refreshOn: String(refreshOn) } : undefined),
-            tokenType: "Bearer",
+            tokenType,
+            ...(keyId && { keyId }),
             lastUpdatedAt: ts,
         } satisfies TokenEntity, kmsi);
         if (json.refresh_token) {
@@ -1824,6 +1921,7 @@ export function createClient(
             environment,
             realm,
             target: grantedStr,
+            tokenType,
         });
         const add = (list: string[], k: string) =>
             list.includes(k) ? list : [...list, k];
@@ -1844,7 +1942,12 @@ export function createClient(
             account: toAccountInfo(entity, realm),
             idToken: json.id_token,
             idTokenClaims: claims,
-            accessToken: json.access_token,
+            // pop results carry the AT re-wrapped as a SignedHttpRequest —
+            // unless request.popKid opted into raw (real's ResponseHandler)
+            accessToken:
+                tokenType === "pop" && !shr?.popKid
+                    ? await popApi().sign(json.access_token, keyId!, shr!)
+                    : json.access_token,
             fromCache: false,
             expiresOn: new Date(expiresOn * 1000),
             extExpiresOn: new Date(
@@ -1854,7 +1957,7 @@ export function createClient(
             correlationId,
             requestId: "",
             familyId: json.foci ?? "",
-            tokenType: "Bearer",
+            tokenType,
             state: meta?.state,
             // like real, sourced from the cached account entity
             cloudGraphHostName: entity.cloudGraphHostName ?? "",
@@ -1894,6 +1997,7 @@ export function createClient(
                 cloudInstanceHostName: res.cloudInstanceHostName,
                 cloudGraphHostName: res.cloudGraphHostName,
                 msGraphHost: res.msGraphHost,
+                shr: res.shr,
             }
         );
 
@@ -1906,10 +2010,11 @@ export function createClient(
             {
                 grant_type: "refresh_token",
                 refresh_token: refreshToken,
-                // real redeems against the request's redirectUri
-                ...(req.redirectUri && {
-                    redirect_uri: new URL(req.redirectUri, location.href).href,
-                }),
+                // real's RT grant carries redirect_uri ONLY when the request
+                // has one (the undefined override drops the base default)
+                redirect_uri: req.redirectUri
+                    ? new URL(req.redirectUri, location.href).href
+                    : undefined,
             },
             // 61 = real's ApiId.acquireTokenSilent_silentFlow
             {
@@ -1920,6 +2025,7 @@ export function createClient(
                 eqp: req.extraQueryParameters,
                 authority: req.authority,
                 homeAccountId: req.account?.homeAccountId,
+                shr: req,
             }
         );
 
@@ -1962,6 +2068,7 @@ export function createClient(
             claims: reqClaims,
             eqp,
             authority: reqAuthority,
+            shr,
         } = JSON.parse(stored);
         const had = accountKeys().length;
         emit(EventType.HANDLE_REDIRECT_START, "redirect");
@@ -2037,6 +2144,7 @@ export function createClient(
                 claims: reqClaims,
                 eqp,
                 authority: reqAuthority,
+                shr,
             });
             emit(EventType.ACQUIRE_TOKEN_SUCCESS, "redirect", result);
             if (had < accountKeys().length) {
@@ -2094,6 +2202,7 @@ export function createClient(
                 claims: req.claims,
                 eqp: req.extraQueryParameters,
                 authority: req.authority,
+                shr: req,
             });
         } catch (e) {
             // real's SilentIframeClient is always created with
@@ -2152,6 +2261,7 @@ export function createClient(
             pol >= CacheLookupPolicy.RefreshTokenAndNetwork;
         const keys = tokenKeys();
         const wanted = req.scopes.map((sc) => sc.toLowerCase());
+        const scheme = req.authenticationScheme ?? "Bearer";
         let at: TokenEntity | undefined;
         if (useAT) {
             const matches = keys.accessToken.filter((k) => {
@@ -2161,6 +2271,10 @@ export function createClient(
                     t.clientId === clientId &&
                     t.homeAccountId === account.homeAccountId &&
                     t.realm === account.tenantId &&
+                    // real's getAccessToken filter is scheme-aware: a pop
+                    // request never matches a bearer AT (and vice versa)
+                    (t.tokenType ?? "Bearer") === scheme &&
+                    (!req.sshKid || t.keyId === req.sshKid) &&
                     wanted.every((sc) =>
                         (t.target ?? "").toLowerCase().split(" ").includes(sc)
                     )
@@ -2199,6 +2313,15 @@ export function createClient(
             const base = accountKeys()
                 .map((k) => readUser<AccountEntity>(k))
                 .find((e) => e?.homeAccountId === account.homeAccountId);
+            // real re-signs a fresh SHR around the cached pop AT on every
+            // cache hit (request.popKid opts back into the raw secret)
+            let accessToken = at.secret;
+            if (at.tokenType === "pop" && !req.popKid) {
+                if (!at.keyId) {
+                    throw new ClientAuthError("key_id_missing");
+                }
+                accessToken = await popApi().sign(at.secret, at.keyId, req);
+            }
             return {
                 authority: `${reqAuthority}/`,
                 uniqueId: account.localAccountId,
@@ -2207,7 +2330,7 @@ export function createClient(
                 account,
                 idToken: id?.secret ?? "",
                 idTokenClaims: account.idTokenClaims,
-                accessToken: at.secret,
+                accessToken,
                 fromCache: true,
                 expiresOn: new Date(Number(at.expiresOn) * 1000),
                 extExpiresOn: new Date(Number(at.extendedExpiresOn) * 1000),
@@ -2217,7 +2340,7 @@ export function createClient(
                 correlationId: req.correlationId ?? crypto.randomUUID(),
                 requestId: "",
                 familyId: "",
-                tokenType: "Bearer",
+                tokenType: at.tokenType ?? "Bearer",
                 state: undefined,
                 cloudGraphHostName: base?.cloudGraphHostName ?? "",
                 msGraphHost: base?.msGraphHost ?? "",
@@ -2233,7 +2356,7 @@ export function createClient(
         // fully-initialized silent request as payload
         emit(EventType.ACQUIRE_TOKEN_NETWORK_START, "silent", {
             account,
-            authenticationScheme: "Bearer",
+            authenticationScheme: scheme,
             authority: `${reqAuthority}/`,
             correlationId: req.correlationId,
             forceRefresh: !!req.forceRefresh,
@@ -2516,6 +2639,23 @@ export function createClient(
                     claims: req.claims,
                     eqp: req.extraQueryParameters,
                     authority: req.authority,
+                    // pop/ssh: scheme fields must survive to the redemption
+                    // leg on the other side of the roundtrip
+                    ...(req.authenticationScheme &&
+                        req.authenticationScheme !== "Bearer" && {
+                            shr: Object.fromEntries(
+                                (
+                                    "authenticationScheme resourceRequestMethod " +
+                                    "resourceRequestUri shrClaims shrNonce " +
+                                    "shrOptions popKid sshJwk sshKid"
+                                )
+                                    .split(" ")
+                                    .map((k) => [
+                                        k,
+                                        req[k as keyof TokenRequest],
+                                    ])
+                            ),
+                        }),
                 })
             );
             // start page cached so handleRedirectPromise can navigate back
@@ -2548,13 +2688,20 @@ export function createClient(
                 // real rejects unknown accounts as an authority mismatch
                 throw new ClientConfigurationError("authority_mismatch");
             }
+            validateScheme(req);
             // identical concurrent calls share one in-flight promise (real's
-            // acquireTokenSilentDeduped; thumbprint has no policy/forceRefresh)
+            // acquireTokenSilentDeduped; thumbprint has no policy/forceRefresh
+            // but does carry the scheme/SHR fields)
             const key = JSON.stringify([
                 req.scopes,
                 account.homeAccountId,
                 req.authority,
                 req.claims,
+                req.authenticationScheme,
+                req.resourceRequestMethod,
+                req.resourceRequestUri,
+                req.shrClaims,
+                req.sshKid,
             ]);
             let shared = inFlight.get(key);
             if (!shared) {

@@ -8,6 +8,7 @@
     "exports": {
         ".": "./src/index.ts",
         "./popup": "./src/popup.ts",
+        "./pop": "./src/pop.ts",
         "./broker": "./src/broker.ts",
         "./local-storage": "./src/local-storage.ts",
         "./cache-migration": "./src/cache-migration.ts",

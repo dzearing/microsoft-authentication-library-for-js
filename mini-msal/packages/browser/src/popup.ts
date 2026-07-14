@@ -152,6 +152,7 @@ export function popup(ctx: ClientContext): void {
                     claims: req.claims,
                     eqp: req.extraQueryParameters,
                     authority: req.authority,
+                    shr: req,
                 });
                 ctx.emit(EventType.ACQUIRE_TOKEN_SUCCESS, "popup", result);
                 if (had < c.getAllAccounts().length) {

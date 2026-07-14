@@ -1,7 +1,12 @@
 [
   {
-    "id": "telemetry.performance-marks",
-    "area": "telemetry",
+    "id": "pop.silent-shr",
+    "area": "pop",
+    "status": "captured"
+  },
+  {
+    "id": "pop.ssh-scheme-and-errors",
+    "area": "pop",
     "status": "captured"
   }
 ]

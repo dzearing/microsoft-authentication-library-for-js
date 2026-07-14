@@ -238,13 +238,41 @@ const server = createServer(tls, (req, res) => {
                   ) ?? lastNonce
                 : lastNonce;
             console.log("  grant:", params.get("grant_type"), "user:", idx);
+            // PoP/SSH (token_type=pop|ssh-cert + req_cnf): like AAD, echo the
+            // requested token_type; for pop, mint the AT as a JWT whose
+            // cnf.kid claim is the client's req_cnf key thumbprint (MSAL
+            // requires it to cache the token); for ssh, echo the JWK's kid
+            // back as key_id
+            const reqTokenType = params.get("token_type");
+            let accessToken = `mock-access-token-${idx}`;
+            const popExtra = {};
+            if (reqTokenType === "pop" && params.get("req_cnf")) {
+                try {
+                    const kid = JSON.parse(
+                        Buffer.from(params.get("req_cnf"), "base64url").toString()
+                    ).kid;
+                    accessToken = `${b64url({ alg: "none" })}.${b64url({
+                        cnf: { kid },
+                        uid: idx,
+                    })}.sig`;
+                } catch {
+                    /* keep opaque AT */
+                }
+            } else if (reqTokenType === "ssh-cert" && params.get("req_cnf")) {
+                try {
+                    popExtra.key_id = JSON.parse(params.get("req_cnf")).kid;
+                } catch {
+                    /* no key_id */
+                }
+            }
             res.setHeader("Content-Type", "application/json");
             res.end(
                 JSON.stringify({
-                    token_type: "Bearer",
+                    token_type: reqTokenType || "Bearer",
                     scope: "openid profile User.Read",
                     expires_in: 3600,
-                    access_token: `mock-access-token-${idx}`,
+                    access_token: accessToken,
+                    ...popExtra,
                     refresh_token: `mock-rt-${idx}`,
                     id_token: makeIdToken(idx, nonce),
                     client_info: b64url({

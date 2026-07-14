@@ -13,6 +13,7 @@ import {
     type Config,
 } from "@mini-msal/browser";
 import { popup, type PopupClient } from "@mini-msal/browser/popup";
+import { pop } from "@mini-msal/browser/pop";
 import { broker, type BrokerClient } from "@mini-msal/browser/broker";
 import { localStorageCache } from "@mini-msal/browser/local-storage";
 import { cacheMigration } from "@mini-msal/browser/cache-migration";
@@ -78,6 +79,12 @@ export const PromptValue = {
 } as const;
 
 export const OIDC_DEFAULT_SCOPES = ["openid", "profile", "offline_access"];
+
+export const AuthenticationScheme = {
+    BEARER: "Bearer",
+    POP: "pop",
+    SSH: "ssh-cert",
+} as const;
 
 /** unpack "snake_code" (key camelized from code) / "irregularKey=snake_code"
  * entries into real's *ErrorCodes namespace shape */
@@ -192,6 +199,7 @@ export class PublicClientApplication {
             localStorageCache,
             cacheMigration,
             popup,
+            pop,
             broker,
             telemetry,
         ]) as PublicClientApplication;

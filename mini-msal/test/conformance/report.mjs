@@ -753,6 +753,18 @@ const C = {
         mini: "Pre-C20: the Performance API was never touched — the diagnostics flag produced nothing.",
         cost: 0.1,
     },
+    "pop.silent-shr": {
+        class: "missing-feature",
+        real: "authenticationScheme 'pop': fresh RSA-2048 binding keypair per request, token_type=pop + req_cnf (b64url {kid, xms_ksl:'sw'}) on the token endpoint, AT cached as AccessToken_With_AuthScheme with keyId + a 'pop' cache-key suffix (bearer ATs never match a pop lookup), result.tokenType 'pop' with the AT wrapped as a SignedHttpRequest JWT — re-signed with a fresh nonce on every cache hit; request.popKid reuses a key and skips signing.",
+        mini: "Pre-C21: the field was silently ignored — the IdP never saw req_cnf, the app got an unbound bearer token that PoP-protected resources (ARM/Graph SHR) reject.",
+        cost: 0.8,
+    },
+    "pop.ssh-scheme-and-errors": {
+        class: "missing-feature",
+        real: "authenticationScheme 'ssh-cert': the request's sshJwk rides req_cnf verbatim with token_type=ssh-cert, the entity keyId comes from the response key_id, results carry the raw AT (no signing); missing sshJwk/sshKid throw missing_ssh_jwk/missing_ssh_kid ClientConfigurationErrors.",
+        mini: "Pre-C21: no validation, no wire params, bearer-shaped cache/result.",
+        cost: 0.2,
+    },
 };
 
 // ---- generate ---------------------------------------------------------------
@@ -773,6 +785,7 @@ const areaOrder = [
     "token-apis",
     "authority",
     "config",
+    "pop",
 ];
 const areaTitles = {
     core: "1. Core flows",
@@ -791,6 +804,7 @@ const areaTitles = {
     "token-apis": "14. Programmatic token APIs",
     authority: "15. Authority modes & discovery",
     config: "16. Config knobs & logout params",
+    pop: "17. Proof-of-Possession schemes",
 };
 
 const rows = results.map((r) => {
