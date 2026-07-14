@@ -693,6 +693,30 @@ const C = {
         mini: "Pre-C18: the fragment fields were dropped (hash parse read only code/state/error) and both result fields were hardcoded '' — multi-cloud guest apps would call the wrong Graph cloud.",
         cost: 0.5,
     },
+    "config.allow-redirect-in-iframe": {
+        class: "missing-feature",
+        real: "system.allowRedirectInIframe=true lets an embedded app (Teams tab, portal iframe) run full redirect flows: loginRedirect navigates the iframe to the IdP and handleRedirectPromise processes the returned code in place.",
+        mini: "Pre-C19: the flag was never read — acquireTokenRedirect unconditionally threw redirect_in_iframe inside any iframe, and processRedirect bailed out.",
+        cost: 0.5,
+    },
+    "config.token-renewal-offset": {
+        class: "behavior-diff",
+        real: "system.tokenRenewalOffsetSeconds tunes the cached-AT expiry buffer: a large offset forces proactive network refreshes, 0 serves near-expiry tokens from cache.",
+        mini: "Pre-C19: the buffer was hardcoded to 300s and getConfiguration() still reported the user's value — apps tuning proactive refresh saw the opposite cache/network behavior.",
+        cost: 0.4,
+    },
+    "config.logout-hint-params": {
+        class: "missing-feature",
+        real: "The end_session URL carries logout_hint (explicit request.logoutHint, else derived from the account's login_hint claim), id_token_hint, and extraQueryParameters — the IdP skips its account picker on logout.",
+        mini: "Pre-C19: logout URLs carried only post_logout_redirect_uri/client-request-id/state; the hint fields weren't even accepted on the request, so real's silent picker-free logout became interactive.",
+        cost: 0.4,
+    },
+    "config.server-telemetry-enabled": {
+        class: "missing-feature",
+        real: "system.serverTelemetryEnabled=true populates x-client-current/last-telemetry ('5|apiId,…' schema) on token POSTs and persists failures to a server-telemetry-<clientId> cache entry, flushed on the next request and cleared on success.",
+        mini: "Pre-C19: the params were hardcoded empty and no entry was ever written — ESTS-side diagnostics lost the failure history when apps opted in.",
+        cost: 0.2,
+    },
 };
 
 // ---- generate ---------------------------------------------------------------
@@ -712,6 +736,7 @@ const areaOrder = [
     "cache",
     "token-apis",
     "authority",
+    "config",
 ];
 const areaTitles = {
     core: "1. Core flows",
@@ -729,6 +754,7 @@ const areaTitles = {
     cache: "13. Cache entity semantics",
     "token-apis": "14. Programmatic token APIs",
     authority: "15. Authority modes & discovery",
+    config: "16. Config knobs & logout params",
 };
 
 const rows = results.map((r) => {

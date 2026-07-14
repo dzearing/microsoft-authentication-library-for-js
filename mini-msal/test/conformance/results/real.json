@@ -1,32 +1,22 @@
 [
   {
-    "id": "authority.lazy-discovery-default-path",
-    "area": "authority",
+    "id": "config.allow-redirect-in-iframe",
+    "area": "config",
     "status": "captured"
   },
   {
-    "id": "authority.oidc-discovery-endpoint-path",
-    "area": "authority",
+    "id": "config.token-renewal-offset",
+    "area": "config",
     "status": "captured"
   },
   {
-    "id": "authority.authority-metadata-config",
-    "area": "authority",
+    "id": "config.logout-hint-params",
+    "area": "config",
     "status": "captured"
   },
   {
-    "id": "authority.known-authorities-validation",
-    "area": "authority",
-    "status": "captured"
-  },
-  {
-    "id": "authority.hardcoded-cloud-metadata",
-    "area": "authority",
-    "status": "captured"
-  },
-  {
-    "id": "authority.instance-aware-cloud-instance",
-    "area": "authority",
+    "id": "config.server-telemetry-enabled",
+    "area": "config",
     "status": "captured"
   }
 ]

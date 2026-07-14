@@ -6623,5 +6623,131 @@
         }
       }
     }
+  },
+  {
+    "id": "config.allow-redirect-in-iframe",
+    "area": "config",
+    "status": "pass",
+    "observed": {
+      "authorizeCalls": 1,
+      "completed": {
+        "ok": {
+          "fromCache": false,
+          "hasAccessToken": true,
+          "username": "ada@contoso.com"
+        }
+      },
+      "redirectErr": null,
+      "tokenCalls": 1
+    }
+  },
+  {
+    "id": "config.token-renewal-offset",
+    "area": "config",
+    "status": "pass",
+    "observed": {
+      "bigOffset": {
+        "fromCache": false,
+        "grants": [
+          "refresh_token"
+        ]
+      },
+      "reported": {
+        "ok": 1800
+      },
+      "zeroOffset": {
+        "fromCache": true,
+        "grants": []
+      }
+    }
+  },
+  {
+    "id": "config.logout-hint-params",
+    "area": "config",
+    "status": "pass",
+    "observed": {
+      "calls": {
+        "derived": {
+          "ok": "done"
+        },
+        "explicit": {
+          "ok": "done"
+        },
+        "idTokenHint": {
+          "ok": "done"
+        }
+      },
+      "logoutRequests": [
+        {
+          "endpoint": "logout",
+          "headers": {},
+          "query": {
+            "client-request-id": "<dynamic>",
+            "logout_hint": "explicit-hint@contoso.com",
+            "post_logout_redirect_uri": "http://localhost:4173/conformance-app/popup.html",
+            "state": "<dynamic>"
+          }
+        },
+        {
+          "endpoint": "logout",
+          "headers": {},
+          "query": {
+            "client-request-id": "<dynamic>",
+            "logout_hint": "ada.hint@contoso.com",
+            "post_logout_redirect_uri": "http://localhost:4173/conformance-app/popup.html",
+            "state": "<dynamic>"
+          }
+        },
+        {
+          "endpoint": "logout",
+          "headers": {},
+          "query": {
+            "client-request-id": "<dynamic>",
+            "customParam": "custom-value",
+            "id_token_hint": "the-id-token-hint",
+            "logout_hint": "ada.hint@contoso.com",
+            "post_logout_redirect_uri": "http://localhost:4173/conformance-app/popup.html",
+            "state": "<dynamic>"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "config.server-telemetry-enabled",
+    "area": "config",
+    "status": "pass",
+    "observed": {
+      "entryAfterFailure": {
+        "cacheHits": 0,
+        "errors": [
+          "invalid_grant",
+          "login_required"
+        ],
+        "failedRequests": [
+          61,
+          "<guid>",
+          863,
+          "<guid>"
+        ]
+      },
+      "entryAfterSuccess": null,
+      "failed": "login_required",
+      "loginTelemetry": {
+        "current": "5|862,0,,,|,",
+        "last": "5|0|||0,0"
+      },
+      "retried": false,
+      "retryTelemetry": [
+        {
+          "current": "5|61,0,,,|,",
+          "last": "5|0|||0,0"
+        },
+        {
+          "current": "5|61,0,,,|,",
+          "last": "5|0|61,<guid>,863,<guid>|invalid_grant,login_required|2,0"
+        }
+      ]
+    }
   }
 ]

@@ -1004,6 +1004,70 @@ Decisions/details:
   change, logoutPopup awaits it after the sync about:blank open, so popup
   timing semantics are unchanged.
 
+### C19 — 2026-07-14 — config knobs + logout params (allowRedirectInIframe, tokenRenewalOffsetSeconds, logout hints, serverTelemetryEnabled)
+
+Suite 109→113 (new area 16-config, 4 scenarios, deterministic — capture +
+--check both clean — all green on the first mini run after
+implementation). Audit findings: `allow-redirect-in-iframe`,
+`token-renewal-offset-seconds`, `logout-hint-param`,
+`server-telemetry-enabled`.
+
+Decisions/details:
+- **navigateToLoginRequestUrl is a handleRedirectPromise OPTION in real
+  5.16** (`options?.navigateToLoginRequestUrl ?? true` in
+  RedirectClient/StandardController) — the `auth.navigateToLoginRequestUrl`
+  config flag is NOT read on the hRP side, so a scenario can't suppress
+  the replay via config. The iframe scenario instead makes the iframe src
+  EXACTLY equal the redirectUri: after the roundtrip the current URL
+  matches the stored login-request URL and real processes the hash in
+  place (no replay navigation destroying Playwright's evaluate context).
+  Mini's processRedirect keeps reading the config flag (its replay
+  semantics were pinned by area 11 where both stacks agree).
+- **allowRedirectInIframe gates two places**: the acquireTokenRedirect
+  `redirect_in_iframe` guard AND processRedirect's leave-the-hash-for-
+  the-opener bail-out (real's RedirectClient replay branch checks
+  `!isInIframe() || allowRedirectInIframe`; the in-place branches never
+  check). Scenario completes a FULL redirect login inside an iframe.
+- **tokenRenewalOffsetSeconds**: real's check is `now + offset >
+  expiresOn` — offset 3500 against a fresh 3600s AT is still a cache HIT
+  (the audit's suggested test was wrong there); the scenario patches the
+  AT to ~600s remaining and uses offset 1800 (forces refresh) + offset 0
+  against ~120s remaining (still cache-hit where the old hardcoded 300
+  would refresh). Mini: one `config.system?.tokenRenewalOffsetSeconds ??
+  300` in the silent ladder.
+- **Logout hint params**: new exported `LogoutRequest` (account,
+  postLogoutRedirectUri, correlationId, logoutHint, idTokenHint,
+  extraQueryParameters); logoutUrl sets id_token_hint, logout_hint
+  (explicit request.logoutHint, else account.loginHint, else the
+  account's idTokenClaims.login_hint — real's initializeLogoutRequest
+  derivation), then eQP appended LAST and never overriding protocol
+  params (real's addExtraQueryParameters). Shared by logoutRedirect and
+  ./popup's logoutPopup (LogoutPopupRequest extends it). Mock IdP id
+  tokens get a login_hint claim via the C16 `/config?claims.*` override.
+- **Server telemetry (ported ServerTelemetryManager)**: when
+  `system.serverTelemetryEnabled` (default false = real's stub → empty
+  strings, no entry): token POSTs carry
+  `x-client-current-telemetry: 5|<apiId>,0,,,|<wrapperSku>,<wrapperVer>`
+  (cacheOutcome effectively always 0 on the wire — each real interaction
+  client gets a fresh manager, and cache hits never reach the network)
+  and `x-client-last-telemetry:
+  5|<cacheHits>|<apiId,cid pairs>|<errorCodes>|<count>,<overflow>` from
+  the `server-telemetry-<clientId>` entry (real's exact entity JSON:
+  failedRequests/errors/cacheHits). Failure hooks mirror real's
+  cacheFailedRequest sites: RT refresh = 61, silent iframe = **863
+  ALWAYS** (real's createSilentIframeClient passes ApiId.ssoSilent even
+  for the acquireTokenSilent ladder — snapshot-pinned; mini's silentFrame
+  keeps 864 for its perf-event internals but stFail records 863),
+  processRedirect = 865, popup = 862 via the new `ctx.stFail` seam.
+  Entry cleared after a successful token response (real clears in
+  handleServerTokenResponse), with real's 330-byte flush cap + partial
+  retention and 50-error FIFO; AT cache hits increment cacheHits
+  (SilentFlowClient). initializeWrapperLibrary's SKU/version now feed the
+  current-telemetry platform fields.
+- Sizes: compat 56.4 KB min (+1.4), mini-core 29.4 (+1.4 — the ST
+  manager, hint params, and knobs are all core; stFail rides the existing
+  ctx seam for ./popup).
+
 ## Progress log
 
 | Task | Status | Pass | mini-stack size | Notes |
@@ -1040,3 +1104,4 @@ Decisions/details:
 | C16 | done 2026-07-13 | 98/98 | 60.6 KB min / 19.9 gz | +5 scenarios (suite 93→98, NEW area 13-cache — all green first mini run). AT intersecting-scope dedupe on save + multi-match clear on lookup (+realm filter on the silent AT rung); mergeAccount = buildAccountToCache (one base entity per homeAccountId+env, profiles appended, isHomeTenant computed, shared by web/broker/naa); getAllAccounts expands tenantProfiles (Map) into per-tenant AccountInfos; Store.setUser kmsi seam → plaintext KMSI entities in localStorage mode + real AccountInfo.kmsi; NEW /cache-migration feature (msal.0/1/2→3, 5-day TTL) via new ctx.onInit/getStore seams; mock IdP claims.* overrides. compat 50.6 min (+4.7), mini-core 24.1 (+1.5). e2e 25/25 |
 | C17 | done 2026-07-13 | 103/103 | 62.5 KB min / 20.4 gz | +5 scenarios (suite 98→103, NEW area 14-token-apis — all green first mini run). Core clearCache (local sign-out: clearAccount + real's clear-all-msal-keys, activeAccountChanged via setActiveAccount(null)) + hydrateCache (entityFromAccountInfo ApiId 963, id+AT only, KMSI-aware) + top-level loadExternalTokens export (ApiId 964, id/AT/RT per presence, compat re-export composes local-storage+migration); ./broker hybrid acquireTokenByCode({code}) — ApiId 866 redemption w/o code_verifier/redirect_uri, same-code promise dedupe, spa_code_and_nativeAccountId_present; ctx.writeTokens generalized (optional creds, extExpiresOn, RT+foci, kmsi); setActiveAccount event payload dropped (real emits none); post() drops undefined body values. compat 52.5 min (+1.9), mini-core 25.6 (+1.5). e2e 25/25 |
 | C18 | done 2026-07-13 | 109/109 | 64.9 KB min / 21.1 gz | +6 scenarios (suite 103→109, NEW area 15-authority — all green first mini run; 3 silent.* snapshots then pinned that real discovers even on cache hits → silentLadder awaits resolveEndpoints). Lazy discovery (initialize does zero network), trust validation (knownAuthorities/cloudDiscoveryMetadata/hardcoded clouds/CIAM/AAD instance-discovery probe → endpoints_resolution_error wrap), endpoint sources config→hardcoded→network with real's /v2.0/ path rule, system.protocolMode (NOT auth — real ignores auth.protocolMode!), instance-aware cloud_instance_host_name token-host swap + cloud_graph_host_name/msgraph_host entity+result fields. Mock IdP: instance_aware fragment extension. compat 55.0 min (+2.5), mini-core 28.0 (+2.4 — discovery is core). e2e 25/25 |
+| C19 | done 2026-07-14 | 113/113 | 66.4 KB min / 21.6 gz | +4 scenarios (suite 109→113, NEW area 16-config — all green first mini run). system.allowRedirectInIframe gates acquireTokenRedirect guard + processRedirect bail-out (scenario completes a FULL redirect login in an iframe; iframe src === redirectUri pins real's in-place hRP — navigateToLoginRequestUrl is an hRP OPTION in real 5.16, not config); system.tokenRenewalOffsetSeconds replaces the hardcoded 300s AT buffer (real: now+offset>expiresOn); LogoutRequest logout_hint (explicit/derived login_hint claim) + id_token_hint + eQP on end_session URLs (redirect + popup); serverTelemetryEnabled ports ServerTelemetryManager (current/last wire format, server-telemetry-<clientId> entry, 330B flush cap, 50-error FIFO, clear-on-success, cacheHits; stFail hooks 61/863-always/865/862 via new ctx.stFail). compat 56.4 min (+1.4), mini-core 29.4 (+1.4). e2e 25/25 |

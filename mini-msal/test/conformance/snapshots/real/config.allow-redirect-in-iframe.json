@@ -1,0 +1,12 @@
+{
+  "authorizeCalls": 1,
+  "completed": {
+    "ok": {
+      "fromCache": false,
+      "hasAccessToken": true,
+      "username": "ada@contoso.com"
+    }
+  },
+  "redirectErr": null,
+  "tokenCalls": 1
+}

@@ -1,0 +1,15 @@
+{
+  "bigOffset": {
+    "fromCache": false,
+    "grants": [
+      "refresh_token"
+    ]
+  },
+  "reported": {
+    "ok": 1800
+  },
+  "zeroOffset": {
+    "fromCache": true,
+    "grants": []
+  }
+}

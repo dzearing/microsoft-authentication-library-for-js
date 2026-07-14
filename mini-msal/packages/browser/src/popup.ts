@@ -11,22 +11,23 @@ import {
     type AccountInfo,
     type AuthenticationResult,
     type ClientContext,
+    type LogoutRequest,
     type PopupWindowAttributes,
     type TokenRequest,
 } from "./index.js";
+
+/** logoutPopup request: core LogoutRequest + popup-window controls */
+export interface LogoutPopupRequest extends LogoutRequest {
+    mainWindowRedirectUri?: string;
+    popupWindowAttributes?: PopupWindowAttributes;
+    popupWindowParent?: Window;
+}
 
 /** The methods this feature attaches to the client. */
 export interface PopupClient {
     loginPopup(req: TokenRequest): Promise<AuthenticationResult>;
     acquireTokenPopup(req: TokenRequest): Promise<AuthenticationResult>;
-    logoutPopup(req?: {
-        account?: AccountInfo | null;
-        postLogoutRedirectUri?: string;
-        mainWindowRedirectUri?: string;
-        correlationId?: string;
-        popupWindowAttributes?: PopupWindowAttributes;
-        popupWindowParent?: Window;
-    }): Promise<void>;
+    logoutPopup(req?: LogoutPopupRequest): Promise<void>;
 }
 
 const POPUP_W = 483;
@@ -164,6 +165,7 @@ export function popup(ctx: ClientContext): void {
         } catch (e) {
             // real closes the synchronously-opened popup on failure
             p.popup?.close();
+            ctx.stFail(862, cid, e); // real PopupClient's failure cache
             ctx.emit(EventType.ACQUIRE_TOKEN_FAILURE, "popup", undefined, e);
             throw e;
         } finally {
@@ -177,20 +179,11 @@ export function popup(ctx: ClientContext): void {
     c.loginPopup = (req: TokenRequest): Promise<AuthenticationResult> =>
         c.acquireTokenPopup({ correlationId: crypto.randomUUID(), ...req });
 
-    c.logoutPopup = async (req?: {
-        account?: AccountInfo | null;
-        postLogoutRedirectUri?: string;
-        mainWindowRedirectUri?: string;
-        correlationId?: string;
-        popupWindowAttributes?: PopupWindowAttributes;
-        popupWindowParent?: Window;
-    }): Promise<void> => {
+    c.logoutPopup = async (req?: LogoutPopupRequest): Promise<void> => {
         ctx.preflight();
         ctx.lock("signout");
-        const validRequest: {
+        const validRequest: LogoutPopupRequest & {
             correlationId: string;
-            postLogoutRedirectUri?: string;
-            account?: AccountInfo | null;
             state?: string;
         } = {
             correlationId: crypto.randomUUID(),

@@ -24,10 +24,10 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-13)**: Phases A0–C18 COMPLETE — conformance 109/109,
-e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 55.0 KB min
-(real: 220.5), compat+react stack 64.9 KB (real: 248.8), core-only
-28.0 KB. Remaining: C-gaps C19–C21 (post-audit parity gaps beyond the
+**Status (2026-07-14)**: Phases A0–C19 COMPLETE — conformance 113/113,
+e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 56.4 KB min
+(real: 220.5), compat+react stack 66.4 KB (real: 248.8), core-only
+29.4 KB. Remaining: C-gaps C20–C21 (post-audit parity gaps beyond the
 suite) then D-series (à-la-carte DX/docs/examples).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
@@ -294,14 +294,27 @@ scenarios + a partial implementation, add a follow-up task, note it here.
   result paths; logoutUrl now async. Mock IdP: instance_aware fragment
   extension. compat 55.0 min (+2.5), core 28.0 (+2.4 — discovery is
   core). e2e 25/25. Details: PARITY_LOG C18 entry.
-- [ ] **C19** `pending` — Config knobs + logout params. Findings:
-  `allow-redirect-in-iframe` (honor the flag inside iframes),
-  `token-renewal-offset-seconds` (expiry buffer configurable, not
-  hardcoded 300s), `logout-hint-param` (logoutHint / id_token-derived
-  logout_hint / idTokenHint / eQP on end_session URL),
-  `server-telemetry-enabled` (LOW: x-client-current/last-telemetry
-  populated + server-telemetry cache entry when enabled). Scenarios per
-  findings. Context: audit json; `packages/browser/src/index.ts`.
+- [x] **C19** `done 2026-07-14 — pass 113/113, mini-stack 66.4 KB` — Config
+  knobs + logout params. Suite grew 109→113 (new area 16-config:
+  allow-redirect-in-iframe, token-renewal-offset, logout-hint-params,
+  server-telemetry-enabled — all green first mini run after impl).
+  system.allowRedirectInIframe gates BOTH the acquireTokenRedirect guard
+  and processRedirect's iframe bail-out; system.tokenRenewalOffsetSeconds
+  replaces the hardcoded 300s AT buffer; logoutUrl + new exported
+  LogoutRequest carry logout_hint (explicit or derived account.loginHint /
+  login_hint claim), id_token_hint, eQP (appended last, non-overriding) —
+  popup + redirect logout share the builder. serverTelemetryEnabled:
+  real's ServerTelemetryManager ported (5|apiId,0,,,|sku,ver current;
+  5|hits|fails|errors|n,overflow last; server-telemetry-<clientId> entry,
+  330-byte flush cap, FIFO at 50, cleared-on-success, cacheHits++ on AT
+  hits); stFail hooks: RT=61, iframe=863 ALWAYS (real's
+  SilentIframeClient is created with ApiId.ssoSilent even on the silent
+  ladder), redirect hRP=865, popup=862 via new ctx.stFail seam. KEY
+  CAPTURE FACTS: navigateToLoginRequestUrl is a hRP OPTION in real 5.16
+  (config.auth flag ignored there — iframe scenario pins the in-place
+  path by making iframe src === redirectUri); real's offset check is
+  now+offset>expiresOn, so offset<lifetime still cache-hits. compat 56.4
+  min (+1.4), core 29.4 (+1.4). e2e 25/25. Details: PARITY_LOG C19 entry.
 - [ ] **C20** `pending` — Perf-event emission semantics (C11's sibling —
   do AFTER C11). Findings: `handle-redirect-perf-event` (root
   acquireTokenRedirect event from handleRedirectPromise; NOTE

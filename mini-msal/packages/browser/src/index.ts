@@ -104,6 +104,18 @@ export interface TokenRequest {
     popupWindowParent?: Window;
 }
 
+/** logoutRedirect / ./popup logoutPopup request (real's EndSessionRequest) */
+export interface LogoutRequest {
+    account?: AccountInfo | null;
+    postLogoutRedirectUri?: string;
+    correlationId?: string;
+    /** explicit logout_hint; else derived from the account's login_hint claim */
+    logoutHint?: string;
+    /** id_token_hint on the end_session URL (plain-OIDC RP-initiated logout) */
+    idTokenHint?: string;
+    extraQueryParameters?: Record<string, string>;
+}
+
 export interface Config {
     auth: {
         clientId: string;
@@ -144,6 +156,15 @@ export interface Config {
         iframeBridgeTimeout?: number;
         /** ms before a redirect navigation is considered failed (default 30s) */
         redirectNavigationTimeout?: number;
+        /** allow loginRedirect/acquireTokenRedirect (and response
+         * processing) inside an iframe, like real (default false) */
+        allowRedirectInIframe?: boolean;
+        /** seconds before expiry a cached AT stops being served (default 300) */
+        tokenRenewalOffsetSeconds?: number;
+        /** populate x-client-current/last-telemetry on token requests and
+         * keep real's server-telemetry-<clientId> failure entry (default
+         * false = real's stub: empty strings, no entry) */
+        serverTelemetryEnabled?: boolean;
         /** custom navigation implementation for redirect flows */
         navigationClient?: NavigationClient;
         /** probe/use the platform broker (./broker feature) */
@@ -186,8 +207,8 @@ const AKA = (code: string) =>
 /**
  * Real MSAL's literal wire identity (Decision Log: impersonation) — keep in
  * one block so a future un-impersonation is a one-line change. Real browser
- * 5.16 uses StubServerTelemetryManager, so the telemetry params are sent as
- * EMPTY strings on every token request (verified in snapshots).
+ * 5.16 defaults to StubServerTelemetryManager, so the telemetry params are
+ * EMPTY strings unless system.serverTelemetryEnabled overrides them (C19).
  */
 const WIRE_ID = {
     "x-client-SKU": "msal.js.browser",
@@ -770,7 +791,7 @@ export interface AuthClient {
     handleRedirectPromise(): Promise<AuthenticationResult | null>;
     ssoSilent(req: TokenRequest): Promise<AuthenticationResult>;
     acquireTokenSilent(req: TokenRequest): Promise<AuthenticationResult>;
-    logoutRedirect(req?: { account?: AccountInfo | null }): Promise<void>;
+    logoutRedirect(req?: LogoutRequest): Promise<void>;
     /** local sign-out: purge the cache, no navigation, no end_session */
     clearCache(req?: { account?: AccountInfo | null }): Promise<void>;
     /** seed the cache from an externally-acquired AuthenticationResult
@@ -863,13 +884,13 @@ export interface ClientContext {
         req: TokenRequest,
         account: AccountInfo
     ) => Promise<AuthenticationResult> | undefined;
-    logoutUrl(
-        req?: { postLogoutRedirectUri?: string; correlationId?: string },
-        interactionType?: string
-    ): Promise<string>;
+    logoutUrl(req?: LogoutRequest, interactionType?: string): Promise<string>;
     /** main-window navigation through the NavigationClient seam
      * (./popup's logoutPopup mainWindowRedirectUri) */
     navigate(url: string, apiId: number): Promise<boolean | void>;
+    /** record a flow failure into the server-telemetry entry (no-op unless
+     * system.serverTelemetryEnabled) — ./popup calls it with ApiId 862 */
+    stFail(apiId: number, correlationId: string | undefined, e: unknown): void;
 }
 
 export type Feature = (ctx: ClientContext) => void;
@@ -997,9 +1018,8 @@ export function createClient(
     );
     const log = (level: number, msg: string) =>
         logger.logMessage(msg, { logLevel: level });
-    // wrapper SKU/version (initializeWrapperLibrary) — real forwards these
-    // to server telemetry; mini sends stub-empty telemetry headers (see
-    // TOKEN_TELEMETRY), so the metadata is only stored (C19 revisits)
+    // wrapper SKU/version (initializeWrapperLibrary) — forwarded into the
+    // current-telemetry platform fields when serverTelemetryEnabled
     let wrapperMeta: [sku: string, version: string] | null = null;
 
     // ---- redirect navigation seam (real's NavigationClient plumbing) ----
@@ -1073,6 +1093,86 @@ export function createClient(
 
     const writeUser = (key: string, value: unknown, kmsi?: boolean) =>
         store.setUser(key, JSON.stringify(value), kmsi);
+
+    // ---- server telemetry (system.serverTelemetryEnabled) ----
+    // real's ServerTelemetryManager: failures accumulate in a
+    // server-telemetry-<clientId> entry (apiId,correlationId pairs + error
+    // codes) and are flushed via x-client-last-telemetry on the next token
+    // request, then cleared on success
+    const stEnabled = !!config.system?.serverTelemetryEnabled;
+    const stKey = `server-telemetry-${clientId}`;
+    interface STEntity {
+        failedRequests: (number | string)[];
+        errors: string[];
+        cacheHits: number;
+    }
+    const stGet = (): STEntity =>
+        readJSON<STEntity>(stKey) ?? {
+            failedRequests: [],
+            errors: [],
+            cacheHits: 0,
+        };
+    // real's maxErrorsToSend: errors that fit the 330-byte header budget
+    const stMax = (t: STEntity): number => {
+        let n = 0;
+        let size = 0;
+        for (let i = 0; i < t.errors.length; i++) {
+            size +=
+                String(t.failedRequests[2 * i] ?? "").length +
+                String(t.failedRequests[2 * i + 1] ?? "").length +
+                (t.errors[i] ?? "").length +
+                3;
+            if (size >= 330) break;
+            n++;
+        }
+        return n;
+    };
+    const stFail = (apiId: number, correlationId: string | undefined, e: unknown) => {
+        if (!stEnabled) return;
+        const t = stGet();
+        if (t.errors.length >= 50) {
+            // FIFO eviction at real's 50-error cap
+            t.failedRequests.splice(0, 2);
+            t.errors.shift();
+        }
+        t.failedRequests.push(apiId, correlationId ?? "");
+        const err = e as { subError?: string; errorCode?: string };
+        t.errors.push(
+            err?.subError || err?.errorCode || (e ? String(e) : "unknown_error")
+        );
+        writeJSON(stKey, t);
+    };
+    /** token-body params; undefined (spread no-op) when disabled */
+    const stParams = (apiId?: number) => {
+        if (!stEnabled) return undefined;
+        const t = stGet();
+        const max = stMax(t);
+        return {
+            "x-client-current-telemetry": `5|${apiId ?? 0},0,,,|${(
+                wrapperMeta ?? ["", ""]
+            ).join(",")}`,
+            "x-client-last-telemetry": `5|${t.cacheHits}|${t.failedRequests
+                .slice(0, 2 * max)
+                .join(",")}|${t.errors.slice(0, max).join(",")}|${
+                t.errors.length
+            },${max < t.errors.length ? 1 : 0}`,
+        };
+    };
+    /** after a token success: drop what was flushed (real clearTelemetryCache) */
+    const stClear = () => {
+        if (!stEnabled) return;
+        const t = stGet();
+        const max = stMax(t);
+        if (max === t.errors.length) {
+            store.remove(stKey);
+        } else {
+            writeJSON(stKey, {
+                failedRequests: t.failedRequests.slice(2 * max),
+                errors: t.errors.slice(max),
+                cacheHits: 0,
+            });
+        }
+    };
 
     const tokenKeysKey = `${P}.token.keys.${clientId}`;
 
@@ -1601,10 +1701,12 @@ export function createClient(
                 claims: mergedClaims(meta?.claims),
                 ...(meta?.ccs && { "X-AnchorMailbox": meta.ccs }),
                 ...TOKEN_TELEMETRY,
+                ...stParams(meta?.apiId),
             },
             store,
             throttleKey
         );
+        stClear();
         log(3, "token response received");
         const claims = decodeJwt(json.id_token);
         if (meta?.nonce && claims.nonce !== meta.nonce) {
@@ -1821,9 +1923,10 @@ export function createClient(
 
     // ---- interactive: redirect ----
     const processRedirect = async (): Promise<AuthenticationResult | null> => {
-        if (window !== window.parent) {
+        if (window !== window.parent && !config.system?.allowRedirectInIframe) {
             // app re-loaded inside our own hidden iframe: leave the hash for
-            // the opener's poller (same behavior as real MSAL's iframe guard)
+            // the opener's poller (same behavior as real MSAL's iframe
+            // guard); allowRedirectInIframe processes it, like real
             return null;
         }
         let params = new URLSearchParams(location.hash.slice(1));
@@ -1939,6 +2042,7 @@ export function createClient(
             }
             return result;
         } catch (e) {
+            stFail(865, correlationId, e); // ApiId.handleRedirectPromise
             emit(EventType.ACQUIRE_TOKEN_FAILURE, "redirect", undefined, e);
             throw e;
         } finally {
@@ -1988,6 +2092,11 @@ export function createClient(
                 eqp: req.extraQueryParameters,
                 authority: req.authority,
             });
+        } catch (e) {
+            // real's SilentIframeClient is always created with
+            // ApiId.ssoSilent (863), even on the acquireTokenSilent ladder
+            stFail(863, correlationId, e);
+            throw e;
         } finally {
             frame.remove();
         }
@@ -2064,12 +2173,21 @@ export function createClient(
                 writeJSON(tokenKeysKey, keys);
             } else if (matches.length === 1) {
                 const t = readUser<TokenEntity>(matches[0])!;
-                if (Number(t.expiresOn) - 300 > Date.now() / 1000) {
+                const offset =
+                    config.system?.tokenRenewalOffsetSeconds ?? 300;
+                if (Number(t.expiresOn) - offset > Date.now() / 1000) {
                     at = t;
                 }
             }
         }
         if (at) {
+            if (stEnabled) {
+                // real's SilentFlowClient counts cache hits into the entry;
+                // they surface in the next request's last-telemetry
+                const t = stGet();
+                t.cacheHits++;
+                writeJSON(stKey, t);
+            }
             const id = findCred(
                 keys.idToken,
                 (t) => t.homeAccountId === account.homeAccountId
@@ -2128,6 +2246,9 @@ export function createClient(
                 try {
                     return await redeemRefresh({ ...req, account }, rt.secret);
                 } catch (e) {
+                    // real's SilentRefreshClient caches the failure (61)
+                    // before the ladder decides on the iframe fallback
+                    stFail(61, req.correlationId, e);
                     // real's checkIfRefreshTokenErrorCanBeResolvedSilently:
                     // iframe renewal only for invalid_grant/
                     // token_refresh_required errors that don't require
@@ -2176,7 +2297,7 @@ export function createClient(
 
     // ---- logout ----
     const logoutUrl = async (
-        req?: { postLogoutRedirectUri?: string; correlationId?: string },
+        req?: LogoutRequest,
         interactionType = "redirect"
     ): Promise<string> => {
         await resolveEndpoints();
@@ -2192,6 +2313,19 @@ export function createClient(
             ).href
         );
         p.set("client-request-id", req?.correlationId ?? crypto.randomUUID());
+        // real's id_token_hint / logout_hint (explicit, else derived from
+        // the account's login_hint claim) let the IdP skip its account
+        // picker on RP-initiated logout
+        if (req?.idTokenHint) {
+            p.set("id_token_hint", req.idTokenHint);
+        }
+        const hint =
+            req?.logoutHint ??
+            req?.account?.loginHint ??
+            (req?.account?.idTokenClaims?.login_hint as string | undefined);
+        if (hint) {
+            p.set("logout_hint", hint);
+        }
         // real's redirect bridge requires a state param (lib-state format:
         // base64 of {id, meta:{interactionType}}); the IdP echoes it back
         p.set(
@@ -2203,6 +2337,12 @@ export function createClient(
                 })
             )
         );
+        // extraQueryParameters go last and never override protocol params
+        for (const [k, v] of Object.entries(req?.extraQueryParameters ?? {})) {
+            if (!p.has(k)) {
+                p.set(k, v);
+            }
+        }
         return url.href;
     };
 
@@ -2347,8 +2487,12 @@ export function createClient(
 
         async acquireTokenRedirect(req: TokenRequest): Promise<void> {
             preflight();
-            if (window !== window.parent) {
-                // same guard as real MSAL: no full-page redirects from iframes
+            if (
+                window !== window.parent &&
+                !config.system?.allowRedirectInIframe
+            ) {
+                // same guard as real MSAL: no full-page redirects from
+                // iframes unless system.allowRedirectInIframe opts in
                 throw new BrowserAuthError("redirect_in_iframe");
             }
             lock();
@@ -2443,11 +2587,7 @@ export function createClient(
             return shared;
         },
 
-        async logoutRedirect(req?: {
-            account?: AccountInfo | null;
-            postLogoutRedirectUri?: string;
-            correlationId?: string;
-        }): Promise<void> {
+        async logoutRedirect(req?: LogoutRequest): Promise<void> {
             preflight();
             lock("signout");
             const validRequest = {
@@ -2561,6 +2701,7 @@ export function createClient(
         findToken: (type, match) => findCred(tokenKeys()[type], match),
         writeTokens: writeTokenEntities,
         logoutUrl,
+        stFail,
     };
     for (const f of features) f(ctx);
     return client;
