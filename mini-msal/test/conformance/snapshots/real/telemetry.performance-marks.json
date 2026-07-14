@@ -1,0 +1,23 @@
+{
+  "markKinds": [
+    "end",
+    "start"
+  ],
+  "measures": [
+    "msal.measure.acquireTokenFromCache.<cid>",
+    "msal.measure.acquireTokenSilent.<cid>",
+    "msal.measure.acquireTokenSilentAsync.<cid>",
+    "msal.measure.authorityFactoryCreateDiscoveredInstance.<cid>",
+    "msal.measure.authorityResolveEndpointsAsync.<cid>",
+    "msal.measure.authorityUpdateCloudDiscoveryMetadata.<cid>",
+    "msal.measure.authorityUpdateEndpointMetadata.<cid>",
+    "msal.measure.initializeBaseRequest.<cid>",
+    "msal.measure.initializeSilentRequest.<cid>",
+    "msal.measure.silentCacheClientAcquireToken.<cid>",
+    "msal.measure.silentFlowClientAcquireCachedToken.<cid>",
+    "msal.measure.silentFlowClientGenerateResultFromCacheRecord.<cid>",
+    "msal.measure.standardInteractionClientGetClientConfiguration.<cid>",
+    "msal.measure.standardInteractionClientGetDiscoveredAuthority.<cid>"
+  ],
+  "withoutFlag": 0
+}

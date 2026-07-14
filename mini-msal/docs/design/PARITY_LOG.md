@@ -1068,6 +1068,74 @@ Decisions/details:
   manager, hint params, and knobs are all core; stFail rides the existing
   ctx seam for ./popup).
 
+### C20 — 2026-07-14 — perf-event emission semantics (redirect root event, failure cid joins, callback dedupe, preflight/init-once, performance marks)
+
+Suite 113→119 (6 new 08-telemetry scenarios, deterministic — captured
+twice, byte-identical — all green on the first mini run after
+implementation). Audit findings: `handle-redirect-perf-event`,
+`failure-event-correlation-id`, `duplicate-perf-callback-dedupe`,
+`preflight-failure-no-perf-event`, `init-perf-event-once`,
+`performance-marks-session-flag`.
+
+Decisions/details (several audit claims corrected by capture):
+- **Redirect root event** (telemetry.perf-redirect-event): one
+  `acquireTokenRedirect` event per processed redirect response, emitted by
+  handleRedirectPromise with the CACHED request's correlationId; clean
+  loads emit nothing (real returns before startMeasurement when no
+  interaction is in progress) and repeat calls reuse the memoized promise.
+  Ext is the REDEMPTION HALF only — no PKCE / getAuthCodeUrl /
+  getStandardParams / deserializeResponse (those ran on the pre-redirect
+  page) — new REDIR group + DISC + NETDISC. Here
+  networkClientSendPostRequestAsync carries BOTH CallCount and DurationMs
+  (unlike popup's CallCount-only); the DurationMs key is exactly 43 chars
+  so it normalizes as `<b64-43>` (C11's collision, now load-bearing).
+  Event carries `previousLibraryVersion` because the return page's cache
+  already holds `msal.version` from the pre-redirect load: mini reads the
+  store key at telemetry-feature setup (pre-initialize) and rides it on
+  every event when present. Mini wrapper dedupes by promise identity and
+  skips emission for `uninitialized_public_client_application` (real
+  blocks before the measurement). accountType/cacheMatchedAccounts/
+  refreshTokenSize/kmsi/httpVerToken/requestId like popup's success shape;
+  no accessTokenSize/idTokenSize/scenarioId on this event (snapshot-pinned).
+- **Failure-event correlation join** (telemetry.perf-failure-correlation):
+  KEY CAPTURE FACT — real 5.16's RT token POST body has NO
+  client-request-id (RefreshTokenClient.createTokenRequestBody never calls
+  addCorrelationId); the cid rides the token-endpoint QUERY string
+  (createTokenQueryParameters), which mini already matched. The scenario
+  compares the QUERY param. AuthError gains a `correlationId` property;
+  the silent deduped-promise rejection handler stamps
+  `validRequest.correlationId` (real StandardController:1266) and
+  processRedirect's catch stamps the stored request cid; the telemetry
+  failure path uses `e.correlationId ?? req.correlationId` so event cid
+  === error.correlationId === wire cid without an app-supplied cid.
+- **Callback dedupe** (telemetry.perf-callback-dedupe):
+  BrowserPerformanceClient.addPerformanceCallback compares
+  `cb.toString()` against every registered callback and returns the
+  EXISTING id on match (single delivery). KEY CAPTURE FACT: with NO
+  telemetry.client configured, real returns `""` from
+  addPerformanceCallback (NOT the audit-suggested "callback-id") — mini's
+  stub path returns "".
+- **Preflight failures** (telemetry.perf-preflight-failures): confirmed
+  the audit verdict's correction — `no_account_error` emits NOTHING (real
+  throws after startMeasurement with no end/catch attached; mini's silent
+  wrapper rethrows without emitting), but uninitialized preflight
+  failures DO emit success:false events for both acquireTokenSilent and
+  acquireTokenPopup (real's preflightCheck wrapper ends the measurement).
+- **Init-once** (telemetry.perf-init-once): repeat initialize() calls
+  return before real starts the measurement — mini's wrapper gates
+  emission behind a flag set on first success.
+- **Performance marks** (telemetry.performance-marks): with
+  `sessionStorage["msal.browser.performance.enabled"]="1"` AND an opt-in
+  perf client, real writes msal.start/end/measure.<op>.<cid> timeline
+  entries; after root end, the surviving measures for a silent cache-hit
+  are EXACTLY the C11 ext DurationMs-key set + the root name — validating
+  the ext tables. Mini synthesizes mark/mark/measure triplets at emit time
+  from its ext table (0-duration; the scenario compares names with cids
+  stripped). Flag off → zero entries in both.
+- Sizes: compat 58.0 KB min (+1.6), mini-core 29.5 (+0.1 — only the
+  AuthError property + two cid stamps are core; everything else is the
+  telemetry feature). e2e 25/25.
+
 ## Progress log
 
 | Task | Status | Pass | mini-stack size | Notes |
@@ -1105,3 +1173,4 @@ Decisions/details:
 | C17 | done 2026-07-13 | 103/103 | 62.5 KB min / 20.4 gz | +5 scenarios (suite 98→103, NEW area 14-token-apis — all green first mini run). Core clearCache (local sign-out: clearAccount + real's clear-all-msal-keys, activeAccountChanged via setActiveAccount(null)) + hydrateCache (entityFromAccountInfo ApiId 963, id+AT only, KMSI-aware) + top-level loadExternalTokens export (ApiId 964, id/AT/RT per presence, compat re-export composes local-storage+migration); ./broker hybrid acquireTokenByCode({code}) — ApiId 866 redemption w/o code_verifier/redirect_uri, same-code promise dedupe, spa_code_and_nativeAccountId_present; ctx.writeTokens generalized (optional creds, extExpiresOn, RT+foci, kmsi); setActiveAccount event payload dropped (real emits none); post() drops undefined body values. compat 52.5 min (+1.9), mini-core 25.6 (+1.5). e2e 25/25 |
 | C18 | done 2026-07-13 | 109/109 | 64.9 KB min / 21.1 gz | +6 scenarios (suite 103→109, NEW area 15-authority — all green first mini run; 3 silent.* snapshots then pinned that real discovers even on cache hits → silentLadder awaits resolveEndpoints). Lazy discovery (initialize does zero network), trust validation (knownAuthorities/cloudDiscoveryMetadata/hardcoded clouds/CIAM/AAD instance-discovery probe → endpoints_resolution_error wrap), endpoint sources config→hardcoded→network with real's /v2.0/ path rule, system.protocolMode (NOT auth — real ignores auth.protocolMode!), instance-aware cloud_instance_host_name token-host swap + cloud_graph_host_name/msgraph_host entity+result fields. Mock IdP: instance_aware fragment extension. compat 55.0 min (+2.5), mini-core 28.0 (+2.4 — discovery is core). e2e 25/25 |
 | C19 | done 2026-07-14 | 113/113 | 66.4 KB min / 21.6 gz | +4 scenarios (suite 109→113, NEW area 16-config — all green first mini run). system.allowRedirectInIframe gates acquireTokenRedirect guard + processRedirect bail-out (scenario completes a FULL redirect login in an iframe; iframe src === redirectUri pins real's in-place hRP — navigateToLoginRequestUrl is an hRP OPTION in real 5.16, not config); system.tokenRenewalOffsetSeconds replaces the hardcoded 300s AT buffer (real: now+offset>expiresOn); LogoutRequest logout_hint (explicit/derived login_hint claim) + id_token_hint + eQP on end_session URLs (redirect + popup); serverTelemetryEnabled ports ServerTelemetryManager (current/last wire format, server-telemetry-<clientId> entry, 330B flush cap, 50-error FIFO, clear-on-success, cacheHits; stFail hooks 61/863-always/865/862 via new ctx.stFail). compat 56.4 min (+1.4), mini-core 29.4 (+1.4). e2e 25/25 |
+| C20 | done 2026-07-14 | 119/119 | 68.0 KB min / 22.0 gz | +6 scenarios (suite 113→119, 08-telemetry — all green first mini run). Root acquireTokenRedirect event from handleRedirectPromise (cached-request cid, redemption-half ext incl. both networkClientSendPostRequestAsync keys, previousLibraryVersion from pre-init msal.version; clean loads + memoized re-calls emit nothing); failure-event cid joins (AuthError.correlationId stamped by silent/redirect flows — KEY FACT: real's RT token cid is a QUERY param, absent from the body); addPerformanceCallback toString-dedupe + "" stub id (NOT callback-id); no_account_error abandons the measurement (no event) while uninitialized preflight fails DO emit; initialize measured at most once; msal.browser.performance.enabled=1 → mark/measure timeline entries synthesized from the ext tables (real's measure set === C11 ext DurationMs keys + root). compat 58.0 min (+1.6), mini-core 29.5 (+0.1). e2e 25/25 |

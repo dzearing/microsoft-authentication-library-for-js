@@ -383,6 +383,8 @@ export class Logger {
 
 export class AuthError extends Error {
     name = "AuthError";
+    /** the request cid, stamped when a flow fails (real's setCorrelationId) */
+    correlationId?: string;
     constructor(
         public errorCode: string,
         public errorMessage: string = AKA(errorCode),
@@ -2042,6 +2044,7 @@ export function createClient(
             }
             return result;
         } catch (e) {
+            (e as AuthError).correlationId ??= correlationId;
             stFail(865, correlationId, e); // ApiId.handleRedirectPromise
             emit(EventType.ACQUIRE_TOKEN_FAILURE, "redirect", undefined, e);
             throw e;
@@ -2572,6 +2575,12 @@ export function createClient(
                             return r;
                         },
                         (e) => {
+                            // real stamps the request cid on the error right
+                            // before ending the perf measurement — event cid,
+                            // error.correlationId and the wire
+                            // client-request-id all join up
+                            (e as AuthError).correlationId =
+                                validRequest.correlationId;
                             emit(
                                 EventType.ACQUIRE_TOKEN_FAILURE,
                                 "silent",

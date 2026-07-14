@@ -4117,6 +4117,233 @@
     }
   },
   {
+    "id": "telemetry.perf-redirect-event",
+    "area": "telemetry",
+    "status": "pass",
+    "observed": {
+      "cleanLoadEvents": [],
+      "eventNames": [
+        "initializeClientApplication:true",
+        "acquireTokenRedirect:true"
+      ],
+      "redirectEvents": [
+        {
+          "accountType": "AAD",
+          "appName": "",
+          "appVersion": "",
+          "authority": "https://localhost:4599/tenant",
+          "authorityEndpointSource": "network",
+          "cacheMatchedAccounts": 0,
+          "clientId": "<guid>",
+          "cloudDiscoverySource": "config",
+          "context": "<string>",
+          "correlationId": "<dynamic>",
+          "dataBoundary": null,
+          "durationMs": "<number>",
+          "endPageVisibility": "visible",
+          "eventId": "<string>",
+          "ext": {
+            "authClientAcquireTokenCallCount": "<number>",
+            "authClientAcquireTokenDurationMs": "<number>",
+            "authClientCreateTokenRequestBodyCallCount": "<number>",
+            "authClientCreateTokenRequestBodyDurationMs": "<number>",
+            "authClientExecuteTokenRequestCallCount": "<number>",
+            "authClientExecuteTokenRequestDurationMs": "<number>",
+            "authorityFactoryCreateDiscoveredInstanceCallCount": "<number>",
+            "authorityFactoryCreateDiscoveredInstanceDurationMs": "<number>",
+            "authorityGetEndpointMetadataFromNetworkCallCount": "<number>",
+            "authorityGetEndpointMetadataFromNetworkDurationMs": "<number>",
+            "authorityResolveEndpointsAsyncCallCount": "<number>",
+            "authorityResolveEndpointsAsyncDurationMs": "<number>",
+            "authorityUpdateCloudDiscoveryMetadataCallCount": "<number>",
+            "authorityUpdateCloudDiscoveryMetadataDurationMs": "<number>",
+            "authorityUpdateEndpointMetadataCallCount": "<number>",
+            "authorityUpdateEndpointMetadataDurationMs": "<number>",
+            "authorizationCodeClientExecutePostToTokenEndpointCallCount": "<number>",
+            "authorizationCodeClientExecutePostToTokenEndpointDurationMs": "<number>",
+            "handleCodeResponseCallCount": "<number>",
+            "handleCodeResponseDurationMs": "<number>",
+            "handleCodeResponseFromServerCallCount": "<number>",
+            "handleCodeResponseFromServerDurationMs": "<number>",
+            "handleRedirectPromiseCallCount": "<number>",
+            "handleRedirectPromiseDurationMs": "<number>",
+            "handleResponseCodeCallCount": "<number>",
+            "handleResponseCodeDurationMs": "<number>",
+            "handleServerTokenResponseCallCount": "<number>",
+            "handleServerTokenResponseDurationMs": "<number>",
+            "networkClientSendPostRequestAsyncCallCount": "<number>",
+            "<b64-43>": "<number>",
+            "setUserDataCallCount": "<number>",
+            "setUserDataDurationMs": "<number>",
+            "standardInteractionClientCreateAuthCodeClientCallCount": "<number>",
+            "standardInteractionClientCreateAuthCodeClientDurationMs": "<number>",
+            "standardInteractionClientGetClientConfigurationCallCount": "<number>",
+            "standardInteractionClientGetClientConfigurationDurationMs": "<number>",
+            "standardInteractionClientGetDiscoveredAuthorityCallCount": "<number>",
+            "standardInteractionClientGetDiscoveredAuthorityDurationMs": "<number>"
+          },
+          "httpVerToken": "",
+          "incompleteSubMeasurements": null,
+          "incompleteSubsCount": 0,
+          "kmsi": false,
+          "libraryName": "@azure/msal-browser",
+          "libraryVersion": "5.16.0",
+          "logs": "<string>",
+          "name": "acquireTokenRedirect",
+          "networkEffectiveType": "<string>",
+          "networkRtt": "<number>",
+          "previousLibraryVersion": "5.16.0",
+          "refreshTokenSize": 9,
+          "requestId": "<dynamic>",
+          "startOnlineStatus": true,
+          "startPageVisibility": "visible",
+          "startTimeMs": "<number>",
+          "status": 2,
+          "success": true
+        }
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "telemetry.perf-failure-correlation",
+    "area": "telemetry",
+    "status": "pass",
+    "observed": {
+      "errorCode": "login_required",
+      "errorHasCid": true,
+      "eventCidEqualsErrorCid": true,
+      "eventCidEqualsWireCid": true,
+      "failedEventCount": 1
+    }
+  },
+  {
+    "id": "telemetry.perf-callback-dedupe",
+    "area": "telemetry",
+    "status": "pass",
+    "observed": {
+      "deliveredOncePerEvent": true,
+      "emittedSome": true,
+      "sameId": true,
+      "stubIds": [
+        "",
+        ""
+      ]
+    }
+  },
+  {
+    "id": "telemetry.perf-preflight-failures",
+    "area": "telemetry",
+    "status": "pass",
+    "observed": {
+      "noAccount": {
+        "err": {
+          "errorCode": "no_account_error",
+          "message": "See https://aka.ms/msal.js.errors#no_account_error for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      },
+      "noAccountEvents": [],
+      "uninitEvents": [
+        {
+          "errorCode": "uninitialized_public_client_application",
+          "name": "acquireTokenSilent",
+          "success": false
+        },
+        {
+          "errorCode": "uninitialized_public_client_application",
+          "name": "acquireTokenPopup",
+          "success": false
+        }
+      ],
+      "uninitPopup": {
+        "err": {
+          "errorCode": "uninitialized_public_client_application",
+          "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      },
+      "uninitSilent": {
+        "err": {
+          "errorCode": "uninitialized_public_client_application",
+          "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+          "name": "BrowserAuthError",
+          "subError": null
+        }
+      }
+    }
+  },
+  {
+    "id": "telemetry.perf-init-once",
+    "area": "telemetry",
+    "status": "pass",
+    "observed": {
+      "initEventCount": 1,
+      "initEvents": [
+        {
+          "correlationId": "<dynamic>",
+          "errorCode": null,
+          "hasDuration": true,
+          "name": "initializeClientApplication",
+          "success": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "telemetry.performance-marks",
+    "area": "telemetry",
+    "status": "pass",
+    "observed": {
+      "markKinds": [
+        "end",
+        "start"
+      ],
+      "measures": [
+        "msal.measure.acquireTokenFromCache.<cid>",
+        "msal.measure.acquireTokenSilent.<cid>",
+        "msal.measure.acquireTokenSilentAsync.<cid>",
+        "msal.measure.authorityFactoryCreateDiscoveredInstance.<cid>",
+        "msal.measure.authorityResolveEndpointsAsync.<cid>",
+        "msal.measure.authorityUpdateCloudDiscoveryMetadata.<cid>",
+        "msal.measure.authorityUpdateEndpointMetadata.<cid>",
+        "msal.measure.initializeBaseRequest.<cid>",
+        "msal.measure.initializeSilentRequest.<cid>",
+        "msal.measure.silentCacheClientAcquireToken.<cid>",
+        "msal.measure.silentFlowClientAcquireCachedToken.<cid>",
+        "msal.measure.silentFlowClientGenerateResultFromCacheRecord.<cid>",
+        "msal.measure.standardInteractionClientGetClientConfiguration.<cid>",
+        "msal.measure.standardInteractionClientGetDiscoveredAuthority.<cid>"
+      ],
+      "withoutFlag": 0
+    }
+  },
+  {
     "id": "broker.dom-probe-and-interactive",
     "area": "broker",
     "status": "pass",

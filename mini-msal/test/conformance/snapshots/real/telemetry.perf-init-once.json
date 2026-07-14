@@ -1,0 +1,12 @@
+{
+  "initEventCount": 1,
+  "initEvents": [
+    {
+      "correlationId": "<dynamic>",
+      "errorCode": null,
+      "hasDuration": true,
+      "name": "initializeClientApplication",
+      "success": true
+    }
+  ]
+}

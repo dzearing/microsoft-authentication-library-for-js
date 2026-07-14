@@ -24,11 +24,11 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-14)**: Phases A0–C19 COMPLETE — conformance 113/113,
-e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 56.4 KB min
-(real: 220.5), compat+react stack 66.4 KB (real: 248.8), core-only
-29.4 KB. Remaining: C-gaps C20–C21 (post-audit parity gaps beyond the
-suite) then D-series (à-la-carte DX/docs/examples).
+**Status (2026-07-14)**: Phases A0–C20 COMPLETE — conformance 119/119,
+e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 58.0 KB min
+(real: 220.5), compat+react stack 68.0 KB (real: 248.8), core-only
+29.5 KB. Remaining: C-gap C21 (PoP scheme — may need a user descope
+decision) then D-series (à-la-carte DX/docs/examples).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
 ## Context budget (user-required 2026-07-13)
@@ -315,19 +315,24 @@ scenarios + a partial implementation, add a follow-up task, note it here.
   path by making iframe src === redirectUri); real's offset check is
   now+offset>expiresOn, so offset<lifetime still cache-hits. compat 56.4
   min (+1.4), core 29.4 (+1.4). e2e 25/25. Details: PARITY_LOG C19 entry.
-- [ ] **C20** `pending` — Perf-event emission semantics (C11's sibling —
-  do AFTER C11). Findings: `handle-redirect-perf-event` (root
-  acquireTokenRedirect event from handleRedirectPromise; NOTE
-  verdict.corrections: clean loads never start the measurement),
-  `failure-event-correlation-id` (failure event cid = library-generated
-  request cid = error.correlationId = wire client-request-id),
-  `duplicate-perf-callback-dedupe` (dedupe registrations by callback
-  source text), `preflight-failure-no-perf-event` (preflight failures
-  emit NOTHING), `init-perf-event-once` (initializeClientApplication at
-  most once), `performance-marks-session-flag` (LOW:
-  msal.browser.performance.enabled='1' → performance.mark/measure
-  timeline entries). Scenarios per findings. Context: audit json;
-  `packages/browser/src/telemetry.ts`, scenarios 08-telemetry.mjs.
+- [x] **C20** `done 2026-07-14 — pass 119/119, mini-stack 68.0 KB` —
+  Perf-event emission semantics. Suite grew 113→119 (6 new 08-telemetry
+  scenarios, all green first mini run after impl): root
+  acquireTokenRedirect event from handleRedirectPromise (cached-request
+  cid, redemption-half ext, previousLibraryVersion from pre-init
+  msal.version; clean loads + memoized re-calls emit nothing); failed
+  silent w/o app cid: event cid === new AuthError.correlationId === wire
+  cid (KEY CAPTURE FACT: real 5.16's RT token cid rides the QUERY string,
+  the POST body has none); addPerformanceCallback toString-dedupe
+  returning the existing id, stub (no perf client) id is "" NOT the
+  audit's "callback-id"; no_account_error abandons the measurement (zero
+  events) while uninitialized preflight failures DO emit success:false
+  (audit correction confirmed); initialize measured at most once;
+  msal.browser.performance.enabled='1' + perf client → mark/measure
+  timeline entries — real's surviving measure set for a silent cache-hit
+  is EXACTLY C11's ext DurationMs keys + root, so mini synthesizes from
+  its ext tables at emit time. compat 58.0 min (+1.6), core 29.5 (+0.1).
+  e2e 25/25. Details: PARITY_LOG C20 entry.
 - [ ] **C21** `pending` — authenticationScheme "pop"/"ssh" (PoP binding).
   Finding: `authentication-scheme-pop` — real sends req_cnf (JWK
   thumbprint), caches with kid in the key, returns tokenType "pop" +

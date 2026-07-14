@@ -43,6 +43,12 @@ export class BrowserPerformanceClient implements PerfClient {
     private cbs = new Map<string, PerfCallback>();
     constructor(_config?: unknown) {}
     addPerformanceCallback(cb: PerfCallback): string {
+        // real dedupes by callback source text and returns the existing id
+        for (const [id, existing] of this.cbs) {
+            if (existing.toString() === cb.toString()) {
+                return id;
+            }
+        }
         const id = crypto.randomUUID();
         this.cbs.set(id, cb);
         return id;
@@ -75,6 +81,10 @@ const IFRAME =
 // extras on the silent RT-fail -> iframe-fail path beyond the groups above
 const FAILX =
     "acquireTokenBySilentIframe deserializeResponse getAuthCodeUrl getStandardParams handleCodeResponse handleResponseCode silentIframeClientAcquireToken standardInteractionClientCreateAuthCodeClient standardInteractionClientInitializeAuthorizationRequest";
+// handleRedirectPromise root event (C20): redemption half only — PKCE/
+// authorize-url work happened on the pre-redirect page load
+const REDIR =
+    "authClientAcquireToken authClientCreateTokenRequestBody authClientExecuteTokenRequest authorizationCodeClientExecutePostToTokenEndpoint handleCodeResponse handleCodeResponseFromServer handleRedirectPromise handleResponseCode handleServerTokenResponse networkClientSendPostRequestAsync setUserData standardInteractionClientCreateAuthCodeClient";
 
 const join = (...parts: (string | false)[]) =>
     parts.filter(Boolean).join(" ");
@@ -107,12 +117,17 @@ export function telemetry(ctx: ClientContext): void {
     const config = ctx.config;
     const pc = config.telemetry?.client;
     // registration works without an opt-in client, like real's stub — the
-    // callback just never fires
+    // callback just never fires and the returned id is "" (real's
+    // StandardController returns "" when no perf client is configured)
     c.addPerformanceCallback = (cb: PerfCallback): string =>
-        pc?.addPerformanceCallback(cb) ?? crypto.randomUUID();
+        pc?.addPerformanceCallback(cb) ?? "";
     c.removePerformanceCallback = (id: string): boolean =>
         pc?.removePerformanceCallback(id) ?? false;
     if (!pc) return;
+    // pre-existing lib version in the cache (written by a PREVIOUS page's
+    // initialize) rides every event as previousLibraryVersion, like real's
+    // trackVersionChanges — read before initialize() overwrites it
+    const prevVersion = ctx.getStore().get("msal.version");
 
     const clientId = config.auth.clientId;
     instanceCount++;
@@ -182,6 +197,39 @@ export function telemetry(ctx: ClientContext): void {
         fields: Record<string, unknown>
     ) => {
         const durationMs = Math.round(performance.now() - started);
+        const eventCid = cid ?? crypto.randomUUID();
+        // sessionStorage diagnostics flag -> performance timeline entries
+        // (msal.start/end/measure.<op>.<cid>) for the root + every completed
+        // sub-measurement, like real's BrowserPerformanceMeasurement
+        try {
+            if (
+                Number(
+                    sessionStorage.getItem(
+                        "msal.browser.performance.enabled"
+                    )
+                ) === 1
+            ) {
+                const ops = [name];
+                for (const k of Object.keys(ext)) {
+                    if (k.endsWith("DurationMs")) {
+                        ops.push(k.slice(0, -"DurationMs".length));
+                    }
+                }
+                for (const op of ops) {
+                    const start = `msal.start.${op}.${eventCid}`;
+                    const end = `msal.end.${op}.${eventCid}`;
+                    performance.mark(start);
+                    performance.mark(end);
+                    performance.measure(
+                        `msal.measure.${op}.${eventCid}`,
+                        start,
+                        end
+                    );
+                }
+            }
+        } catch {
+            // non-browser env / blocked storage: marks are best-effort
+        }
         pc.emitEvents([
             {
                 eventId: crypto.randomUUID(),
@@ -191,10 +239,11 @@ export function telemetry(ctx: ClientContext): void {
                     "https://login.microsoftonline.com/common",
                 libraryName: LIB_NAME,
                 libraryVersion: version,
+                ...(prevVersion && { previousLibraryVersion: prevVersion }),
                 clientId,
                 name,
                 startTimeMs: Date.now() - durationMs,
-                correlationId: cid ?? crypto.randomUUID(),
+                correlationId: eventCid,
                 appName: "",
                 appVersion: "",
                 durationMs,
@@ -215,11 +264,16 @@ export function telemetry(ctx: ClientContext): void {
     };
 
     const origInit = c.initialize;
+    // real measures initialize at most once: repeat calls return early
+    // BEFORE the measurement starts
+    let initEmitted = false;
     c.initialize = async (...args: any[]) => {
+        if (initEmitted) return origInit(...args);
         const t0 = performance.now();
         const vis0 = document.visibilityState;
         try {
             const r = await origInit(...args);
+            initEmitted = true;
             const accounts = c.getAllAccounts().length;
             emitEvent(
                 "initializeClientApplication",
@@ -259,6 +313,71 @@ export function telemetry(ctx: ClientContext): void {
             );
             throw e;
         }
+    };
+
+    // root acquireTokenRedirect event, emitted by handleRedirectPromise
+    // (C20): one event per processed redirect response — clean loads (null)
+    // emit nothing, and repeat calls reuse the memoized promise
+    const origHrp = c.handleRedirectPromise;
+    let hrpSeen: Promise<AuthenticationResult | null> | undefined;
+    c.handleRedirectPromise = (): Promise<AuthenticationResult | null> => {
+        const t0 = performance.now();
+        const vis0 = document.visibilityState;
+        const pre = snapshot(undefined);
+        const p = origHrp();
+        if (p === hrpSeen) return p;
+        hrpSeen = p;
+        p.then(
+            (r: AuthenticationResult | null) => {
+                if (!r) return; // real discards the measurement
+                const src = netSource();
+                const hid = r.account.homeAccountId;
+                emitEvent(
+                    "acquireTokenRedirect",
+                    true,
+                    r.correlationId,
+                    t0,
+                    vis0,
+                    subMeasurements(
+                        join(DISC, src === "network" && NETDISC, REDIR)
+                    ),
+                    {
+                        accountType: accountType(r.account),
+                        dataBoundary: r.account?.dataBoundary,
+                        cacheMatchedAccounts: pre.accounts.has(hid) ? 1 : 0,
+                        cloudDiscoverySource: "config",
+                        authorityEndpointSource: src,
+                        httpVerToken: "",
+                        kmsi: false,
+                        refreshTokenSize: rtSize(hid),
+                        requestId: crypto.randomUUID(),
+                    }
+                );
+                cachedBy.set(hid, "acquireTokenRedirect");
+            },
+            (e: any) => {
+                // uninitialized rejects before real starts the measurement
+                if (
+                    e?.errorCode === "uninitialized_public_client_application"
+                ) {
+                    return;
+                }
+                netSource();
+                emitEvent(
+                    "acquireTokenRedirect",
+                    false,
+                    e?.correlationId,
+                    t0,
+                    vis0,
+                    {},
+                    {
+                        errorCode: e?.errorCode,
+                        subErrorCode: e?.subError ?? "",
+                    }
+                );
+            }
+        );
+        return p;
     };
 
     const origPopup = c.acquireTokenPopup;
@@ -390,11 +509,18 @@ export function telemetry(ctx: ClientContext): void {
             }
             return r;
         } catch (e: any) {
+            if (e?.errorCode === "no_account_error") {
+                // real throws AFTER starting the measurement but before any
+                // end/catch attaches — the event is abandoned, never emitted
+                throw e;
+            }
             const src = netSource();
             emitEvent(
                 "acquireTokenSilent",
                 false,
-                req?.correlationId,
+                // real binds the library-generated request cid at start; the
+                // core stamps it on the error (error.correlationId)
+                e?.correlationId ?? req?.correlationId,
                 t0,
                 vis0,
                 subMeasurements(

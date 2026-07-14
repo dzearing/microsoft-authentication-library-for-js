@@ -717,6 +717,42 @@ const C = {
         mini: "Pre-C19: the params were hardcoded empty and no entry was ever written — ESTS-side diagnostics lost the failure history when apps opted in.",
         cost: 0.2,
     },
+    "telemetry.perf-redirect-event": {
+        class: "missing-feature",
+        real: "handleRedirectPromise emits ONE root acquireTokenRedirect perf event per processed redirect response (cached-request cid, redemption-half ext, previousLibraryVersion); clean loads and repeat (memoized) calls emit nothing.",
+        mini: "Pre-C20: the redirect flow was never instrumented — dashboards keyed on name==='acquireTokenRedirect' went dark.",
+        cost: 0.4,
+    },
+    "telemetry.perf-failure-correlation": {
+        class: "behavior-diff",
+        real: "A failed acquireTokenSilent without an app correlationId yields event cid === error.correlationId === the token request's client-request-id QUERY param — client events join to caught errors and server logs.",
+        mini: "Pre-C20: errors carried no correlationId at all and the failure event got a fresh random UUID — failure events were uncorrelatable.",
+        cost: 0.3,
+    },
+    "telemetry.perf-callback-dedupe": {
+        class: "behavior-diff",
+        real: "addPerformanceCallback dedupes registrations by callback source text (returns the existing id, single delivery); without a perf client the returned id is ''.",
+        mini: "Pre-C20: every registration got a fresh UUID — re-registered callbacks (React effects) double-counted every metric; the stub path returned a random UUID instead of ''.",
+        cost: 0.2,
+    },
+    "telemetry.perf-preflight-failures": {
+        class: "behavior-diff",
+        real: "acquireTokenSilent with no account ABANDONS the started measurement (zero events reach callbacks); uninitialized preflight failures end the measurement and DO emit success:false events.",
+        mini: "Pre-C20: the wrapper emitted a success:false event for no_account_error too — phantom failures real never reports.",
+        cost: 0.2,
+    },
+    "telemetry.perf-init-once": {
+        class: "behavior-diff",
+        real: "initialize() is measured at most once — repeat calls return early before the measurement starts, so exactly one initializeClientApplication event.",
+        mini: "Pre-C20: every outer initialize() call emitted an event even though the inner call no-ops — duplicate startup events inflating init counts.",
+        cost: 0.1,
+    },
+    "telemetry.performance-marks": {
+        class: "missing-feature",
+        real: "sessionStorage msal.browser.performance.enabled='1' + an opt-in perf client writes msal.start/end/measure.<op>.<cid> performance-timeline entries for the root and every completed sub-measurement (DevTools-visible spans).",
+        mini: "Pre-C20: the Performance API was never touched — the diagnostics flag produced nothing.",
+        cost: 0.1,
+    },
 };
 
 // ---- generate ---------------------------------------------------------------

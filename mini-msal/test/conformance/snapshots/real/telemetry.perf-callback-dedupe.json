@@ -1,0 +1,9 @@
+{
+  "deliveredOncePerEvent": true,
+  "emittedSome": true,
+  "sameId": true,
+  "stubIds": [
+    "",
+    ""
+  ]
+}

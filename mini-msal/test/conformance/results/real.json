@@ -1,22 +1,7 @@
 [
   {
-    "id": "config.allow-redirect-in-iframe",
-    "area": "config",
-    "status": "captured"
-  },
-  {
-    "id": "config.token-renewal-offset",
-    "area": "config",
-    "status": "captured"
-  },
-  {
-    "id": "config.logout-hint-params",
-    "area": "config",
-    "status": "captured"
-  },
-  {
-    "id": "config.server-telemetry-enabled",
-    "area": "config",
+    "id": "telemetry.performance-marks",
+    "area": "telemetry",
     "status": "captured"
   }
 ]

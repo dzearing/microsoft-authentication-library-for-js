@@ -1,0 +1,7 @@
+{
+  "errorCode": "login_required",
+  "errorHasCid": true,
+  "eventCidEqualsErrorCid": true,
+  "eventCidEqualsWireCid": true,
+  "failedEventCount": 1
+}

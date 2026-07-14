@@ -1,0 +1,39 @@
+{
+  "noAccount": {
+    "err": {
+      "errorCode": "no_account_error",
+      "message": "See https://aka.ms/msal.js.errors#no_account_error for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  },
+  "noAccountEvents": [],
+  "uninitEvents": [
+    {
+      "errorCode": "uninitialized_public_client_application",
+      "name": "acquireTokenSilent",
+      "success": false
+    },
+    {
+      "errorCode": "uninitialized_public_client_application",
+      "name": "acquireTokenPopup",
+      "success": false
+    }
+  ],
+  "uninitPopup": {
+    "err": {
+      "errorCode": "uninitialized_public_client_application",
+      "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  },
+  "uninitSilent": {
+    "err": {
+      "errorCode": "uninitialized_public_client_application",
+      "message": "See https://aka.ms/msal.js.errors#uninitialized_public_client_application for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  }
+}
