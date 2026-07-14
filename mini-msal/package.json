@@ -11,6 +11,8 @@
         "measure": "node test/bundle-size/measure.mjs",
         "analyze": "node test/bundle-size/analyze.mjs",
         "e2e": "node test/e2e/e2e.mjs",
+        "seams": "node test/unit/seams.mjs",
+        "pack:check": "node test/packaging/check.mjs",
         "conformance": "npm run conformance:real && npm run conformance:mini && node test/conformance/report.mjs",
         "conformance:real": "node test/conformance/run.mjs --target=real",
         "conformance:mini": "node test/conformance/run.mjs --target=mini",
@@ -26,6 +28,9 @@
     "devDependencies": {
         "@rspack/cli": "^1.7.0",
         "@rspack/core": "^1.7.0",
-        "source-map": "^0.7.4"
+        "@types/react": "^19.2.17",
+        "@types/react-dom": "^19.2.3",
+        "source-map": "^0.7.4",
+        "typescript": "^7.0.2"
     }
 }

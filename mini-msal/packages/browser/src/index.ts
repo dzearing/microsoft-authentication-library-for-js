@@ -431,6 +431,14 @@ export class BrowserAuthError extends AuthError {
     }
 }
 
+/** mini-specific (not in real): a non-composed feature's API was invoked */
+export function featureError(api: string, mod: string): BrowserAuthError {
+    const e = new BrowserAuthError("feature_not_configured");
+    e.errorMessage = `${api} requires composing ${mod} from "@mini-msal/browser/${mod}"`;
+    e.message = `${e.errorCode}: ${e.errorMessage}`;
+    return e;
+}
+
 // same interaction-required detection as real MSAL (code / description /
 // suberror, contains-match on the description)
 const IR_CODES =
@@ -1675,7 +1683,7 @@ export function createClient(
     // pop crypto lives in ./pop; a "pop" request without it is a config gap
     const popApi = () => {
         if (!ctx.pop) {
-            throw new BrowserAuthError("feature_not_configured");
+            throw featureError('authenticationScheme "pop"', "pop");
         }
         return ctx.pop;
     };
@@ -2834,6 +2842,21 @@ export function createClient(
             });
         },
     };
+
+    // Seam hardening: every feature-owned public API exists on a core-only
+    // client as a stub that throws a documented error naming the missing
+    // composition — never undefined-is-not-a-function. Features overwrite.
+    const need = (api: string, mod: string) => {
+        (client as any)[api] = () => {
+            throw featureError(api, mod);
+        };
+    };
+    need("loginPopup", "popup");
+    need("acquireTokenPopup", "popup");
+    need("logoutPopup", "popup");
+    need("acquireTokenByCode", "broker");
+    need("addPerformanceCallback", "telemetry");
+    need("removePerformanceCallback", "telemetry");
 
     const ctx: ClientContext = {
         config,

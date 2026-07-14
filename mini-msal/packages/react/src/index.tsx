@@ -324,7 +324,7 @@ export function useMsalAuthentication(
                     return instance.loginRedirect(req).then(() => null);
                 }
                 if (type === InteractionType.Silent) {
-                    return instance.ssoSilent(req ?? {});
+                    return instance.ssoSilent((req ?? {}) as TokenRequest);
                 }
                 const err = new ReactAuthError(
                     "invalid_interaction_type",

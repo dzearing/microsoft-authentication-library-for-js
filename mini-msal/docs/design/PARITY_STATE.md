@@ -24,12 +24,14 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-14)**: Phases A0–C21 COMPLETE (all C-gaps closed) —
-conformance 121/121, e2e 25/25, GAP_REPORT all-pass. Size matrix:
-compat-no-react 61.2 KB min (real: 220.5), compat+react stack 71.2 KB
-(real: 248.8), core-only 30.9 KB. C21 landed PoP at +3.2 KB compat,
-marginally over its ~3 KB gate (flagged in its row; descope = one-line
-revert). Remaining: D-series (à-la-carte DX/docs/examples).
+**Status (2026-07-14)**: Phases A0–C21 + D1 COMPLETE — conformance
+121/121, e2e 25/25, seams 10/10, pack:check green, GAP_REPORT all-pass.
+Size matrix: compat-no-react 61.7 KB min (real: 220.5), compat+react
+stack 71.7 (real: 248.8), core-only 31.3. Packages now consumer-ready:
+tsc dist + types, verified via npm-pack → throwaway consumer
+(`npm run pack:check`); non-composed feature APIs throw documented
+feature_not_configured errors (`npm run seams`). Remaining: D2–D4
+(docs, examples, requirements audit).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
 ## Context budget (user-required 2026-07-13)
@@ -79,7 +81,10 @@ Work from `mini-msal/` on branch `dzearing/mini-msal`.
      did not regress vs the previous task's recorded count (suite may GROW
      when a task adds scenarios — record the new total as `X/<total>`)
    - `npm run e2e` → 25/25
+   - `npm run seams` → 10/10 (seam-hardening checks, cheap; D1)
    - `npm run measure` → record mini-msal-stack size in the task row
+   - `npm run pack:check` (needs network) only when a task touches
+     package.json exports, tsconfigs, or public API surface
 5. **Update docs**: set task status `done` with date, pass count, size in
    this file; append newly discovered work as new `pending` tasks here;
    append the task's decision entry to `PARITY_LOG.md` (Decision Log
@@ -360,17 +365,22 @@ The C-series proves compat correctness; the D-series makes the à-la-carte
 story real for consumers. Same SOP applies (validate → update doc → commit +
 push → reset). "Consumer" below means someone who has never read this repo.
 
-- [ ] **D1** `pending` — Seam hardening + consumer packaging. (a) Calling a
-  non-composed feature's API must fail with a clear, documented
-  BrowserAuthError (e.g. `feature_not_configured: loginPopup requires
-  composing popup from "@mini-msal/browser/popup"`) — never
-  undefined-is-not-a-function; add conformance-style unit checks for every
-  feature-owned public API on a core-only client. (b) Verify real-world
-  packaging: `npm pack` each package, install into a throwaway consumer app
-  (temp dir, file: deps), confirm subpath exports + types resolve and a
-  minimal build tree-shakes to the expected size. Fix exports maps as needed.
-  Context: `packages/*/package.json`, `packages/browser/src/index.ts`
-  (seam surface), scratch dir for the throwaway consumer.
+- [x] **D1** `done 2026-07-14 — pass 121/121, mini-stack 71.7 KB` — Seam
+  hardening + consumer packaging. (a) Core installs throwing stubs for all 6
+  feature-owned APIs (loginPopup/acquireTokenPopup/logoutPopup → ./popup,
+  acquireTokenByCode → ./broker, add/removePerformanceCallback →
+  ./telemetry): BrowserAuthError `feature_not_configured` whose message
+  names the exact import (shared exported `featureError()`; the ./pop seam
+  guard uses it too). NEW `npm run seams` (test/unit/seams.mjs, 10/10)
+  against new `conformance-mini-core` harness — covers core-only + partial
+  compositions. (b) Packages now ship tsc-built dist (JS + .d.ts;
+  typescript@7 devDep; 5 type-only fixes) with exports conditions
+  types/mini-msal-src/default — internal rspack builds still compile from
+  src (conditionNames), consumers get dist. NEW `npm run pack:check`
+  (network): npm pack → throwaway consumer → strict-tsc across every
+  subpath export + rspack tree-shake gates (core 29.9 / popup 32.5 /
+  compat 59.5 / react 65.1 KB min). Stub bytes: core 31.3 (+0.4), compat
+  61.7 (+0.5). e2e 25/25. Details: PARITY_LOG D1 entry.
 - [ ] **D2** `pending` — Consumer docs (user-required deliverables named
   2026-07-13). Two NEW standalone guides plus the README rewrite:
   (a) `docs/UPGRADING.md` — basic drop-in usage/upgrade doc: migrating from

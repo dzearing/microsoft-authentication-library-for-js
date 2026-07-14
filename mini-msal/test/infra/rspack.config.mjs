@@ -50,6 +50,9 @@ function makeConfig(name, entry, { externals } = {}) {
         resolve: {
             extensions: [".ts", ".tsx", ".js", ".jsx"],
             extensionAlias: { ".js": [".ts", ".tsx", ".js"] },
+            // internal builds consume @mini-msal/* straight from src/*.ts;
+            // consumers resolve the packages' built dist (see pack:check)
+            conditionNames: ["mini-msal-src", "..."],
         },
         module: {
             rules: [
@@ -135,6 +138,13 @@ export default [
     // bare pages exposing the library namespace + a client factory as globals.
     makeConfig("conformance-real", "./test/apps/harness/harness-real.ts"),
     makeConfig("conformance-mini", "./test/apps/harness/harness-mini.ts"),
+
+    // Seam-hardening harness (test/unit/seams.mjs): core + feature closures
+    // as globals so checks compose arbitrary subsets. Not a size target.
+    makeConfig(
+        "conformance-mini-core",
+        "./test/apps/harness/harness-mini-core.ts"
+    ),
 
     // React-bindings conformance harnesses (area 12-react): same globals as
     // above plus __mount/fixtures; React is bundled (not a size target).

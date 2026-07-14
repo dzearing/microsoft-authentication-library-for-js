@@ -18,7 +18,7 @@ const b64url = (bytes: Uint8Array): string =>
         .replace(/\//g, "_")
         .replace(/=+$/, "");
 
-const b64dec = (s: string): Uint8Array =>
+const b64dec = (s: string): Uint8Array<ArrayBuffer> =>
     Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), (c) =>
         c.charCodeAt(0)
     );
@@ -38,7 +38,7 @@ export function localStorageCache(ctx: ClientContext): void {
 
     // real derives a fresh AES-GCM key per operation: HKDF(salt = the random
     // per-write nonce, info = context), then a zero IV
-    const deriveKey = (nonce: Uint8Array, key: string) =>
+    const deriveKey = (nonce: Uint8Array<ArrayBuffer>, key: string) =>
         crypto.subtle.deriveKey(
             {
                 name: "HKDF",
@@ -103,7 +103,7 @@ export function localStorageCache(ctx: ClientContext): void {
             } catch {
                 /* absent or unparsable: generate a fresh key below */
             }
-            let rawKey: Uint8Array;
+            let rawKey: Uint8Array<ArrayBuffer>;
             if (cookie.id && cookie.key) {
                 keyId = cookie.id;
                 rawKey = b64dec(cookie.key);

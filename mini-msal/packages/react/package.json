@@ -5,8 +5,19 @@
     "description": "React bindings for @mini-msal/browser, mirroring the @azure/msal-react surface (prototype)",
     "type": "module",
     "sideEffects": false,
+    "files": [
+        "dist",
+        "src"
+    ],
+    "scripts": {
+        "build": "tsc -p tsconfig.json"
+    },
     "exports": {
-        ".": "./src/index.tsx"
+        ".": {
+            "types": "./dist/index.d.ts",
+            "mini-msal-src": "./src/index.tsx",
+            "default": "./dist/index.js"
+        }
     },
     "dependencies": {
         "@mini-msal/browser": "*"

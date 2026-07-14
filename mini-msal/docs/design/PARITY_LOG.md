@@ -1190,6 +1190,58 @@ Decisions/details:
   revert (drop `pop` from the compat compose list) if the bytes matter
   more. mini-core 30.9 (+1.4). e2e 25/25.
 
+### D1 — 2026-07-14 — seam hardening + consumer packaging
+
+- **Seam hardening (core)**: `createClient` installs throwing stubs for every
+  feature-owned public API before features run (features overwrite them):
+  loginPopup / acquireTokenPopup / logoutPopup → `./popup`,
+  acquireTokenByCode → `./broker`, addPerformanceCallback /
+  removePerformanceCallback → `./telemetry`. Each throws
+  `BrowserAuthError("feature_not_configured")` with
+  `errorMessage = '<api> requires composing <feature> from
+  "@mini-msal/browser/<feature>"'` (new exported `featureError()` helper;
+  the pre-existing pop seam guard now uses it too:
+  `authenticationScheme "pop" requires composing pop from
+  "@mini-msal/browser/pop"`). This error is mini-specific by design — real
+  MSAL has no non-composed state; compat composes everything so conformance
+  never observes it.
+- **Unit checks**: `npm run seams` (test/unit/seams.mjs) drives a new
+  core-only harness bundle (`conformance-mini-core`,
+  test/apps/harness/harness-mini-core.ts — exposes `__core` + `__features`
+  globals; a test vehicle, NOT a size target although it appears in the
+  measure table). 10 checks: all 6 stubs throw the documented error on a
+  core-only client; core APIs intact; composing popup/broker/telemetry
+  replaces exactly its own stubs while OTHER features' stubs keep guarding
+  (partial compositions).
+- **Consumer packaging**: packages previously exported raw `.ts` — unusable
+  outside this repo. Each package now has a tsc dist build
+  (`tsc -p packages/<p>` — typescript@7 devDep; JS + .d.ts, ES2022, module
+  ESNext) and a three-condition exports map per entry:
+  `"types"` → dist/*.d.ts, `"mini-msal-src"` → src/*.ts, `"default"` →
+  dist/*.js. Internal rspack builds resolve `mini-msal-src` first
+  (resolve.conditionNames in test/infra/rspack.config.mjs), so ALL measured
+  bundles + harnesses still compile straight from src exactly as before —
+  consumers get dist. `files: ["dist", "src"]` added for npm pack.
+  Five real type errors surfaced and fixed (types-only, zero runtime bytes):
+  3× `Uint8Array<ArrayBuffer>` BufferSource generics in local-storage.ts,
+  2× spread-args casts in telemetry.ts, 1× TokenRequest cast in react.
+- **pack:check** (test/packaging/check.mjs, network for react+types
+  install): tsc-builds all three packages, `npm pack`s them, installs the
+  tarballs into a throwaway consumer (os.tmpdir, file: deps), then verifies
+  (1) STRICT-tsconfig `tsc --noEmit` over consumer sources exercising the
+  root + every subpath export, and (2) rspack (default conditions → dist)
+  tree-shakes: core-only 29.9 KB min / core+popup 32.5 / compat 59.5 /
+  react-bindings 65.1 (react external) — matching the src-built matrix
+  (30.9/61.2) within default-minifier tolerance; gates assert the ranges +
+  ordering. compat's `"@mini-msal/browser": "*"` dependency is satisfied by
+  the sibling tarball install (npm does not hit the registry for it).
+- **Size cost of the stubs**: mini-core 31.3 KB min (+0.4), compat 61.7
+  (+0.5), stack 71.7 (+0.5) — the guard surface is core bytes by design
+  (that's the point: the errors exist BEFORE any feature is composed).
+- **SOP change**: `npm run seams` added to the validation gates in
+  PARITY_STATE (cheap, catches seam regressions); `npm run pack:check` on
+  demand for packaging-affecting tasks (needs network).
+
 ## Progress log
 
 | Task | Status | Pass | mini-stack size | Notes |
@@ -1229,3 +1281,4 @@ Decisions/details:
 | C19 | done 2026-07-14 | 113/113 | 66.4 KB min / 21.6 gz | +4 scenarios (suite 109→113, NEW area 16-config — all green first mini run). system.allowRedirectInIframe gates acquireTokenRedirect guard + processRedirect bail-out (scenario completes a FULL redirect login in an iframe; iframe src === redirectUri pins real's in-place hRP — navigateToLoginRequestUrl is an hRP OPTION in real 5.16, not config); system.tokenRenewalOffsetSeconds replaces the hardcoded 300s AT buffer (real: now+offset>expiresOn); LogoutRequest logout_hint (explicit/derived login_hint claim) + id_token_hint + eQP on end_session URLs (redirect + popup); serverTelemetryEnabled ports ServerTelemetryManager (current/last wire format, server-telemetry-<clientId> entry, 330B flush cap, 50-error FIFO, clear-on-success, cacheHits; stFail hooks 61/863-always/865/862 via new ctx.stFail). compat 56.4 min (+1.4), mini-core 29.4 (+1.4). e2e 25/25 |
 | C20 | done 2026-07-14 | 119/119 | 68.0 KB min / 22.0 gz | +6 scenarios (suite 113→119, 08-telemetry — all green first mini run). Root acquireTokenRedirect event from handleRedirectPromise (cached-request cid, redemption-half ext incl. both networkClientSendPostRequestAsync keys, previousLibraryVersion from pre-init msal.version; clean loads + memoized re-calls emit nothing); failure-event cid joins (AuthError.correlationId stamped by silent/redirect flows — KEY FACT: real's RT token cid is a QUERY param, absent from the body); addPerformanceCallback toString-dedupe + "" stub id (NOT callback-id); no_account_error abandons the measurement (no event) while uninitialized preflight fails DO emit; initialize measured at most once; msal.browser.performance.enabled=1 → mark/measure timeline entries synthesized from the ext tables (real's measure set === C11 ext DurationMs keys + root). compat 58.0 min (+1.6), mini-core 29.5 (+0.1). e2e 25/25 |
 | C21 | done 2026-07-14 | 121/121 | 71.2 KB min / 23.3 gz | +2 scenarios (suite 119→121, NEW area 17-pop — green first mini run + 1 fix). NEW ./pop feature (RSA-2048 RS256 keypair — real is RSASSA-PKCS1-v1_5 NOT ECDSA; kid = b64url(sha256(sorted {e,kty,n})); IndexedDB msal.db keystore, unextractable private key) + core scheme plumbing: token_type/req_cnf on auth-code + RT grants, AccessToken_With_AuthScheme entity w/ keyId (pop: from the server AT's cnf.kid, required; ssh: response key_id) + scheme cache-key suffix, scheme-aware AT lookup/save-dedupe, SHR result signing incl. cache-hit RE-sign (header typ,alg,kid; payload at,ts,m,u,nonce,p,q,cnf w/ full sorted public JWK), popKid skips keygen+signing, ssh-cert missing_ssh_jwk/missing_ssh_kid config errors, scheme in throttle + silent-dedupe thumbprints. EXTRA FIX exposed by full-body digest: RT grant redirect_uri only when the request has one (mini sent the config default). Compat +AuthenticationScheme export. compat 61.2 min (+3.2 — judged within the task's ~3 KB gate; descope = drop pop from compose), mini-core 30.9 (+1.4). e2e 25/25 |
+| D1 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Seam hardening + consumer packaging. Core stubs for all 6 feature-owned APIs → BrowserAuthError feature_not_configured naming the "@mini-msal/browser/<feature>" import (features overwrite; pop seam guard shares featureError()); NEW `npm run seams` 10/10 vs new conformance-mini-core harness. Packages get tsc dist (JS+d.ts, typescript@7) + 3-condition exports (types/mini-msal-src/default) — internal builds keep compiling from src via resolve.conditionNames; `npm run pack:check` proves npm-pack → throwaway consumer: strict tsc types across all subpaths + rspack tree-shake core 29.9 / popup 32.5 / compat 59.5 / react 65.1 KB min. Stub cost: mini-core 31.3 (+0.4), compat 61.7 (+0.5). e2e 25/25 |

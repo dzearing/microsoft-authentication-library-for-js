@@ -268,11 +268,11 @@ export function telemetry(ctx: ClientContext): void {
     // BEFORE the measurement starts
     let initEmitted = false;
     c.initialize = async (...args: any[]) => {
-        if (initEmitted) return origInit(...args);
+        if (initEmitted) return (origInit as any)(...args);
         const t0 = performance.now();
         const vis0 = document.visibilityState;
         try {
-            const r = await origInit(...args);
+            const r = await (origInit as any)(...args);
             initEmitted = true;
             const accounts = c.getAllAccounts().length;
             emitEvent(

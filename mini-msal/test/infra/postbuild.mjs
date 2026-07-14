@@ -20,6 +20,7 @@ for (const app of [
     "real-mock-app",
     "conformance-real",
     "conformance-mini",
+    "conformance-mini-core",
     "conformance-react-real",
     "conformance-react-mini",
 ]) {

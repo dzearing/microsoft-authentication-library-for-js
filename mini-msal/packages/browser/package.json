@@ -5,15 +5,58 @@
     "description": "Minimal drop-in-shaped reimplementation of the @azure/msal-browser surface (prototype)",
     "type": "module",
     "sideEffects": false,
+    "files": [
+        "dist",
+        "src"
+    ],
+    "scripts": {
+        "build": "tsc -p tsconfig.json"
+    },
     "exports": {
-        ".": "./src/index.ts",
-        "./popup": "./src/popup.ts",
-        "./pop": "./src/pop.ts",
-        "./broker": "./src/broker.ts",
-        "./local-storage": "./src/local-storage.ts",
-        "./cache-migration": "./src/cache-migration.ts",
-        "./naa": "./src/naa.ts",
-        "./telemetry": "./src/telemetry.ts",
-        "./redirect-bridge": "./src/redirect-bridge.ts"
+        ".": {
+            "types": "./dist/index.d.ts",
+            "mini-msal-src": "./src/index.ts",
+            "default": "./dist/index.js"
+        },
+        "./popup": {
+            "types": "./dist/popup.d.ts",
+            "mini-msal-src": "./src/popup.ts",
+            "default": "./dist/popup.js"
+        },
+        "./pop": {
+            "types": "./dist/pop.d.ts",
+            "mini-msal-src": "./src/pop.ts",
+            "default": "./dist/pop.js"
+        },
+        "./broker": {
+            "types": "./dist/broker.d.ts",
+            "mini-msal-src": "./src/broker.ts",
+            "default": "./dist/broker.js"
+        },
+        "./local-storage": {
+            "types": "./dist/local-storage.d.ts",
+            "mini-msal-src": "./src/local-storage.ts",
+            "default": "./dist/local-storage.js"
+        },
+        "./cache-migration": {
+            "types": "./dist/cache-migration.d.ts",
+            "mini-msal-src": "./src/cache-migration.ts",
+            "default": "./dist/cache-migration.js"
+        },
+        "./naa": {
+            "types": "./dist/naa.d.ts",
+            "mini-msal-src": "./src/naa.ts",
+            "default": "./dist/naa.js"
+        },
+        "./telemetry": {
+            "types": "./dist/telemetry.d.ts",
+            "mini-msal-src": "./src/telemetry.ts",
+            "default": "./dist/telemetry.js"
+        },
+        "./redirect-bridge": {
+            "types": "./dist/redirect-bridge.d.ts",
+            "mini-msal-src": "./src/redirect-bridge.ts",
+            "default": "./dist/redirect-bridge.js"
+        }
     }
 }
