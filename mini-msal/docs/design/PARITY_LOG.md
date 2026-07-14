@@ -560,6 +560,76 @@ Entries (append as you go):
   55.8 KB min (+2.8 — the react port), compat UNCHANGED 45.9, mini-core
   UNCHANGED 22.6 (InteractionStatus tree-shakes out of non-react builds).
 
+### C16 — 2026-07-13 — cache entity semantics (dedupe, tenant merge, migration, KMSI)
+
+Suite 93→98 (new area 13-cache, 5 scenarios, all deterministic and all
+green on the first mini run after implementation). Mock IdP gained
+`/config?claims.<name>=<json-or-string>` overrides merged into id_token
+claims (cleared by /reset) — used for the guest `tid` and
+`signin_state:["kmsi"]`; token-response `scope`/`access_token` overrides
+via the existing /config drive the superset-scope acquisition.
+
+Decisions/details:
+- **AT scope dedupe** (`dedupeATs`, used by tokenRequest AND
+  ctx.writeTokens): matches real's saveAccessToken filter (clientId,
+  homeAccountId, environment, realm, Bearer) + ScopeSet
+  .intersectingScopeSets semantics — OIDC scopes
+  (openid/profile/email/offline_access) are stripped from the NEW token's
+  comparison set unless it is OIDC-only; any remaining overlap removes the
+  cached AT before the new one is indexed. Lookup side: >1 request-matching
+  ATs (scope-superset match, expiry ignored) are ALL removed and the silent
+  ladder falls through to the network, exactly real's getAccessToken
+  multi-match clear. The silent AT rung also gained real's realm filter
+  (t.realm === account.tenantId) — needed so a guest-tenant AT can't
+  satisfy a home-tenant request after the merge work.
+- **Tenant-profile merge** (`mergeAccount` = real's buildAccountToCache):
+  base entity looked up tenant-agnostically by homeAccountId+environment
+  (>1 matches → ignore the hit, like real); incoming tenantProfiles
+  appended if their tenantId is new; lastUpdatedAt + cachedByApiId
+  refreshed on reuse (real stamps the CURRENT ApiId — snapshot shows 61
+  after a silent merge over a popup login's 861). isHomeTenant is now
+  COMPUTED (tid === homeAccountId utid segment) in all three writers —
+  web (tokenRequest), broker, naa — the latter two previously hardcoded
+  `true`. ctx.writeAccount routes through mergeAccount so features share
+  the semantics. Public AccountInfo.tenantProfiles is now a Map keyed by
+  tenantId (real's shape) and getAllAccounts flatMaps entities × profiles
+  into per-tenant AccountInfos whose idToken/claims/username/name/
+  localAccountId/tenantId/kmsi/loginHint/upn are sourced from that
+  tenant's cached id token claims (real's updateAccountTenantProfileData
+  precedence: claims > profile > entity).
+- **KMSI** — Store seam extended: `setUser(key, value, kmsi?)`;
+  ./local-storage writes KMSI entities PLAINTEXT (no AES-GCM wrapper), so
+  they survive losing the per-session encryption cookie — verified by the
+  scenario's cookie-delete + reload leg. kmsi computed once per token
+  response (signin_state contains kmsi/dvc_dmjd, real's AuthToken.isKmsi)
+  and threaded to all four entity writes. AccountInfo.kmsi now true/false
+  when claims exist (real returns false for non-KMSI users, not
+  undefined) — no snapshot pinned the old `undefined`, confirmed by the
+  full-suite run.
+- **Schema migration** is a NEW pay-to-play feature
+  (`@mini-msal/browser/cache-migration`, composed by compat), not core —
+  consumers without pre-v5 users don't pay for it. Core gained two tiny
+  seams for it: `ctx.onInit(hook)` (runs during initialize after
+  store.init, real's BrowserCacheManager.initialize ordering) and
+  `ctx.getStore()`. The feature ports migrateExistingCache: schemas 0-2
+  (msal.account.keys / msal.1.* / msal.2.*), stale-account removal past
+  cacheRetentionDays (default 5, now a Config knob), lastUpdatedAt
+  stamping, expired-AT/RT pruning (300s offset), id-tokens-first ordering
+  so the KMSI map exists for AT/RT writes, tenantProfile reconstruction
+  from claims, old entries left in place (real keeps them; only indexes
+  are pruned). Simplification vs real: old entries that are encrypted
+  wrappers are removed outright (real attempts decryption with the live
+  cookie first) — unobservable unless a pre-v5 ENCRYPTED cache coexists
+  with a live session cookie, which real itself only handles for
+  same-session migrations.
+- **Gotcha**: the new-AT write happens before dedupe runs, so dedupeATs
+  must skip the just-written key (identical superset re-acquisitions
+  share the key).
+- Size: mini-msal-stack 55.8 → 60.6 KB min (+4.8), compat 45.9 → 50.6
+  (+4.7 — merge/dedupe/expansion are core+compat, migration ~2.3 of it),
+  mini-core 22.6 → 24.1 (+1.5). e2e 25/25 (v5 sessionStorage interop
+  unaffected).
+
 ## Completed task list (Phases A0, A, B, C — all done)
 
 ## Task list (execute strictly top-to-bottom)
@@ -809,3 +879,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | C13 | done 2026-07-13 | 83/83 | 51.6 KB min / 17.0 gz | +5 scenarios (suite 78→83, new area 11-navigation — ALL green first mini run). NavigationClient class + setNavigationClient + system.navigationClient; auth.onRedirectNavigate cancel hook (acquire keeps lock, logout releases + logoutEnd); navigateToLoginRequestUrl deep-link replay via real's msal.{cid}.request.origin / urlHash temp keys, redirectStartPage, in-place #hash restore, doc-title swap; redirect logoutStart payload = raw request (real). e2e cancelled-login seed gained request.origin. compat 44.6 min (+1.7), mini-core 22.5 (+1.6 — redirect is core). e2e 25/25 |
 | C14 | done 2026-07-13 | 87/87 | 53.0 KB min / 17.5 gz | +4 scenarios (suite 83→87, all green first mini run). system.navigatePopups default-true sync about:blank open in the user-gesture stack + location.assign navigate; openSizedPopup features/geometry + popupWindowAttributes/popupWindowParent; real popup name formats (token + logout); blocked sync open fails late as popup_window_error like real; logoutPopup mainWindowRedirectUri via new core ctx.navigate seam (ApiId 962, lock survives navigation); telemetry isAsyncPopup wired. compat 45.9 min (+1.3), mini-core 22.6 (+0.1). e2e 25/25 |
 | C15 | done 2026-07-13 | 93/93 | 55.8 KB min / 18.4 gz | +6 scenarios (suite 87→93, NEW area 12-react on NEW dual react harness pages conformance-react-{real,mini}; all green first mini run). packages/react rewritten as a port of msal-react 5.5.1: provider initialize() + initializeWrapperLibrary + full InteractionStatus reducer (real's event mapping w/ clear-guards; accounts [] during startup); useMsalAuthentication {login, acquireToken, result, error} w/ auto-acquire + IRAE fallback + logout reset; useIsAuthenticated(ids)/useAccount case-insensitive + active-account fallback; templates w/ identifier props + function children; MsalAuthenticationTemplate spread/throw error contract. Core +InteractionStatus export. compat UNCHANGED 45.9, mini-core UNCHANGED 22.6. e2e 25/25 |
+| C16 | done 2026-07-13 | 98/98 | 60.6 KB min / 19.9 gz | +5 scenarios (suite 93→98, NEW area 13-cache — all green first mini run). AT intersecting-scope dedupe on save + multi-match clear on lookup (+realm filter on the silent AT rung); mergeAccount = buildAccountToCache (one base entity per homeAccountId+env, profiles appended, isHomeTenant computed, shared by web/broker/naa); getAllAccounts expands tenantProfiles (Map) into per-tenant AccountInfos; Store.setUser kmsi seam → plaintext KMSI entities in localStorage mode + real AccountInfo.kmsi; NEW /cache-migration feature (msal.0/1/2→3, 5-day TTL) via new ctx.onInit/getStore seams; mock IdP claims.* overrides. compat 50.6 min (+4.7), mini-core 24.1 (+1.5). e2e 25/25 |

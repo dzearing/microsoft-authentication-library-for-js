@@ -597,6 +597,36 @@ const C = {
         mini: "Pre-C15: useIsAuthenticated took no argument (any account = authenticated, true during startup); homeAccountId/localAccountId compared case-sensitively; empty filter returned accounts[0] instead of the active account.",
         cost: 0.4,
     },
+    "cache.at-scope-dedupe": {
+        class: "behavior-diff",
+        real: "saveAccessToken removes every cached AT for the same account/realm/type whose (non-OIDC) scope set intersects the new token's — at most one AT per scope family; a narrower silent request then serves the NEW token.",
+        mini: "Pre-C16: ATs accumulated per scope-set key and the silent lookup returned the FIRST (older, narrower) match — a stale token the server had superseded.",
+        cost: 0.5,
+    },
+    "cache.at-multi-match-clear": {
+        class: "behavior-diff",
+        real: "getAccessToken with >1 matching cached ATs removes them ALL and refreshes over the network.",
+        mini: "Pre-C16: served the first matching AT from cache, leaving the ambiguous duplicates in place.",
+        cost: 0.2,
+    },
+    "cache.tenant-profile-merge": {
+        class: "behavior-diff",
+        real: "Guest-tenant tokens merge into ONE base account entity (homeAccountId+environment) with an appended tenantProfile (isHomeTenant computed); getAllAccounts expands profiles into per-tenant AccountInfo objects.",
+        mini: "Pre-C16: wrote a second account entity per realm, each falsely claiming isHomeTenant:true, and never expanded profiles.",
+        cost: 0.6,
+    },
+    "cache.schema-migration": {
+        class: "missing-feature",
+        real: "initialize migrates msal.0/1/2-schema accounts+tokens into msal.3 (stamping lastUpdatedAt, pruning entries older than cacheRetentionDays=5d, expired or invalid) so pre-v5 users keep silent SSO.",
+        mini: "Pre-C16: old-schema entries were ignored forever — upgraded users were forced to re-authenticate. Now a compat-composed /cache-migration feature.",
+        cost: 1.0,
+    },
+    "cache.kmsi-plaintext-localstorage": {
+        class: "behavior-diff",
+        real: "KMSI entities (signin_state kmsi/dvc_dmjd) are persisted PLAINTEXT in localStorage mode so sign-in survives losing the per-session encryption cookie; AccountInfo.kmsi reflects the claim.",
+        mini: "Pre-C16: everything was encrypted under the session cookie key (KMSI users lost sign-in on browser restart) and account.kmsi was hardcoded undefined.",
+        cost: 0.4,
+    },
 };
 
 // ---- generate ---------------------------------------------------------------
@@ -613,6 +643,7 @@ const areaOrder = [
     "init",
     "navigation",
     "react",
+    "cache",
 ];
 const areaTitles = {
     core: "1. Core flows",
@@ -627,6 +658,7 @@ const areaTitles = {
     init: "10. Init & misc",
     navigation: "11. Redirect navigation",
     react: "12. React bindings",
+    cache: "13. Cache entity semantics",
 };
 
 const rows = results.map((r) => {

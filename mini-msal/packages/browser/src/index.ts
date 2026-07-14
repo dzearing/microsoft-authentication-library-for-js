@@ -35,7 +35,8 @@ export interface AccountInfo {
     idTokenClaims: Record<string, unknown>;
     idToken?: string;
     authorityType?: string;
-    tenantProfiles?: unknown[];
+    /** public shape is a Map keyed by tenantId, like real's AccountInfo */
+    tenantProfiles?: Map<string, unknown>;
     nativeAccountId?: string;
     dataBoundary?: string;
     kmsi?: boolean;
@@ -144,7 +145,7 @@ export interface Config {
     };
     /** sessionStorage (default) built in; "localStorage" needs the
      * ./local-storage feature composed */
-    cache?: { cacheLocation?: string };
+    cache?: { cacheLocation?: string; cacheRetentionDays?: number };
     experimental?: Record<string, unknown>;
     /** perf events opt-in: `client: new BrowserPerformanceClient()` (./telemetry) */
     telemetry?: {
@@ -479,11 +480,21 @@ async function pkce(): Promise<{ verifier: string; challenge: string }> {
     return { verifier, challenge };
 }
 
-function decodeJwt(token: string): Record<string, any> {
+export function decodeJwt(token: string): Record<string, any> {
     return JSON.parse(
         atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))
     );
 }
+
+/** signin_state claim contains kmsi/dvc_dmjd (real's AuthToken.isKmsi) */
+export function isKmsi(claims: Record<string, any>): boolean {
+    return !!(claims.signin_state as string[] | undefined)?.some((v) =>
+        ["kmsi", "dvc_dmjd"].includes(v.trim().toLowerCase())
+    );
+}
+
+/** never the ONLY scopes real considers when deduping intersecting ATs */
+const OIDC_SCOPES = ["openid", "profile", "email", "offline_access"];
 
 async function post(
     url: string,
@@ -631,7 +642,8 @@ export interface Store {
     set(key: string, value: string): void;
     remove(key: string): void;
     getUser(key: string): string | null;
-    setUser(key: string, value: string): void | Promise<void>;
+    /** kmsi entities are persisted plaintext by ./local-storage, like real */
+    setUser(key: string, value: string, kmsi?: boolean): void | Promise<void>;
 }
 
 /** The core client surface returned by createClient. */
@@ -695,6 +707,11 @@ export interface ClientContext {
     clearAccount(account?: AccountInfo | null): void;
     /** replace the cache backend (./local-storage); call before initialize */
     setStore(store: Store): void;
+    /** the live cache backend (resolved at call time, after setStore) */
+    getStore(): Store;
+    /** run a hook during initialize(), after the store is ready
+     * (./cache-migration) */
+    onInit(hook: () => Promise<void> | void): void;
     /** cache an account entity + index it (routed through the Store seam) */
     writeAccount(entity: AccountEntity): Promise<void>;
     /** read a cached credential entity from a token-key index (./naa) */
@@ -761,6 +778,9 @@ export function createClient(
         getUser: (k) => sessionStorage.getItem(k),
         setUser: (k, v) => sessionStorage.setItem(k, v),
     };
+
+    // feature hooks run during initialize(), after the store is ready
+    const initHooks: (() => Promise<void> | void)[] = [];
 
     const uninitialized = () =>
         new BrowserAuthError("uninitialized_public_client_application");
@@ -855,8 +875,8 @@ export function createClient(
         return raw ? (JSON.parse(raw) as T) : null;
     };
 
-    const writeUser = (key: string, value: unknown) =>
-        store.setUser(key, JSON.stringify(value));
+    const writeUser = (key: string, value: unknown, kmsi?: boolean) =>
+        store.setUser(key, JSON.stringify(value), kmsi);
 
     const tokenKeysKey = `${P}.token.keys.${clientId}`;
 
@@ -883,27 +903,38 @@ export function createClient(
         return undefined;
     };
 
-    const toAccountInfo = (e: AccountEntity): AccountInfo => {
+    // real expands each tenantProfile into its own AccountInfo, sourcing
+    // per-tenant fields from that tenant's cached id token claims
+    // (CacheManager.buildTenantProfiles + updateAccountTenantProfileData)
+    const toAccountInfo = (e: AccountEntity, tenantId?: string): AccountInfo => {
+        const profiles = (e.tenantProfiles ?? []) as Record<string, any>[];
+        const tid = tenantId ?? e.realm;
+        const profile = profiles.find((p) => p.tenantId === tid);
         const id = findCred(
             tokenKeys().idToken,
-            (t) => t.homeAccountId === e.homeAccountId
+            (t) => t.homeAccountId === e.homeAccountId && t.realm === tid
         );
+        const claims = id ? decodeJwt(id.secret) : undefined;
         return {
             authorityType: e.authorityType,
             dataBoundary: undefined,
             environment: e.environment,
             homeAccountId: e.homeAccountId,
             idToken: id?.secret,
-            idTokenClaims: id ? decodeJwt(id.secret) : {},
-            kmsi: undefined,
-            localAccountId: e.localAccountId,
-            loginHint: undefined,
-            name: e.name,
+            idTokenClaims: claims ?? {},
+            kmsi: claims ? isKmsi(claims) : undefined,
+            localAccountId: claims
+                ? claims.oid ?? claims.sub ?? ""
+                : profile?.localAccountId ?? e.localAccountId,
+            loginHint: claims?.login_hint,
+            name: claims ? claims.name : profile?.name ?? e.name,
             nativeAccountId: e.nativeAccountId,
-            tenantId: e.realm,
-            tenantProfiles: e.tenantProfiles,
-            upn: undefined,
-            username: e.username,
+            tenantId: claims ? claims.tid ?? claims.tfp ?? claims.acr ?? "" : tid,
+            tenantProfiles: new Map(profiles.map((p) => [p.tenantId, p])),
+            upn: claims?.upn,
+            username: claims
+                ? claims.preferred_username ?? claims.upn ?? ""
+                : profile?.username ?? e.username,
         };
     };
 
@@ -917,7 +948,11 @@ export function createClient(
         accountKeys()
             .map((k) => readUser<AccountEntity>(k))
             .filter((e): e is AccountEntity => !!e)
-            .map(toAccountInfo)
+            .flatMap((e) =>
+                ((e.tenantProfiles as { tenantId: string }[]) ?? [
+                    { tenantId: e.realm },
+                ]).map((p) => toAccountInfo(e, p.tenantId))
+            )
             .filter((a) => !filter || matchesFilter(a, filter));
 
     // Real returns null on an empty/all-empty filter (CacheManager
@@ -932,6 +967,89 @@ export function createClient(
     const getActiveAccount = (): AccountInfo | null => {
         const f = readJSON<{ homeAccountId: string }>(activeKey);
         return f ? getAccount({ homeAccountId: f.homeAccountId }) : null;
+    };
+
+    /**
+     * Real's buildAccountToCache: reuse the tenant-agnostic base account
+     * entity (homeAccountId + environment) and append the incoming tenant
+     * profiles to it — guest-tenant tokens never create a second entity.
+     * Returns the (merged) entity actually written.
+     */
+    const mergeAccount = async (
+        e: AccountEntity,
+        kmsi?: boolean
+    ): Promise<AccountEntity> => {
+        const ks = accountKeys();
+        const bases = ks
+            .map((k) => readUser<AccountEntity>(k))
+            .filter(
+                (b): b is AccountEntity =>
+                    !!b &&
+                    b.homeAccountId === e.homeAccountId &&
+                    b.environment === e.environment
+            );
+        // like real, >1 base match means a corrupt cache: ignore the hit
+        const target = bases.length === 1 ? bases[0] : e;
+        if (target !== e) {
+            const profiles = (target.tenantProfiles ??= []) as {
+                tenantId: string;
+            }[];
+            for (const p of (e.tenantProfiles ?? []) as { tenantId: string }[]) {
+                if (!profiles.some((q) => q.tenantId === p.tenantId)) {
+                    profiles.push(p);
+                }
+            }
+            target.lastUpdatedAt = e.lastUpdatedAt;
+            target.cachedByApiId = e.cachedByApiId;
+        }
+        const key = `${P}|${target.homeAccountId}|${target.environment}|${target.realm}`;
+        await writeUser(key, target, kmsi);
+        if (!ks.includes(key)) {
+            writeJSON(`${P}.account.keys`, [...ks, key]);
+        }
+        return target;
+    };
+
+    /**
+     * Real's saveAccessToken scope dedupe: remove every cached AT for the
+     * same clientId/account/realm/tokenType whose (non-OIDC) scope set
+     * intersects the new token's. Returns the pruned key list.
+     */
+    const dedupeATs = (
+        list: string[],
+        newKey: string,
+        t: {
+            homeAccountId: string;
+            environment: string;
+            realm: string;
+            target: string;
+        }
+    ): string[] => {
+        const scopes = t.target.toLowerCase().split(" ").filter(Boolean);
+        const nonOidc = scopes.filter((s) => !OIDC_SCOPES.includes(s));
+        const cmp = nonOidc.length ? nonOidc : scopes;
+        return list.filter((k) => {
+            if (k === newKey) {
+                return true;
+            }
+            const c = readUser<TokenEntity>(k);
+            if (
+                c &&
+                c.clientId === clientId &&
+                c.homeAccountId === t.homeAccountId &&
+                c.environment === t.environment &&
+                c.realm === t.realm &&
+                (c.tokenType ?? "Bearer") === "Bearer" &&
+                (c.target ?? "")
+                    .toLowerCase()
+                    .split(" ")
+                    .some((s) => cmp.includes(s))
+            ) {
+                store.remove(k);
+                return false;
+            }
+            return true;
+        });
     };
 
     /**
@@ -1209,33 +1327,35 @@ export function createClient(
         const realm = claims.tid ?? "";
         const base = `${P}|${homeAccountId}|${environment}`;
 
-        const accountKey = `${base}|${realm}`;
         const idKey = `${base}|idtoken|${clientId}|${realm}||`;
         const atKey = `${base}|accesstoken|${clientId}|${realm}|${grantedStr.toLowerCase()}|`;
         const rtKey = `${base}|refreshtoken|${clientId}|||`;
+        const kmsi = isKmsi(claims);
 
-        const entity: AccountEntity = {
-            homeAccountId,
-            environment,
-            realm,
-            localAccountId,
-            username,
-            authorityType: "MSSTS",
-            name: claims.name,
-            clientInfo: json.client_info,
-            tenantProfiles: [
-                {
-                    tenantId: realm,
-                    localAccountId,
-                    name: claims.name,
-                    username,
-                    isHomeTenant: true,
-                },
-            ],
-            lastUpdatedAt: ts,
-            cachedByApiId: meta?.apiId,
-        };
-        await writeUser(accountKey, entity);
+        const entity = await mergeAccount(
+            {
+                homeAccountId,
+                environment,
+                realm,
+                localAccountId,
+                username,
+                authorityType: "MSSTS",
+                name: claims.name,
+                clientInfo: json.client_info,
+                tenantProfiles: [
+                    {
+                        tenantId: realm,
+                        localAccountId,
+                        name: claims.name,
+                        username,
+                        isHomeTenant: realm === homeAccountId.split(".")[1],
+                    },
+                ],
+                lastUpdatedAt: ts,
+                cachedByApiId: meta?.apiId,
+            },
+            kmsi
+        );
         await writeUser(idKey, {
             credentialType: "IdToken",
             homeAccountId,
@@ -1244,7 +1364,7 @@ export function createClient(
             secret: json.id_token,
             realm,
             lastUpdatedAt: ts,
-        } satisfies TokenEntity);
+        } satisfies TokenEntity, kmsi);
         await writeUser(atKey, {
             credentialType: "AccessToken",
             homeAccountId,
@@ -1259,7 +1379,7 @@ export function createClient(
             ...(refreshOn ? { refreshOn: String(refreshOn) } : undefined),
             tokenType: "Bearer",
             lastUpdatedAt: ts,
-        } satisfies TokenEntity);
+        } satisfies TokenEntity, kmsi);
         if (json.refresh_token) {
             await writeUser(rtKey, {
                 credentialType: "RefreshToken",
@@ -1268,10 +1388,18 @@ export function createClient(
                 clientId,
                 secret: json.refresh_token,
                 lastUpdatedAt: ts,
-            } satisfies TokenEntity);
+            } satisfies TokenEntity, kmsi);
         }
 
         const keys = tokenKeys();
+        // real's saveAccessToken drops cached ATs (same account/realm/type)
+        // whose scopes intersect the new token's before writing it
+        keys.accessToken = dedupeATs(keys.accessToken, atKey, {
+            homeAccountId,
+            environment,
+            realm,
+            target: grantedStr,
+        });
         const add = (list: string[], k: string) =>
             list.includes(k) ? list : [...list, k];
         writeJSON(tokenKeysKey, {
@@ -1281,10 +1409,6 @@ export function createClient(
                 ? add(keys.refreshToken, rtKey)
                 : keys.refreshToken,
         });
-        const acctKeys = accountKeys();
-        if (!acctKeys.includes(accountKey)) {
-            writeJSON(`${P}.account.keys`, [...acctKeys, accountKey]);
-        }
         // real emits no same-tab accountAdded event; cross-tab propagation
         // is the localStorage/BroadcastChannel feature's job
         return {
@@ -1292,7 +1416,7 @@ export function createClient(
             uniqueId: localAccountId,
             tenantId: realm,
             scopes: [...new Set(grantedStr.split(" "))],
-            account: toAccountInfo(entity),
+            account: toAccountInfo(entity, realm),
             idToken: json.id_token,
             idTokenClaims: claims,
             accessToken: json.access_token,
@@ -1577,16 +1701,35 @@ export function createClient(
             pol >= CacheLookupPolicy.RefreshTokenAndNetwork;
         const keys = tokenKeys();
         const wanted = req.scopes.map((sc) => sc.toLowerCase());
-        const at = useAT
-            ? findCred(keys.accessToken, (t) => {
-                  const target = (t.target ?? "").toLowerCase().split(" ");
-                  return (
-                      t.homeAccountId === account.homeAccountId &&
-                      wanted.every((sc) => target.includes(sc)) &&
-                      Number(t.expiresOn) - 300 > Date.now() / 1000
-                  );
-              })
-            : undefined;
+        let at: TokenEntity | undefined;
+        if (useAT) {
+            const matches = keys.accessToken.filter((k) => {
+                const t = readUser<TokenEntity>(k);
+                return (
+                    !!t &&
+                    t.clientId === clientId &&
+                    t.homeAccountId === account.homeAccountId &&
+                    t.realm === account.tenantId &&
+                    wanted.every((sc) =>
+                        (t.target ?? "").toLowerCase().split(" ").includes(sc)
+                    )
+                );
+            });
+            if (matches.length > 1) {
+                // real's getAccessToken: >1 match clears them ALL and
+                // refreshes over the network
+                matches.forEach((k) => store.remove(k));
+                keys.accessToken = keys.accessToken.filter(
+                    (k) => !matches.includes(k)
+                );
+                writeJSON(tokenKeysKey, keys);
+            } else if (matches.length === 1) {
+                const t = readUser<TokenEntity>(matches[0])!;
+                if (Number(t.expiresOn) - 300 > Date.now() / 1000) {
+                    at = t;
+                }
+            }
+        }
         if (at) {
             const id = findCred(
                 keys.idToken,
@@ -1760,6 +1903,11 @@ export function createClient(
             // encryption-key + cache import for ./local-storage (real's
             // browserStorage.initialize), no-op for the default store
             await store.init?.();
+            // feature init hooks (./cache-migration), like real's
+            // BrowserCacheManager.initialize ordering
+            for (const h of initHooks) {
+                await h();
+            }
             if (config.cache?.cacheLocation === "localStorage") {
                 // real subscribes to cross-tab events only in localStorage
                 // mode (StandardController.initialize)
@@ -2000,13 +2148,10 @@ export function createClient(
         navigate: (url, apiId) =>
             navClient.navigateInternal(url, navOptions(apiId)),
         setStore: (s) => (store = s),
+        getStore: () => store,
+        onInit: (h) => initHooks.push(h),
         writeAccount: async (e) => {
-            const key = `${P}|${e.homeAccountId}|${e.environment}|${e.realm}`;
-            await writeUser(key, e);
-            const ks = accountKeys();
-            if (!ks.includes(key)) {
-                writeJSON(`${P}.account.keys`, [...ks, key]);
-            }
+            await mergeAccount(e);
         },
         findToken: (type, match) => findCred(tokenKeys()[type], match),
         writeTokens: async (t) => {
@@ -2037,6 +2182,7 @@ export function createClient(
                 tokenType: "Bearer",
             } satisfies TokenEntity);
             const keys = tokenKeys();
+            keys.accessToken = dedupeATs(keys.accessToken, atKey, t);
             const add = (list: string[], k: string) =>
                 list.includes(k) ? list : [...list, k];
             writeJSON(tokenKeysKey, {

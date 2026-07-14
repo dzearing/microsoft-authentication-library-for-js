@@ -24,10 +24,10 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-13)**: Phases A0–C15 COMPLETE — conformance 93/93,
-e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 45.9 KB min
-(real: 220.5), compat+react stack 55.8 KB (real: 248.8), core-only
-22.6 KB. Remaining: C-gaps C16–C21 (post-audit parity gaps beyond the
+**Status (2026-07-13)**: Phases A0–C16 COMPLETE — conformance 98/98,
+e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 50.6 KB min
+(real: 220.5), compat+react stack 60.6 KB (real: 248.8), core-only
+24.1 KB. Remaining: C-gaps C17–C21 (post-audit parity gaps beyond the
 suite) then D-series (à-la-carte DX/docs/examples).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
@@ -240,16 +240,23 @@ scenarios + a partial implementation, add a follow-up task, note it here.
   export. compat unchanged 45.9, core 22.6. Gotchas (logout popups need
   bridge postLogoutRedirectUri; neither stack auto-sets active account):
   PARITY_LOG C15 entry.
-- [ ] **C16** `pending` — Cache entity semantics. Findings:
-  `access-token-scope-dedupe` (delete intersecting-scope ATs on save,
-  clear multi-matches on lookup — stale-token bug),
-  `tenant-profile-merge` (guest-tenant tokens merge into ONE base account
-  entity with tenantProfiles; mini writes per-realm entities),
-  `cache-schema-migration` (migrate msal.1/msal.2 schemas + retention
-  cleanup at initialize), `kmsi-plaintext-storage` (HIGH: KMSI accounts
-  stay PLAINTEXT in localStorage mode). Scenarios per findings.
-  Context: audit json; `packages/browser/src/index.ts` (cache write/read),
-  `packages/browser/src/local-storage.ts`, scenarios 02-silent/03-accounts.
+- [x] **C16** `done 2026-07-13 — pass 98/98, mini-stack 60.6 KB` — Cache
+  entity semantics. Suite grew 93→98 (new area 13-cache: at-scope-dedupe,
+  at-multi-match-clear, tenant-profile-merge, schema-migration,
+  kmsi-plaintext-localstorage — all green first mini run after impl).
+  Mock IdP gained `/config?claims.<name>=<json>` id_token-claim overrides
+  (drives guest-tid + signin_state). Core: saveAccessToken intersecting-
+  scope dedupe (OIDC-stripped) + >1-match clear-on-lookup; base-account
+  merge (mergeAccount = real's buildAccountToCache: one entity per
+  homeAccountId+environment, tenantProfiles appended, isHomeTenant
+  computed) shared by web/broker/naa writers; getAllAccounts expands
+  profiles into per-tenant AccountInfos (tenantProfiles now a Map,
+  per-tenant idToken/claims/kmsi/loginHint/upn sourced from claims). KMSI:
+  Store.setUser(key, value, kmsi) seam — ./local-storage persists KMSI
+  entities PLAINTEXT (survive cookie loss); AccountInfo.kmsi real values.
+  NEW /cache-migration feature (compat-composed; core got onInit/getStore
+  seams): msal.0/1/2→msal.3 migration + 5-day retention TTL. compat 50.6
+  min (+4.7), core 24.1 (+1.5). e2e 25/25. Details: PARITY_LOG C16 entry.
 - [ ] **C17** `pending` — Programmatic token APIs. Findings: `clear-cache`
   (clearCache(logoutRequest) — local sign-out, no navigation),
   `hydrate-cache` (hydrateCache(result, request) — SSR seeding),

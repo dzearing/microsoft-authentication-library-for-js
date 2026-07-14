@@ -1,7 +1,27 @@
 [
   {
-    "id": "react.auth-template-error-contract",
-    "area": "react",
+    "id": "cache.at-scope-dedupe",
+    "area": "cache",
+    "status": "captured"
+  },
+  {
+    "id": "cache.at-multi-match-clear",
+    "area": "cache",
+    "status": "captured"
+  },
+  {
+    "id": "cache.tenant-profile-merge",
+    "area": "cache",
+    "status": "captured"
+  },
+  {
+    "id": "cache.schema-migration",
+    "area": "cache",
+    "status": "captured"
+  },
+  {
+    "id": "cache.kmsi-plaintext-localstorage",
+    "area": "cache",
     "status": "captured"
   }
 ]

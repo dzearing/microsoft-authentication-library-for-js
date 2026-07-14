@@ -67,6 +67,7 @@ const nonceByChallenge = new Map();
 let requestLog = []; // every authorize/token/logout request, in order
 let injections = []; // queued error injections consumed by /token|/authorize
 let tokenOverrides = {}; // extra/overridden fields merged into /token responses
+let claimsOverrides = {}; // extra/overridden id_token claims (/config?claims.tid=...)
 
 function logRequest(entry) {
     requestLog.push({ seq: requestLog.length, ...entry });
@@ -88,6 +89,7 @@ function makeIdToken(idx, nonce = lastNonce) {
         nonce,
         exp: Math.floor(Date.now() / 1000) + 3600,
         iat: Math.floor(Date.now() / 1000),
+        ...claimsOverrides,
     };
     return `${b64url({ alg: "none" })}.${b64url(claims)}.sig`;
 }
@@ -252,6 +254,7 @@ const server = createServer(tls, (req, res) => {
         requestLog = [];
         injections = [];
         tokenOverrides = {};
+        claimsOverrides = {};
         nonceByChallenge.clear();
         res.end("reset");
     } else if (url.pathname === "/requests") {
@@ -273,7 +276,18 @@ const server = createServer(tls, (req, res) => {
         res.end("injected");
     } else if (url.pathname === "/config") {
         for (const [k, v] of url.searchParams) {
-            tokenOverrides[k] = /^-?\d+$/.test(v) ? Number(v) : v;
+            // claims.<name>=<json-or-string> overrides id_token claims
+            if (k.startsWith("claims.")) {
+                let parsed = v;
+                try {
+                    parsed = JSON.parse(v);
+                } catch {
+                    /* keep raw string */
+                }
+                claimsOverrides[k.slice(7)] = parsed;
+            } else {
+                tokenOverrides[k] = /^-?\d+$/.test(v) ? Number(v) : v;
+            }
         }
         res.end("configured");
     } else if (url.pathname === "/session") {

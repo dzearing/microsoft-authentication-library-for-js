@@ -15,6 +15,7 @@ import {
     BrowserAuthError,
     InteractionRequiredAuthError,
     EventType,
+    isKmsi,
     type AccountEntity,
     type AccountInfo,
     type AuthenticationResult,
@@ -429,7 +430,7 @@ export function broker(ctx: ClientContext): void {
                 localAccountId,
                 name: claims.name,
                 username,
-                isHomeTenant: true,
+                isHomeTenant: realm === homeAccountId.split(".")[1],
             },
         ];
         const entity: AccountEntity = {
@@ -455,14 +456,16 @@ export function broker(ctx: ClientContext): void {
             homeAccountId,
             idToken: response.idToken,
             idTokenClaims: claims,
-            kmsi: undefined,
+            kmsi: isKmsi(claims),
             localAccountId,
-            loginHint: undefined,
+            loginHint: claims.login_hint,
             name: claims.name,
             nativeAccountId: response.account.id,
             tenantId: realm,
-            tenantProfiles,
-            upn: undefined,
+            tenantProfiles: new Map(
+                tenantProfiles.map((p) => [p.tenantId, p])
+            ),
+            upn: claims.upn,
             username,
         };
         return {

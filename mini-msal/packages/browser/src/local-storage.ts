@@ -185,7 +185,15 @@ export function localStorageCache(ctx: ClientContext): void {
             localStorage.removeItem(k);
         },
         getUser: (k) => mem.get(k) ?? null,
-        async setUser(k, v) {
+        async setUser(k, v, kmsi) {
+            if (kmsi) {
+                // real persists KMSI entities PLAINTEXT so sign-in survives
+                // losing the per-session encryption cookie (browser restart)
+                localStorage.setItem(k, v);
+                mem.set(k, v);
+                channel.postMessage({ key: k, value: v, context: context(k) });
+                return;
+            }
             const nonce = crypto.getRandomValues(new Uint8Array(16));
             const data = new Uint8Array(
                 await crypto.subtle.encrypt(

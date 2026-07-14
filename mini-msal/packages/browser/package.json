@@ -10,6 +10,7 @@
         "./popup": "./src/popup.ts",
         "./broker": "./src/broker.ts",
         "./local-storage": "./src/local-storage.ts",
+        "./cache-migration": "./src/cache-migration.ts",
         "./naa": "./src/naa.ts",
         "./telemetry": "./src/telemetry.ts",
         "./redirect-bridge": "./src/redirect-bridge.ts"

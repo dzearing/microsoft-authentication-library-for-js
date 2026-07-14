@@ -5231,5 +5231,625 @@
       "missAndEmptyFilter": "|status:none;accounts:2;logger:object||probe:isAuth=false;account=grace@contoso.com|",
       "uppercasedId": "|status:none;accounts:2;logger:object||probe:isAuth=true;account=ada@contoso.com|"
     }
+  },
+  {
+    "id": "cache.at-scope-dedupe",
+    "area": "cache",
+    "status": "pass",
+    "observed": {
+      "atKeysAfter": [
+        "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read mail.read|"
+      ],
+      "followUp": {
+        "ok": {
+          "accessToken": "mock-access-token-superset",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": true,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "Mail.Read",
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      },
+      "networkCalls": [
+        "token:refresh_token"
+      ],
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {
+          "msal.3.account.keys": [
+            "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
+          ],
+          "msal.3.token.keys.<guid>": {
+            "accessToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read mail.read|"
+            ],
+            "idToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||"
+            ],
+            "refreshToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||"
+            ]
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read mail.read|": {
+            "cachedAt": "<dynamic>",
+            "clientId": "<guid>",
+            "credentialType": "AccessToken",
+            "environment": "localhost:4599",
+            "expiresOn": "<dynamic>",
+            "extendedExpiresOn": "<dynamic>",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "realm": "tenant-123",
+            "secret": "mock-access-token-superset",
+            "target": "openid profile User.Read Mail.Read",
+            "tokenType": "Bearer"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||": {
+            "clientId": "<guid>",
+            "credentialType": "IdToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "realm": "tenant-123",
+            "secret": "<jwt>"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||": {
+            "clientId": "<guid>",
+            "credentialType": "RefreshToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "secret": "mock-rt-0"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|tenant-123": {
+            "authorityType": "MSSTS",
+            "cachedByApiId": 61,
+            "clientInfo": "eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "realm": "tenant-123",
+            "tenantProfiles": [
+              {
+                "isHomeTenant": true,
+                "localAccountId": "oid-123",
+                "name": "Ada Lovelace",
+                "tenantId": "tenant-123",
+                "username": "ada@contoso.com"
+              }
+            ],
+            "username": "ada@contoso.com"
+          },
+          "msal.version": "5.16.0"
+        }
+      },
+      "superset": {
+        "ok": {
+          "accessToken": "mock-access-token-superset",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "Mail.Read",
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "cache.at-multi-match-clear",
+    "area": "cache",
+    "status": "pass",
+    "observed": {
+      "atKeysAfter": [
+        "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|"
+      ],
+      "networkCalls": [
+        "token:refresh_token"
+      ],
+      "result": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      }
+    }
+  },
+  {
+    "id": "cache.tenant-profile-merge",
+    "area": "cache",
+    "status": "pass",
+    "observed": {
+      "accountIdx": [
+        "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
+      ],
+      "accounts": {
+        "ok": [
+          {
+            "hasIdTokenClaims": true,
+            "homeAccountId": "oid-123.tenant-123",
+            "kmsi": false,
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "profiles": [
+              {
+                "isHomeTenant": true,
+                "tenantId": "tenant-123"
+              },
+              {
+                "isHomeTenant": false,
+                "tenantId": "tenant-b"
+              }
+            ],
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          {
+            "hasIdTokenClaims": true,
+            "homeAccountId": "oid-123.tenant-123",
+            "kmsi": false,
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "profiles": [
+              {
+                "isHomeTenant": true,
+                "tenantId": "tenant-123"
+              },
+              {
+                "isHomeTenant": false,
+                "tenantId": "tenant-b"
+              }
+            ],
+            "tenantId": "tenant-b",
+            "username": "ada@contoso.com"
+          }
+        ]
+      },
+      "guest": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-b",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": null,
+          "tokenType": "Bearer"
+        }
+      },
+      "guestTenantId": {
+        "ok": {
+          "fromCache": true,
+          "tenantId": "tenant-b"
+        }
+      },
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {
+          "msal.3.account.keys": [
+            "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
+          ],
+          "msal.3.token.keys.<guid>": {
+            "accessToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|",
+              "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-b|openid profile user.read|"
+            ],
+            "idToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||",
+              "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-b||"
+            ],
+            "refreshToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||"
+            ]
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|": {
+            "cachedAt": "<dynamic>",
+            "clientId": "<guid>",
+            "credentialType": "AccessToken",
+            "environment": "localhost:4599",
+            "expiresOn": "<dynamic>",
+            "extendedExpiresOn": "<dynamic>",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "realm": "tenant-123",
+            "secret": "mock-access-token-0",
+            "target": "openid profile User.Read",
+            "tokenType": "Bearer"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-b|openid profile user.read|": {
+            "cachedAt": "<dynamic>",
+            "clientId": "<guid>",
+            "credentialType": "AccessToken",
+            "environment": "localhost:4599",
+            "expiresOn": "<dynamic>",
+            "extendedExpiresOn": "<dynamic>",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "realm": "tenant-b",
+            "secret": "mock-access-token-0",
+            "target": "openid profile User.Read",
+            "tokenType": "Bearer"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||": {
+            "clientId": "<guid>",
+            "credentialType": "IdToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "realm": "tenant-123",
+            "secret": "<jwt>"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-b||": {
+            "clientId": "<guid>",
+            "credentialType": "IdToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "realm": "tenant-b",
+            "secret": "<jwt>"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||": {
+            "clientId": "<guid>",
+            "credentialType": "RefreshToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "secret": "mock-rt-0"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|tenant-123": {
+            "authorityType": "MSSTS",
+            "cachedByApiId": 61,
+            "clientInfo": "eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "realm": "tenant-123",
+            "tenantProfiles": [
+              {
+                "isHomeTenant": true,
+                "localAccountId": "oid-123",
+                "name": "Ada Lovelace",
+                "tenantId": "tenant-123",
+                "username": "ada@contoso.com"
+              },
+              {
+                "isHomeTenant": false,
+                "localAccountId": "oid-123",
+                "name": "Ada Lovelace",
+                "tenantId": "tenant-b",
+                "username": "ada@contoso.com"
+              }
+            ],
+            "username": "ada@contoso.com"
+          },
+          "msal.version": "5.16.0"
+        }
+      }
+    }
+  },
+  {
+    "id": "cache.schema-migration",
+    "area": "cache",
+    "status": "pass",
+    "observed": {
+      "accounts": {
+        "ok": [
+          {
+            "hasIdTokenClaims": true,
+            "homeAccountId": "oid-123.tenant-123",
+            "kmsi": false,
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "profiles": [
+              {
+                "isHomeTenant": true,
+                "tenantId": "tenant-123"
+              }
+            ],
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          }
+        ]
+      },
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {
+          "msal.2.account.keys": [
+            "msal.2|oid-123.tenant-123|localhost:4599|tenant-123"
+          ],
+          "msal.2.token.keys.<guid>": {
+            "accessToken": [],
+            "idToken": [
+              "msal.2|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||"
+            ],
+            "refreshToken": [
+              "msal.2|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||"
+            ]
+          },
+          "msal.2|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||": {
+            "clientId": "<guid>",
+            "credentialType": "IdToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "realm": "tenant-123",
+            "secret": "<jwt>"
+          },
+          "msal.2|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||": {
+            "clientId": "<guid>",
+            "credentialType": "RefreshToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "secret": "legacy-rt-0"
+          },
+          "msal.2|oid-123.tenant-123|localhost:4599|tenant-123": {
+            "authorityType": "MSSTS",
+            "clientInfo": "eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "realm": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "msal.3.account.keys": [
+            "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
+          ],
+          "msal.3.token.keys.<guid>": {
+            "accessToken": [],
+            "idToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||"
+            ],
+            "refreshToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||"
+            ]
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||": {
+            "clientId": "<guid>",
+            "credentialType": "IdToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "realm": "tenant-123",
+            "secret": "<jwt>"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||": {
+            "clientId": "<guid>",
+            "credentialType": "RefreshToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "secret": "legacy-rt-0"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|tenant-123": {
+            "authorityType": "MSSTS",
+            "clientInfo": "eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "realm": "tenant-123",
+            "tenantProfiles": [
+              {
+                "isHomeTenant": true,
+                "localAccountId": "oid-123",
+                "name": "Ada Lovelace",
+                "tenantId": "tenant-123",
+                "username": "ada@contoso.com"
+              }
+            ],
+            "username": "ada@contoso.com"
+          },
+          "msal.version": "5.16.0"
+        }
+      }
+    }
+  },
+  {
+    "id": "cache.kmsi-plaintext-localstorage",
+    "area": "cache",
+    "status": "pass",
+    "observed": {
+      "accounts": {
+        "ok": [
+          {
+            "hasIdTokenClaims": true,
+            "homeAccountId": "oid-123.tenant-123",
+            "kmsi": true,
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "profiles": [
+              {
+                "isHomeTenant": true,
+                "tenantId": "tenant-123"
+              }
+            ],
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          }
+        ]
+      },
+      "accountsAfterRestart": {
+        "ok": [
+          {
+            "hasIdTokenClaims": true,
+            "homeAccountId": "oid-123.tenant-123",
+            "kmsi": true,
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "profiles": [
+              {
+                "isHomeTenant": true,
+                "tenantId": "tenant-123"
+              }
+            ],
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          }
+        ]
+      },
+      "login": {
+        "ok": {
+          "accessToken": "mock-access-token-0",
+          "account": {
+            "homeAccountId": "oid-123.tenant-123",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          },
+          "authority": "https://localhost:4599/tenant/",
+          "correlationIdPresent": true,
+          "expiresInFuture": true,
+          "expiresOnType": "Date",
+          "fromCache": false,
+          "fromPlatformBroker": false,
+          "idToken": "<jwt>",
+          "scopes": [
+            "User.Read",
+            "openid",
+            "profile"
+          ],
+          "state": "<dynamic>",
+          "tokenType": "Bearer"
+        }
+      },
+      "storage": {
+        "localStorage": {
+          "msal.3.account.keys": [
+            "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
+          ],
+          "msal.3.token.keys.<guid>": {
+            "accessToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|"
+            ],
+            "idToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||"
+            ],
+            "refreshToken": [
+              "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||"
+            ]
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|": {
+            "cachedAt": "<dynamic>",
+            "clientId": "<guid>",
+            "credentialType": "AccessToken",
+            "environment": "localhost:4599",
+            "expiresOn": "<dynamic>",
+            "extendedExpiresOn": "<dynamic>",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "realm": "tenant-123",
+            "secret": "mock-access-token-0",
+            "target": "openid profile User.Read",
+            "tokenType": "Bearer"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||": {
+            "clientId": "<guid>",
+            "credentialType": "IdToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "realm": "tenant-123",
+            "secret": "<jwt>"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||": {
+            "clientId": "<guid>",
+            "credentialType": "RefreshToken",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "secret": "mock-rt-0"
+          },
+          "msal.3|oid-123.tenant-123|localhost:4599|tenant-123": {
+            "authorityType": "MSSTS",
+            "cachedByApiId": 862,
+            "clientInfo": "eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ",
+            "environment": "localhost:4599",
+            "homeAccountId": "oid-123.tenant-123",
+            "lastUpdatedAt": "<epoch-ms>",
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "realm": "tenant-123",
+            "tenantProfiles": [
+              {
+                "isHomeTenant": true,
+                "localAccountId": "oid-123",
+                "name": "Ada Lovelace",
+                "tenantId": "tenant-123",
+                "username": "ada@contoso.com"
+              }
+            ],
+            "username": "ada@contoso.com"
+          },
+          "msal.version": "5.16.0"
+        },
+        "sessionStorage": {}
+      }
+    }
   }
 ]

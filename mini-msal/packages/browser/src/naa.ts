@@ -210,15 +210,23 @@ const naa =
                 idToken,
                 idTokenClaims: claims,
                 nativeAccountId: a.platformBrokerId,
-                tenantProfiles: [
-                    {
+                tenantProfiles: new Map([
+                    [
                         tenantId,
-                        localAccountId,
-                        name,
-                        username,
-                        isHomeTenant: true,
-                    },
-                ],
+                        {
+                            tenantId,
+                            localAccountId,
+                            name,
+                            username,
+                            isHomeTenant:
+                                tenantId ===
+                                (
+                                    a.homeAccountId ||
+                                    `${localAccountId}.${tenantId}`
+                                ).split(".")[1],
+                        },
+                    ],
+                ]),
             };
         };
 
@@ -329,7 +337,9 @@ const naa =
                 authorityType: "MSSTS",
                 name: a.name,
                 nativeAccountId: a.nativeAccountId,
-                tenantProfiles: a.tenantProfiles,
+                tenantProfiles: a.tenantProfiles
+                    ? [...a.tenantProfiles.values()]
+                    : undefined,
                 lastUpdatedAt: String(Date.now()),
                 cachedByApiId: 963, // ApiId.hydrateCache
             });

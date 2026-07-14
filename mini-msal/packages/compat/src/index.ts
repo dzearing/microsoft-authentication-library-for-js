@@ -14,6 +14,7 @@ import {
 import { popup, type PopupClient } from "@mini-msal/browser/popup";
 import { broker, type BrokerClient } from "@mini-msal/browser/broker";
 import { localStorageCache } from "@mini-msal/browser/local-storage";
+import { cacheMigration } from "@mini-msal/browser/cache-migration";
 import { createNestableClient } from "@mini-msal/browser/naa";
 import {
     telemetry,
@@ -188,6 +189,7 @@ export class PublicClientApplication {
         // so it can wrap the methods other features attach
         return createClient(config, [
             localStorageCache,
+            cacheMigration,
             popup,
             broker,
             telemetry,
