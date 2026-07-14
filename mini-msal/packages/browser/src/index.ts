@@ -496,9 +496,40 @@ export function isKmsi(claims: Record<string, any>): boolean {
 /** never the ONLY scopes real considers when deduping intersecting ATs */
 const OIDC_SCOPES = ["openid", "profile", "email", "offline_access"];
 
+/** cache environment: real MSAL uses the cloud's preferred_cache host */
+const preferredEnv = (authority: string): string => {
+    const host = new URL(authority).host;
+    return /login\.microsoftonline\.com|login\.microsoft\.com|sts\.windows\.net/.test(
+        host
+    )
+        ? "login.windows.net"
+        : host;
+};
+
+/** real's createAccountEntityFromAccountInfo (hydrateCache,
+ * loadExternalTokens with request.account) */
+const entityFromAccountInfo = (
+    a: AccountInfo,
+    apiId: number,
+    graphHosts?: { cloudGraphHostName?: string; msGraphHost?: string }
+): AccountEntity => ({
+    homeAccountId: a.homeAccountId,
+    environment: a.environment,
+    realm: a.tenantId,
+    localAccountId: a.localAccountId,
+    username: a.username,
+    authorityType: a.authorityType ?? "MSSTS",
+    name: a.name,
+    nativeAccountId: a.nativeAccountId,
+    tenantProfiles: [...(a.tenantProfiles?.values() ?? [])],
+    lastUpdatedAt: String(Date.now()),
+    cachedByApiId: apiId,
+    ...graphHosts,
+});
+
 async function post(
     url: string,
-    body: Record<string, string>,
+    body: Record<string, string | undefined>,
     store: Store,
     throttleKey: string
 ) {
@@ -521,7 +552,11 @@ async function post(
         headers: {
             "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
         },
-        body: new URLSearchParams(body).toString(),
+        body: new URLSearchParams(
+            Object.entries(body).filter(
+                (e): e is [string, string] => e[1] !== undefined
+            )
+        ).toString(),
     });
     const json = await res.json();
     if (
@@ -581,6 +616,7 @@ export interface TokenEntity {
     extendedExpiresOn?: string;
     refreshOn?: string;
     tokenType?: string;
+    familyId?: string;
     lastUpdatedAt?: string;
 }
 
@@ -597,6 +633,8 @@ export interface AccountEntity {
     nativeAccountId?: string;
     lastUpdatedAt?: string;
     cachedByApiId?: number;
+    cloudGraphHostName?: string;
+    msGraphHost?: string;
 }
 
 interface TokenKeys {
@@ -607,7 +645,8 @@ interface TokenKeys {
 
 export interface AuthCodeResponse {
     code: string;
-    verifier: string;
+    /** PKCE verifier; absent on hybrid-spa redemptions (ApiId 866) */
+    verifier?: string;
     scopes: string[];
     redirectUri?: string;
     correlationId?: string;
@@ -669,6 +708,14 @@ export interface AuthClient {
     ssoSilent(req: TokenRequest): Promise<AuthenticationResult>;
     acquireTokenSilent(req: TokenRequest): Promise<AuthenticationResult>;
     logoutRedirect(req?: { account?: AccountInfo | null }): Promise<void>;
+    /** local sign-out: purge the cache, no navigation, no end_session */
+    clearCache(req?: { account?: AccountInfo | null }): Promise<void>;
+    /** seed the cache from an externally-acquired AuthenticationResult
+     * (hybrid SSR apps); writes account + id/access token entities */
+    hydrateCache(
+        result: AuthenticationResult,
+        request?: { correlationId?: string }
+    ): Promise<void>;
 }
 
 /**
@@ -713,22 +760,30 @@ export interface ClientContext {
      * (./cache-migration) */
     onInit(hook: () => Promise<void> | void): void;
     /** cache an account entity + index it (routed through the Store seam) */
-    writeAccount(entity: AccountEntity): Promise<void>;
+    writeAccount(entity: AccountEntity, kmsi?: boolean): Promise<void>;
     /** read a cached credential entity from a token-key index (./naa) */
     findToken(
         type: "idToken" | "accessToken" | "refreshToken",
         match: (t: TokenEntity) => boolean
     ): TokenEntity | undefined;
-    /** cache id+access token entities + index them (./naa hydration) */
+    /** cache token entities + index them (./naa hydration,
+     * loadExternalTokens); writes only the credentials present */
     writeTokens(t: {
         homeAccountId: string;
         environment: string;
         realm: string;
-        idToken: string;
-        accessToken: string;
-        target: string;
+        idToken?: string;
+        accessToken?: string;
+        target?: string;
         /** epoch seconds */
-        expiresOn: number;
+        expiresOn?: number;
+        /** epoch seconds; defaults to expiresOn */
+        extendedExpiresOn?: number;
+        refreshToken?: string;
+        /** family id (foci) for the refresh token entity */
+        foci?: string;
+        /** KMSI entities persist plaintext via ./local-storage */
+        kmsi?: boolean;
     }): Promise<void>;
     /** ./broker's silent interception: a promise routes the request to the
      * platform broker; undefined runs the web silent ladder */
@@ -849,15 +904,7 @@ export function createClient(
     };
 
     // ---- cache (real-MSAL v5 schema) ----
-    /** cache environment: real MSAL uses the cloud's preferred_cache host */
-    const env = () => {
-        const host = new URL(authority).host;
-        return /login\.microsoftonline\.com|login\.microsoft\.com|sts\.windows\.net/.test(
-            host
-        )
-            ? "login.windows.net"
-            : host;
-    };
+    const env = () => preferredEnv(authority);
 
     const readJSON = <T,>(key: string): T | null => {
         const raw = store.get(key);
@@ -1052,6 +1099,93 @@ export function createClient(
         });
     };
 
+    /** write id/access/refresh token entities + index them (ctx.writeTokens
+     * seam, hydrateCache, loadExternalTokens); writes what's present */
+    const writeTokenEntities = async (t: {
+        homeAccountId: string;
+        environment: string;
+        realm: string;
+        idToken?: string;
+        accessToken?: string;
+        target?: string;
+        expiresOn?: number;
+        extendedExpiresOn?: number;
+        refreshToken?: string;
+        foci?: string;
+        kmsi?: boolean;
+    }): Promise<void> => {
+        const ts = String(Date.now());
+        const base = `${P}|${t.homeAccountId}|${t.environment}`;
+        const shared = {
+            homeAccountId: t.homeAccountId,
+            environment: t.environment,
+            clientId,
+            lastUpdatedAt: ts,
+        };
+        const keys = tokenKeys();
+        const add = (list: string[], k: string) =>
+            list.includes(k) ? list : [...list, k];
+        if (t.idToken) {
+            const idKey = `${base}|idtoken|${clientId}|${t.realm}||`;
+            await writeUser(
+                idKey,
+                {
+                    ...shared,
+                    credentialType: "IdToken",
+                    secret: t.idToken,
+                    realm: t.realm,
+                } satisfies TokenEntity,
+                t.kmsi
+            );
+            keys.idToken = add(keys.idToken, idKey);
+        }
+        if (t.accessToken) {
+            const target = t.target ?? "";
+            const atKey = `${base}|accesstoken|${clientId}|${t.realm}|${target.toLowerCase()}|`;
+            await writeUser(
+                atKey,
+                {
+                    ...shared,
+                    credentialType: "AccessToken",
+                    secret: t.accessToken,
+                    realm: t.realm,
+                    target,
+                    cachedAt: String(Math.floor(Date.now() / 1000)),
+                    expiresOn: String(t.expiresOn ?? 0),
+                    extendedExpiresOn: String(
+                        t.extendedExpiresOn ?? t.expiresOn ?? 0
+                    ),
+                    tokenType: "Bearer",
+                } satisfies TokenEntity,
+                t.kmsi
+            );
+            keys.accessToken = add(
+                dedupeATs(keys.accessToken, atKey, {
+                    homeAccountId: t.homeAccountId,
+                    environment: t.environment,
+                    realm: t.realm,
+                    target,
+                }),
+                atKey
+            );
+        }
+        if (t.refreshToken) {
+            const rtKey = `${base}|refreshtoken|${clientId}|||`;
+            await writeUser(
+                rtKey,
+                {
+                    ...shared,
+                    credentialType: "RefreshToken",
+                    secret: t.refreshToken,
+                    ...(t.foci && { familyId: t.foci }),
+                } satisfies TokenEntity,
+                t.kmsi
+            );
+            keys.refreshToken = add(keys.refreshToken, rtKey);
+        }
+        writeJSON(tokenKeysKey, keys);
+    };
+
     /**
      * Same environment guard as real MSAL 5.16: when this app is re-booted
      * inside one of our own hidden iframes (auth response in the hash), auth
@@ -1243,7 +1377,7 @@ export function createClient(
     // ---- token redemption ----
     const tokenRequest = async (
         scopes: string[],
-        grant: Record<string, string>,
+        grant: Record<string, string | undefined>,
         // state present (custom or "") only on interactive/ssoSilent results,
         // like real; correlationId generated per request when not provided
         meta?: {
@@ -1444,8 +1578,17 @@ export function createClient(
             {
                 grant_type: "authorization_code",
                 code: res.code,
-                code_verifier: res.verifier,
-                ...(res.redirectUri && { redirect_uri: res.redirectUri }),
+                // hybrid-spa codes (ApiId 866) come from a confidential
+                // client: the redemption carries no PKCE verifier and no
+                // redirect_uri (real's HybridSpaAuthorizationCodeClient)
+                ...(res.apiId === 866
+                    ? { redirect_uri: undefined }
+                    : {
+                          code_verifier: res.verifier,
+                          ...(res.redirectUri && {
+                              redirect_uri: res.redirectUri,
+                          }),
+                      }),
             },
             {
                 correlationId: res.correlationId,
@@ -1997,7 +2140,8 @@ export function createClient(
             } else {
                 store.remove(activeKey);
             }
-            emit(EventType.ACTIVE_ACCOUNT_CHANGED, undefined, account);
+            // real emits this event with no payload (BrowserCacheManager)
+            emit(EventType.ACTIVE_ACCOUNT_CHANGED);
         },
 
         async loginRedirect(req: TokenRequest): Promise<void> {
@@ -2132,6 +2276,70 @@ export function createClient(
                 navOptions(961) // ApiId.logout
             );
         },
+
+        // real's PCA.clearCache -> SilentCacheClient.logout ->
+        // clearCacheOnLogout: purely local purge, no navigation, no
+        // end_session request, no initialize requirement
+        async clearCache(req?: {
+            account?: AccountInfo | null;
+        }): Promise<void> {
+            const account = req?.account;
+            const active = readJSON<{ homeAccountId: string }>(activeKey);
+            if (
+                active &&
+                (!account || active.homeAccountId === account.homeAccountId)
+            ) {
+                // real's removeAccount: clearing the active account goes
+                // through setActiveAccount(null) (emits activeAccountChanged)
+                client.setActiveAccount(null);
+            }
+            clearAccount(account);
+            if (!account) {
+                // real's browserStorage.clear(): every remaining msal /
+                // client-id key in the cache location + temp storage goes too
+                const areas = [sessionStorage];
+                if (config.cache?.cacheLocation === "localStorage") {
+                    areas.push(localStorage);
+                }
+                for (const s of areas) {
+                    for (const k of Object.keys(s)) {
+                        if (k.includes("msal") || k.includes(clientId)) {
+                            store.remove(k); // keeps ./local-storage's mirror in sync
+                            s.removeItem(k);
+                        }
+                    }
+                }
+            }
+        },
+
+        // real's PCA.hydrateCache: account entity from result.account, then
+        // id + access token entities (never a refresh token)
+        async hydrateCache(result: AuthenticationResult): Promise<void> {
+            const kmsi = isKmsi(result.idTokenClaims ?? {});
+            await mergeAccount(
+                entityFromAccountInfo(result.account, 963, {
+                    // ApiId.hydrateCache
+                    cloudGraphHostName: result.cloudGraphHostName,
+                    msGraphHost: result.msGraphHost,
+                }),
+                kmsi
+            );
+            await writeTokenEntities({
+                homeAccountId: result.account.homeAccountId,
+                environment: result.account.environment,
+                realm: result.tenantId,
+                idToken: result.idToken,
+                accessToken: result.accessToken,
+                target: result.scopes.join(" "),
+                expiresOn: result.expiresOn
+                    ? Math.floor(+new Date(result.expiresOn) / 1000)
+                    : 0,
+                extendedExpiresOn: result.extExpiresOn
+                    ? Math.floor(+new Date(result.extExpiresOn) / 1000)
+                    : 0,
+                kmsi,
+            });
+        },
     };
 
     const ctx: ClientContext = {
@@ -2150,49 +2358,152 @@ export function createClient(
         setStore: (s) => (store = s),
         getStore: () => store,
         onInit: (h) => initHooks.push(h),
-        writeAccount: async (e) => {
-            await mergeAccount(e);
+        writeAccount: async (e, kmsi) => {
+            await mergeAccount(e, kmsi);
         },
         findToken: (type, match) => findCred(tokenKeys()[type], match),
-        writeTokens: async (t) => {
-            const ts = String(Date.now());
-            const base = `${P}|${t.homeAccountId}|${t.environment}`;
-            const idKey = `${base}|idtoken|${clientId}|${t.realm}||`;
-            const atKey = `${base}|accesstoken|${clientId}|${t.realm}|${t.target.toLowerCase()}|`;
-            const shared = {
-                homeAccountId: t.homeAccountId,
-                environment: t.environment,
-                clientId,
-                realm: t.realm,
-                lastUpdatedAt: ts,
-            };
-            await writeUser(idKey, {
-                ...shared,
-                credentialType: "IdToken",
-                secret: t.idToken,
-            } satisfies TokenEntity);
-            await writeUser(atKey, {
-                ...shared,
-                credentialType: "AccessToken",
-                secret: t.accessToken,
-                target: t.target,
-                cachedAt: String(Math.floor(Date.now() / 1000)),
-                expiresOn: String(t.expiresOn),
-                extendedExpiresOn: String(t.expiresOn),
-                tokenType: "Bearer",
-            } satisfies TokenEntity);
-            const keys = tokenKeys();
-            keys.accessToken = dedupeATs(keys.accessToken, atKey, t);
-            const add = (list: string[], k: string) =>
-                list.includes(k) ? list : [...list, k];
-            writeJSON(tokenKeysKey, {
-                idToken: add(keys.idToken, idKey),
-                accessToken: add(keys.accessToken, atKey),
-                refreshToken: keys.refreshToken,
-            });
-        },
+        writeTokens: writeTokenEntities,
         logoutUrl,
     };
     for (const f of features) f(ctx);
     return client;
+}
+
+/**
+ * Real's top-level loadExternalTokens export (the getTokenCache/ITokenCache
+ * successor): write an externally-acquired token response (e.g. from
+ * msal-node in a hybrid app, or a test harness) into the cache and return
+ * the AuthenticationResult it represents. `features` lets callers compose
+ * cache backends (compat passes ./local-storage + ./cache-migration).
+ */
+export async function loadExternalTokens(
+    config: Config,
+    request: {
+        scopes?: string[];
+        authority?: string;
+        account?: AccountInfo;
+        correlationId?: string;
+        state?: string;
+    },
+    response: Record<string, any>,
+    options: {
+        clientInfo?: string;
+        /** epoch seconds; defaults to now + response.expires_in */
+        expiresOn?: number;
+        extendedExpiresOn?: number;
+    } = {},
+    features: Feature[] = []
+): Promise<AuthenticationResult> {
+    let ctx!: ClientContext;
+    const client = createClient(config, [
+        ...(Array.isArray(features) ? features : []),
+        (c) => (ctx = c),
+    ]);
+    // storage init + authority discovery, like real's standalone
+    // BrowserCacheManager/Authority setup
+    await client.initialize();
+    const claims = response.id_token
+        ? decodeJwt(response.id_token)
+        : undefined;
+    const kmsi = isKmsi(claims ?? {});
+    const authority = (
+        request.authority ??
+        config.auth.authority ??
+        "https://login.microsoftonline.com/common"
+    ).replace(/\/$/, "");
+    const environment = preferredEnv(authority);
+    let entity: AccountEntity;
+    if (request.account) {
+        entity = entityFromAccountInfo(request.account, 964); // ApiId.loadExternalTokens
+    } else {
+        const clientInfo: string =
+            options.clientInfo || response.client_info || "";
+        if (!clientInfo && !claims) {
+            throw new BrowserAuthError("unable_to_load_token");
+        }
+        let uid = claims?.oid ?? claims?.sub;
+        let utid = claims?.tid ?? "";
+        try {
+            const ci = JSON.parse(
+                atob(clientInfo.replace(/-/g, "+").replace(/_/g, "/"))
+            );
+            uid = ci.uid;
+            utid = ci.utid;
+        } catch {
+            /* fall back to claims */
+        }
+        const homeAccountId = `${uid}.${utid}`;
+        const realm = claims?.tid ?? "";
+        const localAccountId = claims?.oid ?? claims?.sub ?? "";
+        const username =
+            claims?.preferred_username ?? claims?.email ?? "";
+        entity = {
+            homeAccountId,
+            environment,
+            realm,
+            localAccountId,
+            username,
+            authorityType: "MSSTS",
+            name: claims?.name,
+            clientInfo: clientInfo || undefined,
+            tenantProfiles: [
+                {
+                    tenantId: realm,
+                    localAccountId,
+                    name: claims?.name,
+                    username,
+                    isHomeTenant: realm === homeAccountId.split(".")[1],
+                },
+            ],
+            lastUpdatedAt: String(Date.now()),
+            cachedByApiId: 964, // ApiId.loadExternalTokens
+        };
+    }
+    await ctx.writeAccount(entity, kmsi);
+    const now = Math.floor(Date.now() / 1000);
+    const scopeStr: string =
+        response.scope ?? (request.scopes ?? []).join(" ");
+    const hasAT = !!(response.access_token && response.expires_in && scopeStr);
+    const expiresOn =
+        options.expiresOn ?? now + Number(response.expires_in ?? 0);
+    const extExpiresOn =
+        options.extendedExpiresOn ??
+        now + Number(response.ext_expires_in ?? response.expires_in ?? 0);
+    await ctx.writeTokens({
+        homeAccountId: entity.homeAccountId,
+        environment: entity.environment,
+        realm: entity.realm,
+        idToken: response.id_token,
+        accessToken: hasAT ? response.access_token : undefined,
+        target: scopeStr,
+        expiresOn,
+        extendedExpiresOn: extExpiresOn,
+        refreshToken: response.refresh_token,
+        foci: response.foci,
+        kmsi,
+    });
+    // real's generateAuthenticationResult (fromCache: true)
+    return {
+        authority: `${authority}/`,
+        uniqueId: entity.localAccountId,
+        tenantId: entity.realm,
+        scopes: hasAT ? scopeStr.split(" ") : [],
+        account: client.getAccount({
+            homeAccountId: entity.homeAccountId,
+        })!,
+        idToken: response.id_token || "",
+        idTokenClaims: claims ?? {},
+        accessToken: hasAT ? response.access_token : "",
+        fromCache: true,
+        expiresOn: hasAT ? new Date(expiresOn * 1000) : null,
+        extExpiresOn: hasAT ? new Date(extExpiresOn * 1000) : undefined,
+        correlationId: request.correlationId || "",
+        requestId: "",
+        familyId: response.foci || "",
+        tokenType: hasAT ? "Bearer" : "",
+        state: request.state || "",
+        cloudGraphHostName: entity.cloudGraphHostName || "",
+        msGraphHost: entity.msGraphHost || "",
+        fromPlatformBroker: false,
+    } as unknown as AuthenticationResult;
 }

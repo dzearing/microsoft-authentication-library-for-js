@@ -1,0 +1,37 @@
+{
+  "accountsAfter": [],
+  "accountsBefore": 1,
+  "activeAfter": {
+    "ok": null
+  },
+  "cleared": {
+    "ok": {
+      "isPromise": true,
+      "resolved": null
+    }
+  },
+  "events": [
+    {
+      "error": null,
+      "eventType": "msal:activeAccountChanged",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 6
+    },
+    {
+      "error": null,
+      "eventType": "msal:activeAccountChanged",
+      "interactionType": null,
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 7
+    }
+  ],
+  "network": [],
+  "samePage": true,
+  "storage": {
+    "localStorage": {},
+    "sessionStorage": {}
+  }
+}

@@ -24,10 +24,10 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-13)**: Phases A0–C16 COMPLETE — conformance 98/98,
-e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 50.6 KB min
-(real: 220.5), compat+react stack 60.6 KB (real: 248.8), core-only
-24.1 KB. Remaining: C-gaps C17–C21 (post-audit parity gaps beyond the
+**Status (2026-07-13)**: Phases A0–C17 COMPLETE — conformance 103/103,
+e2e 25/25, GAP_REPORT all-pass. Size matrix: compat-no-react 52.5 KB min
+(real: 220.5), compat+react stack 62.5 KB (real: 248.8), core-only
+25.6 KB. Remaining: C-gaps C18–C21 (post-audit parity gaps beyond the
 suite) then D-series (à-la-carte DX/docs/examples).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
@@ -257,16 +257,22 @@ scenarios + a partial implementation, add a follow-up task, note it here.
   NEW /cache-migration feature (compat-composed; core got onInit/getStore
   seams): msal.0/1/2→msal.3 migration + 5-day retention TTL. compat 50.6
   min (+4.7), core 24.1 (+1.5). e2e 25/25. Details: PARITY_LOG C16 entry.
-- [ ] **C17** `pending` — Programmatic token APIs. Findings: `clear-cache`
-  (clearCache(logoutRequest) — local sign-out, no navigation),
-  `hydrate-cache` (hydrateCache(result, request) — SSR seeding),
-  `load-external-tokens` (top-level loadExternalTokens export),
-  `acquire-token-by-code-hybrid-spa` (== `hybrid-spa-acquire-token-by-
-  code`): acquireTokenByCode({code}) redeems a spa auth code (deduped,
-  no code_verifier). Scenarios per findings (mock IdP can mint codes
-  out-of-band). Context: audit json; `packages/browser/src/index.ts`,
-  `packages/browser/src/broker.ts` (existing byCode path),
-  `test/infra/mock-idp.mjs` (out-of-band code minting).
+- [x] **C17** `done 2026-07-13 — pass 103/103, mini-stack 62.5 KB` —
+  Programmatic token APIs. Suite grew 98→103 (new area 14-token-apis:
+  clear-cache, hydrate-cache, load-external-tokens, acquire-token-by-code,
+  acquire-token-by-code-errors — all green first mini run; area's network
+  digest excludes discovery, C18's concern). Core: clearCache (local
+  sign-out — clearAccount + real's clear-all-msal-keys incl. msal.version,
+  activeAccountChanged via setActiveAccount(null)), hydrateCache
+  (entityFromAccountInfo ApiId 963, id+AT only, KMSI-aware), top-level
+  loadExternalTokens export (ApiId 964; 5th param = features, compat
+  re-export composes local-storage + cache-migration), setActiveAccount
+  now emits NO payload (real), post() drops undefined body values,
+  ctx.writeTokens generalized (optional creds, extExpiresOn, RT+foci,
+  kmsi). ./broker: hybrid acquireTokenByCode({code}) — ApiId 866
+  redemption without code_verifier/redirect_uri, same-code promise
+  dedupe, spa_code_and_nativeAccountId_present. compat 52.5 min (+1.9),
+  core 25.6 (+1.5). e2e 25/25. Details: PARITY_LOG C17 entry.
 - [ ] **C18** `pending` — Authority modes & discovery. Findings:
   `known-authorities-validation` (untrusted_authority ClientConfigurationError
   + AAD instance discovery), `oidc-discovery-endpoint-path` (protocolMode

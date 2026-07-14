@@ -1,0 +1,69 @@
+{
+  "both": {
+    "err": {
+      "errorCode": "spa_code_and_nativeAccountId_present",
+      "message": "See https://aka.ms/msal.js.errors#spa_code_and_nativeAccountId_present for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  },
+  "events": [
+    {
+      "error": null,
+      "eventType": "msal:acquireTokenStart",
+      "interactionType": "silent",
+      "payloadAccount": null,
+      "payloadKeys": [
+        "code",
+        "nativeAccountId",
+        "scopes"
+      ],
+      "seq": 2
+    },
+    {
+      "error": {
+        "errorCode": "spa_code_and_nativeAccountId_present",
+        "message": "See https://aka.ms/msal.js.errors#spa_code_and_nativeAccountId_present for details",
+        "name": "BrowserAuthError",
+        "subError": null
+      },
+      "eventType": "msal:acquireTokenFailure",
+      "interactionType": "silent",
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 3
+    },
+    {
+      "error": null,
+      "eventType": "msal:acquireTokenStart",
+      "interactionType": "silent",
+      "payloadAccount": null,
+      "payloadKeys": [
+        "scopes"
+      ],
+      "seq": 4
+    },
+    {
+      "error": {
+        "errorCode": "auth_code_or_nativeAccountId_required",
+        "message": "See https://aka.ms/msal.js.errors#auth_code_or_nativeAccountId_required for details",
+        "name": "BrowserAuthError",
+        "subError": null
+      },
+      "eventType": "msal:acquireTokenFailure",
+      "interactionType": "silent",
+      "payloadAccount": null,
+      "payloadKeys": null,
+      "seq": 5
+    }
+  ],
+  "neither": {
+    "err": {
+      "errorCode": "auth_code_or_nativeAccountId_required",
+      "message": "See https://aka.ms/msal.js.errors#auth_code_or_nativeAccountId_required for details",
+      "name": "BrowserAuthError",
+      "subError": null
+    }
+  },
+  "network": []
+}

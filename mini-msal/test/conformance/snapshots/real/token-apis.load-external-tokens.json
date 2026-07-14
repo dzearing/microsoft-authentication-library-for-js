@@ -1,0 +1,131 @@
+{
+  "accounts": [
+    {
+      "homeAccountId": "oid-123.tenant-123",
+      "tenantId": "tenant-123",
+      "username": "ada@contoso.com"
+    }
+  ],
+  "loaded": {
+    "ok": {
+      "accessToken": "mock-access-token-ext",
+      "account": {
+        "homeAccountId": "oid-123.tenant-123",
+        "tenantId": "tenant-123",
+        "username": "ada@contoso.com"
+      },
+      "authority": "https://localhost:4599/tenant/",
+      "correlationIdPresent": false,
+      "expiresInFuture": true,
+      "expiresOnType": "Date",
+      "fromCache": true,
+      "fromPlatformBroker": false,
+      "idToken": "<jwt>",
+      "scopes": [
+        "User.Read",
+        "openid",
+        "profile"
+      ],
+      "state": "<dynamic>",
+      "tokenType": "Bearer"
+    }
+  },
+  "network": [],
+  "silent": {
+    "ok": {
+      "accessToken": "mock-access-token-ext",
+      "account": {
+        "homeAccountId": "oid-123.tenant-123",
+        "tenantId": "tenant-123",
+        "username": "ada@contoso.com"
+      },
+      "authority": "https://localhost:4599/tenant/",
+      "correlationIdPresent": true,
+      "expiresInFuture": true,
+      "expiresOnType": "Date",
+      "fromCache": true,
+      "fromPlatformBroker": false,
+      "idToken": "<jwt>",
+      "scopes": [
+        "User.Read",
+        "openid",
+        "profile"
+      ],
+      "state": null,
+      "tokenType": "Bearer"
+    }
+  },
+  "storage": {
+    "localStorage": {},
+    "sessionStorage": {
+      "msal.3.account.keys": [
+        "msal.3|oid-123.tenant-123|localhost:4599|tenant-123"
+      ],
+      "msal.3.token.keys.<guid>": {
+        "accessToken": [
+          "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|"
+        ],
+        "idToken": [
+          "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||"
+        ],
+        "refreshToken": [
+          "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||"
+        ]
+      },
+      "msal.3|oid-123.tenant-123|localhost:4599|accesstoken|<guid>|tenant-123|openid profile user.read|": {
+        "cachedAt": "<dynamic>",
+        "clientId": "<guid>",
+        "credentialType": "AccessToken",
+        "environment": "localhost:4599",
+        "expiresOn": "<dynamic>",
+        "extendedExpiresOn": "<dynamic>",
+        "homeAccountId": "oid-123.tenant-123",
+        "lastUpdatedAt": "<epoch-ms>",
+        "realm": "tenant-123",
+        "secret": "mock-access-token-ext",
+        "target": "openid profile User.Read",
+        "tokenType": "Bearer"
+      },
+      "msal.3|oid-123.tenant-123|localhost:4599|idtoken|<guid>|tenant-123||": {
+        "clientId": "<guid>",
+        "credentialType": "IdToken",
+        "environment": "localhost:4599",
+        "homeAccountId": "oid-123.tenant-123",
+        "lastUpdatedAt": "<epoch-ms>",
+        "realm": "tenant-123",
+        "secret": "<jwt>"
+      },
+      "msal.3|oid-123.tenant-123|localhost:4599|refreshtoken|<guid>|||": {
+        "clientId": "<guid>",
+        "credentialType": "RefreshToken",
+        "environment": "localhost:4599",
+        "homeAccountId": "oid-123.tenant-123",
+        "lastUpdatedAt": "<epoch-ms>",
+        "secret": "mock-rt-ext"
+      },
+      "msal.3|oid-123.tenant-123|localhost:4599|tenant-123": {
+        "authorityType": "MSSTS",
+        "cachedByApiId": 964,
+        "clientInfo": "eyJ1aWQiOiJvaWQtMTIzIiwidXRpZCI6InRlbmFudC0xMjMifQ",
+        "environment": "localhost:4599",
+        "homeAccountId": "oid-123.tenant-123",
+        "lastUpdatedAt": "<epoch-ms>",
+        "localAccountId": "oid-123",
+        "name": "Ada Lovelace",
+        "realm": "tenant-123",
+        "tenantProfiles": [
+          {
+            "isHomeTenant": true,
+            "localAccountId": "oid-123",
+            "name": "Ada Lovelace",
+            "tenantId": "tenant-123",
+            "username": "ada@contoso.com"
+          }
+        ],
+        "username": "ada@contoso.com"
+      },
+      "msal.version": "5.16.0"
+    }
+  },
+  "typeofExport": "function"
+}

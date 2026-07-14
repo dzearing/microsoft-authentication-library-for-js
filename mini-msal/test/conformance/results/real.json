@@ -1,27 +1,27 @@
 [
   {
-    "id": "cache.at-scope-dedupe",
-    "area": "cache",
+    "id": "token-apis.clear-cache",
+    "area": "token-apis",
     "status": "captured"
   },
   {
-    "id": "cache.at-multi-match-clear",
-    "area": "cache",
+    "id": "token-apis.hydrate-cache",
+    "area": "token-apis",
     "status": "captured"
   },
   {
-    "id": "cache.tenant-profile-merge",
-    "area": "cache",
+    "id": "token-apis.load-external-tokens",
+    "area": "token-apis",
     "status": "captured"
   },
   {
-    "id": "cache.schema-migration",
-    "area": "cache",
+    "id": "token-apis.acquire-token-by-code",
+    "area": "token-apis",
     "status": "captured"
   },
   {
-    "id": "cache.kmsi-plaintext-localstorage",
-    "area": "cache",
+    "id": "token-apis.acquire-token-by-code-errors",
+    "area": "token-apis",
     "status": "captured"
   }
 ]

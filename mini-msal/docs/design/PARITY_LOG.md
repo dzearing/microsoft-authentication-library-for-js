@@ -630,6 +630,80 @@ Decisions/details:
   mini-core 22.6 → 24.1 (+1.5). e2e 25/25 (v5 sessionStorage interop
   unaffected).
 
+### C17 — 2026-07-13 — programmatic token APIs (clearCache, hydrateCache, loadExternalTokens, hybrid acquireTokenByCode)
+
+Suite 98→103 (new area 14-token-apis, 5 scenarios, deterministic — three
+identical real captures — and all green on the first mini run after
+implementation). No mock-IdP changes needed: its /token endpoint redeems
+any `mock-code-<idx>` without a prior /authorize, so hybrid-spa codes are
+mintable "out-of-band" by just naming one. The area's network digest
+EXCLUDES discovery requests (eager-vs-lazy discovery timing is C18's
+concern).
+
+Decisions/details:
+- **clearCache(req?)** — core method (real has it on every PCA;
+  SilentCacheClient.logout → clearCacheOnLogout). Account-scoped → existing
+  clearAccount; no-account → clearAccount() PLUS real's
+  browserStorage.clear() semantics: every remaining key containing "msal"
+  or the clientId (incl. msal.version) is removed from sessionStorage
+  (+localStorage only in localStorage mode, mirroring real's
+  cache-location + temp-storage split; store.remove keeps ./local-storage's
+  memory mirror in sync). Clearing the active account routes through
+  setActiveAccount(null) → ONE activeAccountChanged, like real's
+  removeAccount. No initialize requirement, no events otherwise, no
+  navigation, no end_session (snapshot-pinned).
+- **setActiveAccount event payload fix**: real's
+  BrowserCacheManager.setActiveAccount emits activeAccountChanged with NO
+  payload; mini was attaching the account. Only the new clear-cache
+  scenario pins this (no other snapshot captures the event's shape);
+  packages/react only matches on eventType.
+- **hydrateCache(result, request?)** — core method. Account entity from
+  result.account via new module-level entityFromAccountInfo (real's
+  createAccountEntityFromAccountInfo): NO clientInfo, cloudGraphHostName/
+  msGraphHost stamped (empty strings included — real assigns
+  unconditionally), cachedByApiId 963, tenantProfiles Map → array. Then
+  id+access token entities only (never a refresh token), KMSI-aware,
+  expiresOn/extExpiresOn seconds from the result's Dates.
+- **loadExternalTokens(config, request, response, options, features?)** —
+  top-level core export (real's ITokenCache successor, ApiId 964). Builds
+  a throwaway core client (captures ctx via a one-off feature) and
+  initialize()s it — storage init + discovery, like real's standalone
+  BrowserCacheManager/Authority setup (also writes msal.version, which
+  real's standalone path does not; unobservable once any client
+  initializes). Account from request.account OR client_info/claims
+  (clientInfo kept on the entity, like buildAccountToCache); id/access/
+  refresh entities written per presence (AT requires access_token +
+  expires_in + scope, real's guards); returns real's
+  generateAuthenticationResult shape (fromCache true, correlationId
+  request's or "", state request's or ""). 5th param diverges from real
+  (real: performanceClient; mini: features array so compat can compose
+  cache backends — compat's re-export passes [localStorageCache,
+  cacheMigration]). Guarded with Array.isArray so a drop-in consumer
+  passing a real perf client is harmlessly ignored.
+- **ctx.writeTokens generalized** (shared writeTokenEntities, also used by
+  hydrateCache): all credentials optional (writes what's present), +
+  extendedExpiresOn, refreshToken/foci (TokenEntity gained familyId), and
+  kmsi plumbed to the Store seam. ./naa's call sites unchanged.
+- **Hybrid acquireTokenByCode({code})** — stays in ./broker (task pointer;
+  the compat surface owns the method either way). code+nativeAccountId →
+  spa_code_and_nativeAccountId_present (mini previously took the broker
+  path silently); code-only → ctx.redeem with ApiId 866; concurrent
+  same-code calls share ONE promise (real's hybridAuthCodeResponses map,
+  entry deleted on settle → a later call POSTs again). Events: START per
+  call, ONE SUCCESS per redemption (deduped pair → 2×START + 1×SUCCESS,
+  snapshot-pinned); failures emit FAILURE in the shared promise handler
+  AND per-call outer catch, like real's double emission.
+- **Wire**: real's hybrid redemption has NO code_verifier ("PKCE not
+  needed") and NO redirect_uri (HybridSpaAuthorizationCodeClient
+  includeRedirectUri=false) — redeem() branches on apiId 866 and post()
+  now drops undefined body values (URLSearchParams would stringify them).
+  Everything else rides the normal tokenRequest path: default claims,
+  client_info=1, telemetry params, client-request-id query.
+- Size: mini-msal-stack 60.6 → 62.5 KB min (+1.9), compat 50.6 → 52.5
+  (+1.9), mini-core 24.1 → 25.6 (+1.5 — clearCache/hydrateCache/
+  writeTokenEntities are core client surface; loadExternalTokens
+  tree-shakes out of mini-core). e2e 25/25.
+
 ## Completed task list (Phases A0, A, B, C — all done)
 
 ## Task list (execute strictly top-to-bottom)
@@ -880,3 +954,4 @@ Statuses: `pending` | `in-progress` | `done <date> — pass X/75, mini-stack Y K
 | C14 | done 2026-07-13 | 87/87 | 53.0 KB min / 17.5 gz | +4 scenarios (suite 83→87, all green first mini run). system.navigatePopups default-true sync about:blank open in the user-gesture stack + location.assign navigate; openSizedPopup features/geometry + popupWindowAttributes/popupWindowParent; real popup name formats (token + logout); blocked sync open fails late as popup_window_error like real; logoutPopup mainWindowRedirectUri via new core ctx.navigate seam (ApiId 962, lock survives navigation); telemetry isAsyncPopup wired. compat 45.9 min (+1.3), mini-core 22.6 (+0.1). e2e 25/25 |
 | C15 | done 2026-07-13 | 93/93 | 55.8 KB min / 18.4 gz | +6 scenarios (suite 87→93, NEW area 12-react on NEW dual react harness pages conformance-react-{real,mini}; all green first mini run). packages/react rewritten as a port of msal-react 5.5.1: provider initialize() + initializeWrapperLibrary + full InteractionStatus reducer (real's event mapping w/ clear-guards; accounts [] during startup); useMsalAuthentication {login, acquireToken, result, error} w/ auto-acquire + IRAE fallback + logout reset; useIsAuthenticated(ids)/useAccount case-insensitive + active-account fallback; templates w/ identifier props + function children; MsalAuthenticationTemplate spread/throw error contract. Core +InteractionStatus export. compat UNCHANGED 45.9, mini-core UNCHANGED 22.6. e2e 25/25 |
 | C16 | done 2026-07-13 | 98/98 | 60.6 KB min / 19.9 gz | +5 scenarios (suite 93→98, NEW area 13-cache — all green first mini run). AT intersecting-scope dedupe on save + multi-match clear on lookup (+realm filter on the silent AT rung); mergeAccount = buildAccountToCache (one base entity per homeAccountId+env, profiles appended, isHomeTenant computed, shared by web/broker/naa); getAllAccounts expands tenantProfiles (Map) into per-tenant AccountInfos; Store.setUser kmsi seam → plaintext KMSI entities in localStorage mode + real AccountInfo.kmsi; NEW /cache-migration feature (msal.0/1/2→3, 5-day TTL) via new ctx.onInit/getStore seams; mock IdP claims.* overrides. compat 50.6 min (+4.7), mini-core 24.1 (+1.5). e2e 25/25 |
+| C17 | done 2026-07-13 | 103/103 | 62.5 KB min / 20.4 gz | +5 scenarios (suite 98→103, NEW area 14-token-apis — all green first mini run). Core clearCache (local sign-out: clearAccount + real's clear-all-msal-keys, activeAccountChanged via setActiveAccount(null)) + hydrateCache (entityFromAccountInfo ApiId 963, id+AT only, KMSI-aware) + top-level loadExternalTokens export (ApiId 964, id/AT/RT per presence, compat re-export composes local-storage+migration); ./broker hybrid acquireTokenByCode({code}) — ApiId 866 redemption w/o code_verifier/redirect_uri, same-code promise dedupe, spa_code_and_nativeAccountId_present; ctx.writeTokens generalized (optional creds, extExpiresOn, RT+foci, kmsi); setActiveAccount event payload dropped (real emits none); post() drops undefined body values. compat 52.5 min (+1.9), mini-core 25.6 (+1.5). e2e 25/25 |

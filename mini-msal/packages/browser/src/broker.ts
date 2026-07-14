@@ -507,8 +507,12 @@ export function broker(ctx: ClientContext): void {
         }
     };
 
+    // hybrid-spa: concurrent same-code redemptions share one promise
+    // (real's hybridAuthCodeResponses map)
+    const hybridResponses = new Map<string, Promise<AuthenticationResult>>();
+
     c.acquireTokenByCode = async (
-        req: Partial<TokenRequest> & { nativeAccountId?: string }
+        req: Partial<TokenRequest> & { nativeAccountId?: string; code?: string }
     ): Promise<AuthenticationResult> => {
         ctx.preflight();
         const correlationId = req.correlationId ?? crypto.randomUUID();
@@ -516,6 +520,54 @@ export function broker(ctx: ClientContext): void {
         // stamp) and, on the native path, NO success event
         ctx.emit(EventType.ACQUIRE_TOKEN_START, "silent", req);
         try {
+            if (req.code && req.nativeAccountId) {
+                // server returned both spa_code and spa_accountid
+                throw new BrowserAuthError(
+                    "spa_code_and_nativeAccountId_present"
+                );
+            }
+            if (req.code) {
+                // redeem a confidential-client-acquired spa code at the
+                // token endpoint (real's SilentAuthCodeClient)
+                const code = req.code;
+                let p = hybridResponses.get(code);
+                if (!p) {
+                    p = ctx
+                        .redeem({
+                            code,
+                            scopes: req.scopes ?? [],
+                            correlationId,
+                            apiId: 866, // ApiId.acquireTokenByCode
+                            userState: req.state,
+                            claims: req.claims,
+                            eqp: req.extraQueryParameters,
+                            authority: req.authority,
+                        })
+                        .then(
+                            (result) => {
+                                hybridResponses.delete(code);
+                                ctx.emit(
+                                    EventType.ACQUIRE_TOKEN_SUCCESS,
+                                    "silent",
+                                    result
+                                );
+                                return result;
+                            },
+                            (e) => {
+                                hybridResponses.delete(code);
+                                ctx.emit(
+                                    EventType.ACQUIRE_TOKEN_FAILURE,
+                                    "silent",
+                                    undefined,
+                                    e
+                                );
+                                throw e;
+                            }
+                        );
+                    hybridResponses.set(code, p);
+                }
+                return await p;
+            }
             if (!req.nativeAccountId) {
                 throw new BrowserAuthError(
                     "auth_code_or_nativeAccountId_required"

@@ -627,6 +627,36 @@ const C = {
         mini: "Pre-C16: everything was encrypted under the session cookie key (KMSI users lost sign-in on browser restart) and account.kmsi was hardcoded undefined.",
         cost: 0.4,
     },
+    "token-apis.clear-cache": {
+        class: "missing-feature",
+        real: "clearCache(logoutRequest) is the documented local sign-out: purges every msal/client-id cache key (accounts, tokens, msal.version), emits activeAccountChanged when the active account goes, no navigation and no end_session request.",
+        mini: "Pre-C17: no clearCache on the client — drop-in consumers crashed with TypeError and had no way to purge the cache without navigating.",
+        cost: 0.5,
+    },
+    "token-apis.hydrate-cache": {
+        class: "missing-feature",
+        real: "hydrateCache(result, request) seeds browser storage from an externally-acquired AuthenticationResult (hybrid SSR apps): account entity (ApiId 963, cloudGraphHostName/msGraphHost stamped) + id/access token entities, never a refresh token; acquireTokenSilent then serves fromCache with zero network.",
+        mini: "Pre-C17: method missing (TypeError); the only hydration logic was internal to the NAA feature.",
+        cost: 0.4,
+    },
+    "token-apis.load-external-tokens": {
+        class: "missing-feature",
+        real: "Top-level loadExternalTokens(config, request, response, options) export (the getTokenCache/ITokenCache successor): builds its own cache, writes account (ApiId 964) + id/access/refresh token entities from a raw token response, returns a fromCache AuthenticationResult.",
+        mini: "Pre-C17: export did not exist (undefined import) — no supported path for e2e harnesses or hybrid apps to inject externally-acquired tokens.",
+        cost: 0.4,
+    },
+    "token-apis.acquire-token-by-code": {
+        class: "missing-feature",
+        real: "acquireTokenByCode({code}) redeems a confidential-client-acquired spa code at the token endpoint (no PKCE code_verifier, no redirect_uri), dedupes concurrent same-code calls onto one POST/promise, and emits acquireTokenStart per call + one acquireTokenSuccess.",
+        mini: "Pre-C17: threw auth_code_or_nativeAccountId_required whenever only code was supplied — the documented hybrid-SPA flow failed client-side with zero IdP traffic.",
+        cost: 0.5,
+    },
+    "token-apis.acquire-token-by-code-errors": {
+        class: "behavior-diff",
+        real: "acquireTokenByCode with BOTH code and nativeAccountId throws spa_code_and_nativeAccountId_present; with neither it throws auth_code_or_nativeAccountId_required — each with start+failure events and no wire traffic.",
+        mini: "Pre-C17: the both-present case silently took the platform-broker path on nativeAccountId instead of throwing the dedicated error.",
+        cost: 0.2,
+    },
 };
 
 // ---- generate ---------------------------------------------------------------
@@ -644,6 +674,7 @@ const areaOrder = [
     "navigation",
     "react",
     "cache",
+    "token-apis",
 ];
 const areaTitles = {
     core: "1. Core flows",
@@ -659,6 +690,7 @@ const areaTitles = {
     navigation: "11. Redirect navigation",
     react: "12. React bindings",
     cache: "13. Cache entity semantics",
+    "token-apis": "14. Programmatic token APIs",
 };
 
 const rows = results.map((r) => {

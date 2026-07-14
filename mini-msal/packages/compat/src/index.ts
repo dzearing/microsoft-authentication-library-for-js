@@ -8,6 +8,7 @@
  */
 import {
     createClient,
+    loadExternalTokens as loadExternalTokensCore,
     type AuthClient,
     type Config,
 } from "@mini-msal/browser";
@@ -205,6 +206,19 @@ export async function createAuth(
     await auth.initialize();
     return auth;
 }
+
+/** real's top-level loadExternalTokens (ITokenCache successor), composed
+ * with the same cache backends the compat PCA uses */
+export const loadExternalTokens = (
+    config: Config,
+    request: Parameters<typeof loadExternalTokensCore>[1],
+    response: Record<string, any>,
+    options?: Parameters<typeof loadExternalTokensCore>[3]
+) =>
+    loadExternalTokensCore(config, request, response, options, [
+        localStorageCache,
+        cacheMigration,
+    ]);
 
 /** real's factory surface: construct + initialize */
 export const createStandardPublicClientApplication = createAuth;
