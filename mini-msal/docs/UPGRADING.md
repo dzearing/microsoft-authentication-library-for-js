@@ -3,16 +3,16 @@
 `@mini-msal/compat` is a drop-in replacement for `@azure/msal-browser` 5.x:
 same `PublicClientApplication` API, same wire protocol, same error classes and
 codes, same event streams, same on-disk cache. `@mini-msal/react` is the same
-for `@azure/msal-react` 5.x. Parity is measured, not claimed: a 121-scenario
+for `@azure/msal-react` 5.x. Parity is measured, not claimed: a 122-scenario
 conformance suite diffs every observable detail against the real libraries
-(see [GAP_REPORT.md](./GAP_REPORT.md) — currently **121/121 identical**).
+(see [GAP_REPORT.md](./GAP_REPORT.md) — currently **122/122 identical**).
 
 What you save (minified, tree-shaken, measured 2026-07-14):
 
 | | `@azure/msal-*` | `@mini-msal/*` |
 |---|---:|---:|
-| browser library only | 220.5 KB | 61.7 KB |
-| browser + React bindings | 248.8 KB | 71.7 KB |
+| browser library only | 220.5 KB | 62.1 KB |
+| browser + React bindings | 248.8 KB | 72.0 KB |
 | redirect-bridge page | 6.5 KB | 0.6 KB |
 
 > **Prototype note**: these packages are not published to npm. Consume them
@@ -132,7 +132,7 @@ Documented differences rather than silent divergence — the full evidence is
   implemented).
 - Real's **native broker in-memory token cache** is not replicated: mini
   re-asks the platform broker on each call (the broker does its own caching).
-- Anything the 121 conformance scenarios don't observe is not guaranteed. If
+- Anything the 122 conformance scenarios don't observe is not guaranteed. If
   you find a behavioral difference, the conformance suite is the arbiter —
   add a scenario, capture real, and diff (see
   [design/conformance-suite-notes.md](./design/conformance-suite-notes.md)).

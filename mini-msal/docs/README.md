@@ -7,7 +7,7 @@ mini-msal is a from-scratch reimplementation of `@azure/msal-browser` and
 `@azure/msal-react`. It signs users in with the same protocol (auth code +
 PKCE), stores tokens in the same cache format, exposes the same API shapes —
 and the full drop-in with **every** feature composed ships in about
-**61.7 KB minified / 20.0 KB gzip**, where tree-shaken `@azure/msal-browser`
+**62.1 KB minified / 20.1 KB gzip**, where tree-shaken `@azure/msal-browser`
 costs about **220.5 KB minified / 55.4 KB gzip**. Compose less and pay less,
 down to a 29.7 KB redirect-only floor.
 
@@ -21,10 +21,10 @@ Two constraints drive everything here:
 
 1. **Behave like real MSAL.** Same API surface, same wire protocol, same
    error codes, same cache entries on disk. "Looks similar" isn't good
-   enough — we measure parity with a 121-scenario black-box conformance suite
+   enough — we measure parity with a 122-scenario black-box conformance suite
    that runs identical scenarios against both libraries and diffs every
    observable detail (see [GAP_REPORT.md](./GAP_REPORT.md) — currently
-   **121/121 identical**).
+   **122/122 identical**).
 2. **Stay small.** The real `@azure/msal-browser` costs ~220 KB minified even
    after aggressive tree shaking, because its main controller statically pulls
    in every feature (broker, telemetry, IndexedDB, …) whether you use it or
@@ -54,7 +54,7 @@ bindings. Two standalone guides cover the details:
 > packed tarballs, type-checks every subpath export under strict TS, and
 > tree-shake-gates the bundle sizes).
 
-### Profile 1 — drop-in compat (61.7 KB min)
+### Profile 1 — drop-in compat (62.1 KB min)
 
 The classic `PublicClientApplication` with every feature composed. Swap the
 import from `@azure/msal-browser` and nothing else changes — config, request
@@ -250,7 +250,7 @@ conditions; the repo's internal builds compile straight from `src/`.
 
 ## What's implemented, and what isn't
 
-Implemented and verified end-to-end (all 121 conformance scenarios pass):
+Implemented and verified end-to-end (all 122 conformance scenarios pass):
 
 - OIDC discovery; redirect, popup, and `ssoSilent` login (auth code + PKCE);
   authority modes (AAD, CIAM, `knownAuthorities`, instance-aware multi-cloud,
@@ -277,10 +277,10 @@ Implemented and verified end-to-end (all 121 conformance scenarios pass):
   the React layer
 
 Not implemented (by design, for now): B2C/ADFS authorities, and anything
-else the 121 scenarios don't observe (e.g. real's native in-memory broker
+else the 122 scenarios don't observe (e.g. real's native in-memory broker
 token cache — mini re-asks the broker each call).
 
-The evidence lives in [GAP_REPORT.md](./GAP_REPORT.md): **121/121 scenarios
+The evidence lives in [GAP_REPORT.md](./GAP_REPORT.md): **122/122 scenarios
 identical — 0 behavioral diffs, 0 bugs.**
 
 ## How we know it behaves the same
@@ -292,7 +292,7 @@ Independent test layers, all runnable locally with no Azure setup
    through the identical full app — login, popups, multi-account, logout —
    built once against real MSAL and once against mini-msal, including the
    cache-interop proof in both directions.
-2. **Conformance suite** (`npm run conformance`, 121 scenarios): captures real
+2. **Conformance suite** (`npm run conformance`, 122 scenarios): captures real
    MSAL's observable behavior — API results, error types and codes, events in
    order, storage writes, every request the IdP sees — as normalized JSON
    snapshots, then replays the same scenarios against mini-msal and diffs
@@ -331,7 +331,7 @@ mini-msal/
     ├── examples/         examples smoke check (sign-in per example)
     ├── unit/             seam-hardening checks
     ├── packaging/        npm-pack consumer check
-    ├── conformance/      121-scenario conformance runner + snapshots
+    ├── conformance/      122-scenario conformance runner + snapshots
     └── bundle-size/      size measurement + source-map attribution
 ```
 
@@ -354,10 +354,10 @@ To try it against a real Entra ID tenant, see
 
 ## Status and next steps
 
-Current conformance standing (121 scenarios): **121 identical · 0 missing
+Current conformance standing (122 scenarios): **122 identical · 0 missing
 features · 0 behavioral diffs · 0 bugs** — the C-series (full compat parity,
 including the post-audit C11–C21 gap closure) is complete; the D-series
-(consumer packaging, docs) is underway. e2e 25/25, seams 10/10, packaging
+(consumer packaging, docs) is underway. e2e 25/25, seams 12/12, packaging
 check green, and each [examples/](../examples/) profile is size-tracked and
 smoke-tested. The work is driven task-by-task from
 [design/PARITY_STATE.md](./design/PARITY_STATE.md); remaining: the final
@@ -370,8 +370,8 @@ Measured size matrix (2026-07-14, msal-browser 5.16.0, `npm run measure`):
 | real: msal-react + msal-browser stack | 248.8 KB | 64.9 KB | 53.9 KB |
 | real: msal-browser only (no React) | 220.5 KB | 55.4 KB | 46.4 KB |
 | real: redirect-bridge page | 6.5 KB | 2.7 KB | 2.4 KB |
-| **mini: compat + react stack** | **71.7 KB** | **23.4 KB** | **20.8 KB** |
-| **mini: `@mini-msal/compat`, every feature (no React)** | **61.7 KB** | **20.0 KB** | **17.8 KB** |
+| **mini: compat + react stack** | **72.0 KB** | **23.5 KB** | **20.9 KB** |
+| **mini: `@mini-msal/compat`, every feature (no React)** | **62.1 KB** | **20.1 KB** | **17.9 KB** |
 | **mini: `createClient` core only (redirect + silent + multi-account + sign-out)** | **31.3 KB** | **10.8 KB** | **9.8 KB** |
 | mini: redirect-bridge page | 0.6 KB | 0.4 KB | 0.3 KB |
 

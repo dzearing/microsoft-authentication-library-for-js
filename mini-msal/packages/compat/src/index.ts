@@ -26,8 +26,6 @@ import {
 export { BrowserPerformanceClient } from "@mini-msal/browser/telemetry";
 export { NativeAuthError } from "@mini-msal/browser/broker";
 
-import { AuthError } from "@mini-msal/browser";
-
 export {
     AuthError,
     InteractionRequiredAuthError,
@@ -177,13 +175,11 @@ export const BrowserConfigurationAuthErrorCodes = pack(
         "stubbed_public_client_application_called"
 );
 
-/** real's browser-config error class (aka.ms message, like BrowserAuthError) */
-export class BrowserConfigurationAuthError extends AuthError {
-    name = "BrowserConfigurationAuthError";
-    constructor(errorCode: string, subError?: string) {
-        super(errorCode, undefined, subError);
-    }
-}
+// the long tail of real's export surface (D5): BrowserConfigurationAuthError,
+// enums/constants, BrowserUtils, storage classes, EventHandler,
+// EventMessageUtils, perf helpers, SignedHttpRequest,
+// stubbedPublicClientApplication, enforceResourceParameter
+export * from "./surface.js";
 
 export interface PublicClientApplication
     extends AuthClient,

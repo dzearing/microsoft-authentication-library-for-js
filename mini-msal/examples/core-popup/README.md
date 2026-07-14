@@ -4,7 +4,7 @@
 `@mini-msal/browser/popup` (`loginPopup` / `acquireTokenPopup` /
 `logoutPopup`).
 
-**Measured (2026-07-14):** 33.2 KB minified / 11.5 KB gzip for the entire
+**Measured (2026-07-14):** 33.3 KB minified / 11.5 KB gzip for the entire
 app bundle (`example-core-popup` in `npm run measure`) — the popup feature
 costs ~3 KB over the core-redirect example.
 

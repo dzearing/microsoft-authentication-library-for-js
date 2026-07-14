@@ -510,6 +510,7 @@ export interface EventMessage {
     payload: unknown;
     error: unknown;
     timestamp: number;
+    correlationId?: string;
 }
 
 type EventCallback = (message: EventMessage) => void;
@@ -938,8 +939,10 @@ export function createClient(
     const authority = (
         config.auth.authority ?? "https://login.microsoftonline.com/common"
     ).replace(/\/$/, "");
-    const redirectUri = new URL(config.auth.redirectUri ?? "/", location.href)
-        .href;
+    // lazy: touching location at construction would break SSR (real's PCA
+    // constructs fine in Node; only operations require a browser)
+    const redirectUri = () =>
+        new URL(config.auth.redirectUri ?? "/", location.href).href;
     let metadata:
         | {
               authorization_endpoint: string;
@@ -1566,7 +1569,7 @@ export function createClient(
         const ccs = skipHints ? undefined : ccsFrom(req);
         const reqRedirectUri = req.redirectUri
             ? new URL(req.redirectUri, location.href).href
-            : redirectUri;
+            : redirectUri();
         // real's instance-aware seam (getDiscoveredAuthority): EQP
         // instance_aware / auth.instanceAware + a request account swap the
         // authority domain for the account's environment
@@ -1755,7 +1758,7 @@ export function createClient(
         const json = await post(
             `${tokenEndpoint}?${q}`,
             {
-                redirect_uri: redirectUri,
+                redirect_uri: redirectUri(),
                 ...grant,
                 client_id: clientId,
                 scope: normScopes(scopes),
@@ -2442,7 +2445,7 @@ export function createClient(
             new URL(
                 req?.postLogoutRedirectUri ??
                     config.auth.postLogoutRedirectUri ??
-                    redirectUri,
+                    redirectUri(),
                 location.href
             ).href
         );

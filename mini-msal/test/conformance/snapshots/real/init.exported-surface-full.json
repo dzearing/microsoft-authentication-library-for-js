@@ -1,0 +1,390 @@
+{
+  "ok": {
+    "bpm": {
+      "endMark": "msal.end.n.cid",
+      "instance": {
+        "endMark": "msal.end.n.cid",
+        "measureName": "msal.measure.n.cid",
+        "startMark": "msal.start.n.cid"
+      },
+      "measureName": "msal.measure.n.cid",
+      "startMark": "msal.start.n.cid",
+      "supported": true
+    },
+    "browserUtils": {
+      "blockBeforeInit": {
+        "code": "uninitialized_public_client_application",
+        "name": "BrowserAuthError"
+      },
+      "blockNonBrowser": true,
+      "blockReload": null,
+      "currentUri": true,
+      "guidShape": true,
+      "homepage": true,
+      "invokeAsyncIsPromise": true,
+      "invokeResult": 42,
+      "isInIframe": false,
+      "isInPopup": false,
+      "keys": [
+        "blockAPICallsBeforeInitialize",
+        "blockAcquireTokenInPopups",
+        "blockNonBrowserEnvironment",
+        "blockRedirectInIframe",
+        "blockReloadInHiddenIframes",
+        "buildMergedClaims",
+        "cancelPendingBridgeResponse",
+        "clearAuthResponseFromUrl",
+        "clearHash",
+        "createGuid",
+        "getCurrentUri",
+        "getHomepage",
+        "invoke",
+        "invokeAsync",
+        "isInIframe",
+        "isInPopup",
+        "parseAuthResponseFromUrl",
+        "preconnect",
+        "preflightCheck",
+        "redirectPreflightCheck",
+        "replaceHash",
+        "waitForBridgeResponse"
+      ],
+      "mergedClaims": {
+        "access_token": {
+          "xms_cc": {
+            "values": [
+              "cp1",
+              "cp2"
+            ]
+          }
+        },
+        "id_token": {
+          "login_hint": {
+            "essential": false
+          },
+          "signin_state": {
+            "essential": false
+          }
+        }
+      },
+      "mergedClaimsBad": {
+        "code": "invalid_claims",
+        "name": "ClientConfigurationError"
+      },
+      "parseNoResponse": {
+        "code": "empty_response",
+        "name": "BrowserAuthError"
+      },
+      "preflightInit": null,
+      "preflightUninit": {
+        "code": "uninitialized_public_client_application",
+        "name": "BrowserAuthError"
+      },
+      "redirectPreflightMemory": {
+        "code": "in_mem_redirect_unavailable",
+        "name": "BrowserConfigurationAuthError"
+      }
+    },
+    "constants": {
+      "ApiId": {
+        "acquireTokenByCode": 866,
+        "acquireTokenPopup": 862,
+        "acquireTokenRedirect": 861,
+        "acquireTokenSilent_authCode": 864,
+        "acquireTokenSilent_silentFlow": 61,
+        "handleRedirectPromise": 865,
+        "hydrateCache": 963,
+        "loadExternalTokens": 964,
+        "logout": 961,
+        "logoutPopup": 962,
+        "ssoSilent": 863
+      },
+      "AzureCloudInstance": {
+        "AzureChina": "https://login.chinacloudapi.cn",
+        "AzureGermany": "https://login.microsoftonline.de",
+        "AzurePpe": "https://login.windows-ppe.net",
+        "AzurePublic": "https://login.microsoftonline.com",
+        "AzureUsGovernment": "https://login.microsoftonline.us",
+        "None": "none"
+      },
+      "BrowserRootPerformanceEvents": {
+        "AcquireTokenByCode": "acquireTokenByCode",
+        "AcquireTokenPopup": "acquireTokenPopup",
+        "AcquireTokenPreRedirect": "acquireTokenPreRedirect",
+        "AcquireTokenRedirect": "acquireTokenRedirect",
+        "AcquireTokenSilent": "acquireTokenSilent",
+        "InitializeClientApplication": "initializeClientApplication",
+        "LoadExternalTokens": "loadExternalTokens",
+        "LocalStorageUpdated": "localStorageUpdated",
+        "SsoCapable": "ssoCapable",
+        "SsoSilent": "ssoSilent",
+        "WaitForBridgeLateResponse": "waitForBridgeLateResponse"
+      },
+      "DEFAULT_IFRAME_TIMEOUT_MS": 10000,
+      "JsonWebTokenTypes": {
+        "Jwk": "JWK",
+        "Jwt": "JWT",
+        "Pop": "pop"
+      },
+      "ResponseMode": {
+        "FORM_POST": "form_post",
+        "FRAGMENT": "fragment",
+        "QUERY": "query"
+      }
+    },
+    "emu": {
+      "atStartPopup": "acquireToken",
+      "atStartSilent": null,
+      "atSuccessFromAcquire": "none",
+      "atSuccessSilent": null,
+      "hrEndFromHR": "none",
+      "hrEndFromLogin": null,
+      "hrStart": "handleRedirect",
+      "logoutEndFromLogin": null,
+      "logoutEndFromLogout": "none",
+      "logoutStart": "logout"
+    },
+    "erp": {
+      "misplaced": {
+        "code": "misplaced_resource_parameter",
+        "name": "ClientAuthError"
+      },
+      "missingResource": {
+        "code": "resource_parameter_required",
+        "name": "ClientAuthError"
+      },
+      "notMcp": true,
+      "ok": true
+    },
+    "eventHandler": {
+      "dupIdReturnsNull": true,
+      "idIsString": true,
+      "message": {
+        "correlationId": "<dynamic>",
+        "error": null,
+        "eventType": "msal:loginSuccess",
+        "interactionType": "popup",
+        "keys": [
+          "correlationId",
+          "error",
+          "eventType",
+          "interactionType",
+          "payload",
+          "timestamp"
+        ],
+        "payload": {
+          "probe": 1
+        },
+        "tsIsNumber": true
+      },
+      "seenCount": 1
+    },
+    "headerParser": {
+      "challenges": {
+        " realm": "r",
+        "nonce": "<dynamic>"
+      },
+      "fromAuthInfo": "abc123",
+      "fromWww": "n1",
+      "invalid": {
+        "code": "invalid_authentication_header",
+        "name": "ClientConfigurationError"
+      },
+      "missing": {
+        "code": "missing_nonce_authentication_header",
+        "name": "ClientConfigurationError"
+      }
+    },
+    "localStorageShape": {
+      "contains": true,
+      "plainRoundtrip": "v",
+      "removed": null,
+      "setUserBeforeInit": {
+        "code": "uninitialized_public_client_application",
+        "name": "BrowserAuthError"
+      },
+      "userBeforeInit": {
+        "code": "uninitialized_public_client_application",
+        "name": "BrowserAuthError"
+      }
+    },
+    "memoryStorage": {
+      "clearWorks": true,
+      "decrypt": null,
+      "get": "1",
+      "has": true,
+      "keys": [
+        "a",
+        "b"
+      ],
+      "miss": null,
+      "user": "2"
+    },
+    "sessionStorageShape": {
+      "contains": true,
+      "decrypt": null,
+      "removed": null,
+      "roundtrip": "v",
+      "user": "v"
+    },
+    "signedHttpRequest": {
+      "header": {
+        "alg": "RS256",
+        "kidMatches": true,
+        "typ": "pop"
+      },
+      "kidShape": true,
+      "parts": 3,
+      "payload": {
+        "at": "the-at",
+        "client_claims": null,
+        "cnfJwkKeys": [
+          "alg",
+          "e",
+          "ext",
+          "key_ops",
+          "kty",
+          "n"
+        ],
+        "extra": "claim",
+        "m": "GET",
+        "nonceIsString": true,
+        "p": "/path/x",
+        "q": [
+          [],
+          "a=b"
+        ],
+        "tsIsNumber": true,
+        "u": "api.contoso.com"
+      },
+      "removeKeysUndef": true
+    },
+    "stubPerf": {
+      "addCb": "",
+      "end": null,
+      "endMeasurement": null,
+      "eventShape": {
+        "authority": "",
+        "clientId": "",
+        "correlationId": "<dynamic>",
+        "eventId": "string",
+        "libraryName": "",
+        "libraryVersion": "",
+        "name": "measure-x",
+        "startTimeMs": "number",
+        "status": 1
+      },
+      "generateId": "callback-id",
+      "removeCb": true,
+      "startKeys": [
+        "add",
+        "discard",
+        "end",
+        "event",
+        "increment"
+      ]
+    },
+    "stubbedPCA": {
+      "account": null,
+      "accounts": [],
+      "addEventCallback": null,
+      "addPerformanceCallback": "",
+      "getActiveAccount": null,
+      "getLogger": {
+        "code": "stubbed_public_client_application_called",
+        "name": "BrowserConfigurationAuthError"
+      },
+      "keys": [
+        "acquireTokenByCode",
+        "acquireTokenPopup",
+        "acquireTokenRedirect",
+        "acquireTokenSilent",
+        "addEventCallback",
+        "addPerformanceCallback",
+        "clearCache",
+        "getAccount",
+        "getActiveAccount",
+        "getAllAccounts",
+        "getConfiguration",
+        "getLogger",
+        "handleRedirectPromise",
+        "hydrateCache",
+        "initialize",
+        "initializeWrapperLibrary",
+        "loginPopup",
+        "loginRedirect",
+        "logoutPopup",
+        "logoutRedirect",
+        "removeEventCallback",
+        "removePerformanceCallback",
+        "setActiveAccount",
+        "setLogger",
+        "setNavigationClient",
+        "ssoSilent"
+      ],
+      "login": {
+        "code": "stubbed_public_client_application_called",
+        "name": "BrowserConfigurationAuthError"
+      },
+      "removePerformanceCallback": false,
+      "setActiveAccount": true,
+      "silent": {
+        "code": "stubbed_public_client_application_called",
+        "name": "BrowserConfigurationAuthError"
+      }
+    },
+    "types": {
+      "ApiId": "object",
+      "AuthError": "function",
+      "AuthErrorCodes": "object",
+      "AuthenticationHeaderParser": "function",
+      "AuthenticationScheme": "object",
+      "AzureCloudInstance": "object",
+      "BrowserAuthError": "function",
+      "BrowserAuthErrorCodes": "object",
+      "BrowserCacheLocation": "object",
+      "BrowserConfigurationAuthError": "function",
+      "BrowserConfigurationAuthErrorCodes": "object",
+      "BrowserPerformanceClient": "function",
+      "BrowserPerformanceMeasurement": "function",
+      "BrowserRootPerformanceEvents": "object",
+      "BrowserUtils": "object",
+      "CacheLookupPolicy": "object",
+      "ClientAuthError": "function",
+      "ClientAuthErrorCodes": "object",
+      "ClientConfigurationError": "function",
+      "ClientConfigurationErrorCodes": "object",
+      "DEFAULT_IFRAME_TIMEOUT_MS": "number",
+      "EventHandler": "function",
+      "EventMessageUtils": "function",
+      "EventType": "object",
+      "InteractionRequiredAuthError": "function",
+      "InteractionRequiredAuthErrorCodes": "object",
+      "InteractionStatus": "object",
+      "InteractionType": "object",
+      "JsonWebTokenTypes": "object",
+      "LocalStorage": "function",
+      "LogLevel": "object",
+      "Logger": "function",
+      "MemoryStorage": "function",
+      "NavigationClient": "function",
+      "OIDC_DEFAULT_SCOPES": "object",
+      "PromptValue": "object",
+      "ProtocolMode": "object",
+      "PublicClientApplication": "function",
+      "ResponseMode": "object",
+      "ServerError": "function",
+      "SessionStorage": "function",
+      "SignedHttpRequest": "function",
+      "StubPerformanceClient": "function",
+      "WrapperSKU": "object",
+      "createNestablePublicClientApplication": "function",
+      "createStandardPublicClientApplication": "function",
+      "enforceResourceParameter": "function",
+      "isPlatformBrokerAvailable": "function",
+      "loadExternalTokens": "function",
+      "stubbedPublicClientApplication": "object",
+      "version": "string"
+    }
+  }
+}

@@ -4,7 +4,7 @@
 `PublicClientApplication` surface as `@azure/msal-browser` with all features
 (popup, PoP, broker, localStorage, cache migration, telemetry) pre-composed.
 
-**Measured (2026-07-14):** 61.1 KB minified / 19.9 KB gzip for the entire
+**Measured (2026-07-14):** 61.5 KB minified / 20.0 KB gzip for the entire
 app bundle (`example-compat` in `npm run measure`) — 3.6× smaller than real
 msal-browser's 220.5 KB for the same code.
 

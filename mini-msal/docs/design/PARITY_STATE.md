@@ -24,15 +24,15 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-14)**: Phases A0–C21 + D1–D4 COMPLETE — conformance
-121/121, e2e 25/25, seams 10/10, examples:smoke 8/8, pack:check green,
-GAP_REPORT all-pass. Size matrix: compat-no-react 61.7 KB min (real:
-220.5), compat+react stack 71.7 (real: 248.8), core-only 31.3. Packages
+**Status (2026-07-14)**: Phases A0–C21 + D1–D5 COMPLETE — conformance
+122/122, e2e 25/25, seams 12/12, examples:smoke 8/8, pack:check green,
+GAP_REPORT all-pass. Size matrix: compat-no-react 62.1 KB min (real:
+220.5), compat+react stack 72.0 (real: 248.8), core-only 31.3. Packages
 consumer-ready (tsc dist + types, npm-pack-verified); consumer docs +
-runnable size-tracked examples shipped. D4 requirements audit: bullets
-2+3 pass; found 18 module exports missing from compat + a Node/SSR
-construction crash (→ D5) and no committed doc-sample check (→ D6).
-Remaining: D5, D6, D7 (close-out re-audit).
+runnable size-tracked examples shipped. D5 closed the D4 audit's bullet-1
+gaps: full 51-key export surface pinned by scenario, 18 missing exports
+implemented, PCA constructs in plain Node (SSR). Remaining: D6 (committed
+docs:check), D7 (close-out re-audit).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
 ## Context budget (user-required 2026-07-13)
@@ -82,7 +82,7 @@ Work from `mini-msal/` on branch `dzearing/mini-msal`.
      did not regress vs the previous task's recorded count (suite may GROW
      when a task adds scenarios — record the new total as `X/<total>`)
    - `npm run e2e` → 25/25
-   - `npm run seams` → 10/10 (seam-hardening checks, cheap; D1)
+   - `npm run seams` → 12/12 (seam-hardening + node SSR checks, cheap; D1/D5)
    - `npm run measure` → record mini-msal-stack size in the task row
    - `npm run pack:check` (needs network) only when a task touches
      package.json exports, tsconfigs, or public API surface
@@ -444,8 +444,33 @@ push → reset). "Consumer" below means someone who has never read this repo.
   committed check. D7 filed as the close-out re-audit. Zero code changes.
   Details/evidence: PARITY_LOG D4 entry.
 
-- [ ] **D5** `pending` — Compat export-surface completion + SSR-safe
-  construction (D4 audit, Mission bullet 1). Test-first:
+- [x] **D5** `done 2026-07-14 — pass 122/122, mini-stack 72.0 KB` — Compat
+  export-surface completion + SSR-safe construction. Suite grew 121→122
+  (init.exported-surface-full: FULL sorted key+typeof map — mini extras
+  NativeAuthError/NestedAppAuthError/createAuth filtered by a documented
+  allowlist — plus behavior probes for every new export; deterministic,
+  green first mini run after impl). seams grew 10→12: node-side SSR
+  checks import the built dist in-process — compat PCA + core
+  createClient construct in plain Node (fix: createClient's redirectUri
+  is now a lazy closure; ops still require a browser, like real). All 18
+  exports implemented in NEW packages/compat/src/surface.ts as
+  faithful-lean ports: 6 exact constants (ApiId, AzureCloudInstance,
+  JsonWebTokenTypes, ResponseMode, DEFAULT_IFRAME_TIMEOUT_MS,
+  BrowserRootPerformanceEvents), stubbedPublicClientApplication (26 keys,
+  BrowserConfigurationAuthError rejections), AuthenticationHeaderParser,
+  EventMessageUtils, EventHandler, MemoryStorage/SessionStorage +
+  LocalStorage (reuses ./local-storage's newly exported cookie/AES-GCM
+  helpers — interoperates with the feature's at-rest format),
+  BrowserPerformanceMeasurement, StubPerformanceClient,
+  enforceResourceParameter, BrowserUtils namespace (22 fns),
+  SignedHttpRequest (reuses ./pop's newly exported
+  makeBoundKeyPair/signPop/keystore; signPop gained real's
+  claims-override param). PCA instance extras
+  waitForIframeResponse/waitForPopupResponse DESCOPED (not in real's
+  .d.ts). compat 62.1 min (+0.4 — surface tree-shakes away for consumers
+  who don't import it, pack:check gates 29.9/32.5/59.9/65.4), core 31.3
+  (unchanged). e2e 25/25, smoke 8/8. Doc sizes/counts refreshed. Details:
+  PARITY_LOG D5 entry. Original spec:
   (a) NEW scenario `init.exported-surface-full` — in the harness, pin the
   FULL sorted `Object.keys(lib)` list (real snapshot is ground truth) so
   the export surface can never silently diverge again; (b) NEW node-side

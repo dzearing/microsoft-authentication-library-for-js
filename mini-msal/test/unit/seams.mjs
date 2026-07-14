@@ -111,6 +111,47 @@ try {
         return out;
     });
 
+    // D5: SSR-safe construction — real's PCA constructs in plain Node
+    // (Next.js/SSR drop-in; operations may fail later). Import the built
+    // dist in THIS node process, where no browser globals exist.
+    for (const [id, fn] of [
+        [
+            "ssr.compat-pca-constructs",
+            async () => {
+                const { PublicClientApplication } = await import(
+                    "@mini-msal/compat"
+                );
+                const pca = new PublicClientApplication({
+                    auth: { clientId: "11111111-2222-3333-4444-555555555555" },
+                });
+                if (typeof pca.initialize !== "function")
+                    throw new Error("not a client instance");
+            },
+        ],
+        [
+            "ssr.core-create-client-constructs",
+            async () => {
+                const { createClient } = await import("@mini-msal/browser");
+                const c = createClient({
+                    auth: { clientId: "11111111-2222-3333-4444-555555555555" },
+                });
+                if (typeof c.getAllAccounts !== "function")
+                    throw new Error("not a client instance");
+            },
+        ],
+    ]) {
+        try {
+            await fn();
+            results.push({ id, ok: true });
+        } catch (e) {
+            results.push({
+                id,
+                ok: false,
+                detail: String(e?.stack ?? e).slice(0, 300),
+            });
+        }
+    }
+
     for (const r of results) {
         if (!r.ok) failed++;
         console.log(`  ${r.ok ? "PASS" : "FAIL"} ${r.id}${r.ok ? "" : ` — ${r.detail}`}`);

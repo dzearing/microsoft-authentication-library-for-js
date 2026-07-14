@@ -57,7 +57,7 @@ Deltas compose approximately additively (shared plumbing lives in core).
 
 ## Step down, profile by profile
 
-### Step 0 — where you start: compat drop-in, 61.7 KB
+### Step 0 — where you start: compat drop-in, 62.1 KB
 
 ```ts
 import { PublicClientApplication } from "@mini-msal/compat";
@@ -208,7 +208,7 @@ fallback) never loads it.
 | Profile | Composition | min | vs real |
 |---|---|---:|---:|
 | real msal-browser (tree-shaken) | — | 220.5 KB | 1× |
-| compat drop-in | everything | 61.7 KB | 3.6× smaller |
+| compat drop-in | everything | 62.1 KB | 3.5× smaller |
 | explicit full composition | core + 6 features | 56.3 KB | 3.9× smaller |
 | popup SPA | core + `popup` | 32.6 KB | 6.8× smaller |
 | redirect-only SPA | core | 29.7 KB | 7.4× smaller |

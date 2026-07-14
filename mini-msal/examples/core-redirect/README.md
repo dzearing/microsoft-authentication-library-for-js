@@ -3,7 +3,7 @@
 **Composes:** nothing — `createClient(msalConfig)` from `@mini-msal/browser`
 is the whole stack. This is the pay-to-play floor.
 
-**Measured (2026-07-14):** 30.3 KB minified / 10.6 KB gzip for the entire
+**Measured (2026-07-14):** 30.4 KB minified / 10.6 KB gzip for the entire
 app bundle (`example-core-redirect` in `npm run measure`). Real
 msal-browser doing the same job ships 220.5 KB.
 

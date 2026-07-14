@@ -5,7 +5,8 @@
  * access tokens as SignedHttpRequest JWTs — re-signed on every cache hit.
  * Keypairs persist in real's IndexedDB keystore (msal.db / msal.db.keys,
  * private key unextractable) so cached pop ATs stay signable across page
- * loads. Compose via createClient(config, [pop]).
+ * loads. Compose via createClient(config, [pop]). The keygen/signing
+ * helpers are exported for compat's SignedHttpRequest.
  */
 import { BrowserAuthError, b64url, enc } from "./index.js";
 import type { ClientContext, TokenRequest } from "./index.js";
@@ -22,7 +23,7 @@ const b64urlStr = (s: string): string => b64url(enc.encode(s));
 const sortedJson = (o: object): string =>
     JSON.stringify(o, Object.keys(o).sort());
 
-interface BoundKeyPair {
+export interface BoundKeyPair {
     privateKey: CryptoKey;
     publicKey: CryptoKey;
     requestMethod?: string;
@@ -56,92 +57,123 @@ const idbOp = async <T,>(
     }
 };
 
+/** memory-first keystore over the shared IndexedDB (real's AsyncMemoryStorage) */
+export const keystore = {
+    async put(mem: Map<string, BoundKeyPair>, kid: string, entry: BoundKeyPair) {
+        mem.set(kid, entry);
+        await idbOp("readwrite", (s) => s.put(entry, kid)).catch(() => {
+            /* IndexedDB unavailable: memory-only, like real */
+        });
+    },
+    async get(mem: Map<string, BoundKeyPair>, kid: string) {
+        return (
+            mem.get(kid) ??
+            (await idbOp<BoundKeyPair>("readonly", (s) => s.get(kid)).catch(
+                () => undefined
+            ))
+        );
+    },
+    async del(mem: Map<string, BoundKeyPair>, kid: string) {
+        mem.delete(kid);
+        await idbOp("readwrite", (s) => s.delete(kid)).catch(() => {});
+    },
+};
+
+/** real's generateKid half of generateCnf: fresh keypair, kid =
+ * b64url(sha256(sorted {e,kty,n})), private key re-imported unextractable */
+export async function makeBoundKeyPair(
+    req: TokenRequest
+): Promise<{ kid: string; entry: BoundKeyPair }> {
+    const pair = await crypto.subtle.generateKey(RSA, true, [
+        "sign",
+        "verify",
+    ]);
+    const pub = await crypto.subtle.exportKey("jwk", pair.publicKey);
+    const kid = b64url(
+        await crypto.subtle.digest(
+            "SHA-256",
+            enc.encode(sortedJson({ e: pub.e, kty: pub.kty, n: pub.n }))
+        )
+    );
+    const priv = await crypto.subtle.importKey(
+        "jwk",
+        await crypto.subtle.exportKey("jwk", pair.privateKey),
+        RSA,
+        false,
+        ["sign"]
+    );
+    return {
+        kid,
+        entry: {
+            privateKey: priv,
+            publicKey: pair.publicKey,
+            requestMethod: req.resourceRequestMethod,
+            requestUri: req.resourceRequestUri,
+        },
+    };
+}
+
+/** req_cnf = b64url({kid, xms_ksl:"sw"}) */
+export const popReqCnf = (kid: string): string =>
+    b64urlStr(JSON.stringify({ kid, xms_ksl: "sw" }));
+
+/** real's signPayload/signJwt: SHR JWT {typ:"pop", alg, kid} around the AT
+ * with the resource binding claims + the public JWK as cnf.jwk; `claims`
+ * (SignedHttpRequest) can add/override payload fields but never cnf */
+export async function signPop(
+    pair: BoundKeyPair,
+    kid: string,
+    at: string,
+    req: TokenRequest,
+    claims?: object
+): Promise<string> {
+    const pub = await crypto.subtle.exportKey("jwk", pair.publicKey);
+    const u = req.resourceRequestUri
+        ? new URL(req.resourceRequestUri)
+        : undefined;
+    const payload = {
+        at,
+        ts: Math.floor(Date.now() / 1000),
+        m: req.resourceRequestMethod?.toUpperCase(),
+        u: u?.host,
+        nonce: req.shrNonce ?? crypto.randomUUID(),
+        p: u?.pathname,
+        q: u?.search ? [[], u.search.slice(1)] : undefined,
+        client_claims: req.shrClaims || undefined,
+        ...claims,
+        cnf: { jwk: JSON.parse(sortedJson(pub)) },
+    };
+    const header = {
+        typ: req.shrOptions?.header?.typ ?? "pop",
+        alg: pub.alg,
+        kid: b64urlStr(JSON.stringify({ kid })),
+    };
+    const token = `${b64urlStr(JSON.stringify(header))}.${b64urlStr(
+        JSON.stringify(payload)
+    )}`;
+    const sig = await crypto.subtle.sign(RSA, pair.privateKey, enc.encode(token));
+    return `${token}.${b64url(sig)}`;
+}
+
 export function pop(ctx: ClientContext): void {
     // in-memory first (like real's AsyncMemoryStorage), IndexedDB fallback
     const mem = new Map<string, BoundKeyPair>();
-    const getPair = async (kid: string): Promise<BoundKeyPair | undefined> =>
-        mem.get(kid) ??
-        (await idbOp("readonly", (s) => s.get(kid)).catch(
-            () => undefined
-        ));
 
     ctx.pop = {
-        /** real's generateCnf: fresh keypair, kid = b64url(sha256(sorted
-         * {e,kty,n})), req_cnf = b64url({kid, xms_ksl:"sw"}) */
+        /** real's generateCnf */
         async cnf(req: TokenRequest) {
-            const pair = await crypto.subtle.generateKey(RSA, true, [
-                "sign",
-                "verify",
-            ]);
-            const pub = await crypto.subtle.exportKey("jwk", pair.publicKey);
-            const kid = b64url(
-                await crypto.subtle.digest(
-                    "SHA-256",
-                    enc.encode(
-                        sortedJson({ e: pub.e, kty: pub.kty, n: pub.n })
-                    )
-                )
-            );
-            // real re-imports the private key unextractable before storing
-            const priv = await crypto.subtle.importKey(
-                "jwk",
-                await crypto.subtle.exportKey("jwk", pair.privateKey),
-                RSA,
-                false,
-                ["sign"]
-            );
-            const entry: BoundKeyPair = {
-                privateKey: priv,
-                publicKey: pair.publicKey,
-                requestMethod: req.resourceRequestMethod,
-                requestUri: req.resourceRequestUri,
-            };
-            mem.set(kid, entry);
-            await idbOp("readwrite", (s) => s.put(entry, kid)).catch(() => {
-                /* IndexedDB unavailable: memory-only, like real */
-            });
-            return {
-                kid,
-                reqCnf: b64urlStr(JSON.stringify({ kid, xms_ksl: "sw" })),
-            };
+            const { kid, entry } = await makeBoundKeyPair(req);
+            await keystore.put(mem, kid, entry);
+            return { kid, reqCnf: popReqCnf(kid) };
         },
 
-        /** real's signPopToken: SHR JWT {typ:"pop", alg, kid} around the AT
-         * with the resource binding claims + the public JWK as cnf.jwk */
+        /** real's signPopToken */
         async sign(at: string, kid: string, req: TokenRequest) {
-            const pair = await getPair(kid);
+            const pair = await keystore.get(mem, kid);
             if (!pair) {
                 throw new BrowserAuthError("crypto_key_not_found");
             }
-            const pub = await crypto.subtle.exportKey("jwk", pair.publicKey);
-            const u = req.resourceRequestUri
-                ? new URL(req.resourceRequestUri)
-                : undefined;
-            const payload = {
-                at,
-                ts: Math.floor(Date.now() / 1000),
-                m: req.resourceRequestMethod?.toUpperCase(),
-                u: u?.host,
-                nonce: req.shrNonce ?? crypto.randomUUID(),
-                p: u?.pathname,
-                q: u?.search ? [[], u.search.slice(1)] : undefined,
-                client_claims: req.shrClaims || undefined,
-                cnf: { jwk: JSON.parse(sortedJson(pub)) },
-            };
-            const header = {
-                typ: req.shrOptions?.header?.typ ?? "pop",
-                alg: pub.alg,
-                kid: b64urlStr(JSON.stringify({ kid })),
-            };
-            const token = `${b64urlStr(JSON.stringify(header))}.${b64urlStr(
-                JSON.stringify(payload)
-            )}`;
-            const sig = await crypto.subtle.sign(
-                RSA,
-                pair.privateKey,
-                enc.encode(token)
-            );
-            return `${token}.${b64url(sig)}`;
+            return signPop(pair, kid, at, req);
         },
     };
 }

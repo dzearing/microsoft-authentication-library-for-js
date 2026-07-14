@@ -7,7 +7,7 @@ under `@mini-msal/react`, which matches msal-react 5.5.1's contracts
 and completes redirect roundtrips itself — no manual
 `handleRedirectPromise` needed.
 
-**Measured (2026-07-14):** 66.4 KB minified / 21.8 KB gzip
+**Measured (2026-07-14):** 66.8 KB minified / 22.0 KB gzip
 (`example-react` in `npm run measure`), with React external like the rest
 of the size matrix — this is what the auth stack adds to an app that
 already ships React. The real msal-react + msal-browser stack measured the

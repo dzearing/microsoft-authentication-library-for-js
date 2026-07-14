@@ -1366,6 +1366,76 @@ construction check), **D6** (committed `npm run docs:check`), **D7**
 (re-audit close-out — final summary gate). Audit is evidence-only: zero
 package-code changes, sizes unchanged.
 
+### D5 — 2026-07-14 — compat export-surface completion + SSR-safe construction
+
+Test-first, both gates red before impl:
+
+- **init.exported-surface-full** (suite 121→122): pins the FULL sorted
+  `Object.keys(lib)` + per-key typeof (real snapshot captured twice,
+  deterministic), plus behavior probes for every long-tail export
+  (BrowserUtils fns, storage classes, SHR sign/verify shape,
+  stubbed-PCA rejections, EventHandler dispatch, EMU status mapping,
+  perf helpers, enforceResourceParameter, header parser). Mini-only
+  extras `NativeAuthError`/`NestedAppAuthError`/`createAuth` are
+  filtered by an explicit allowlist IN the scenario — any new
+  undocumented export will fail the pin. Mini went from a module-load
+  TypeError to green first run after implementation.
+- **seams 10→12**: node-side SSR checks import the BUILT dist into the
+  seams process itself (no browser globals): `new
+  PublicClientApplication({auth:{clientId}})` and core `createClient()`
+  must construct. Pre-fix mini threw `ReferenceError: location is not
+  defined`.
+
+Implementation decisions:
+
+- **SSR fix is construction-only, like the task spec**: createClient's
+  eager `new URL(config.auth.redirectUri ?? "/", location.href)` became
+  a lazy closure invoked at the three flow-time call sites. Verified
+  against real in plain Node: real's PCA constructs AND initialize()s
+  and getAllAccounts() returns [] there; mini guarantees construction
+  only (ops touch sessionStorage/location and throw). Recorded as an
+  accepted divergence — Next.js/SSR drop-ins construct at module scope
+  but only operate in the browser.
+- **surface.ts placement**: all 18 exports live in NEW
+  `packages/compat/src/surface.ts` (compat is where
+  BrowserConfigurationAuthError already lived — the class moved there,
+  index re-exports `*`). Nothing was added to core, and the surface
+  tree-shakes away for consumers who don't import it: mini-core 31.3
+  unchanged, pack:check gates core 29.9 / popup 32.5 (unchanged) /
+  compat 59.9 (+0.4) / react 65.4 (+0.3).
+- **Reuse over duplication**: SignedHttpRequest is built on ./pop's
+  machinery — pop.ts now exports `makeBoundKeyPair`/`signPop`/`keystore`
+  (feature closure rewritten on top of them; `signPop` gained real's
+  claims-override param, spread before cnf so claims can never override
+  the jwk). LocalStorage (the exported class) is built on
+  ./local-storage's newly exported `loadEncryptionCookie`/
+  `encryptEntry`/`decryptEntry` — same msal.cache.encryption cookie,
+  HKDF/AES-GCM scheme and broadcast channel, so the class interoperates
+  with the feature's at-rest entries.
+- **Faithful-lean ports**: constants byte-exact (ApiId, ResponseMode,
+  JsonWebTokenTypes, AzureCloudInstance, DEFAULT_IFRAME_TIMEOUT_MS,
+  BrowserRootPerformanceEvents); stubbedPublicClientApplication matches
+  real's 26 keys and per-method return/reject behavior; EventHandler /
+  EventMessageUtils / AuthenticationHeaderParser /
+  BrowserPerformanceMeasurement / StubPerformanceClient /
+  enforceResourceParameter are direct ports; BrowserUtils has real's 22
+  keys with lean internals (createGuid is UUIDv4 not real's v7 —
+  scenario pins format only; blockReloadInHiddenIframes uses core's
+  code|error hash test rather than real's full deserializer).
+- **DESCOPED**: PCA instance runtime-extras
+  `waitForIframeResponse`/`waitForPopupResponse` — absent from real's
+  .d.ts (untyped internals), left out. `BrowserUtils.waitForBridgeResponse`
+  (which IS exported by real) was implemented.
+- Type-only: core's `EventMessage` gained optional `correlationId`
+  (real's message shape; core still doesn't set it — event-stream
+  snapshots unchanged).
+- Consumer-doc size/count refresh: 121→122, seams 12/12, compat
+  61.7→62.1, stack 71.7→72.0, examples 30.4/33.3/61.5/66.8 (README,
+  docs/README, UPGRADING, ALACARTE, example READMEs).
+
+All gates: conformance:mini **122/122**, e2e **25/25**, seams **12/12**,
+examples:smoke **8/8**, pack:check OK, GAP_REPORT 122-scenario all-pass.
+
 ## Progress log
 
 | Task | Status | Pass | mini-stack size | Notes |
@@ -1409,3 +1479,4 @@ package-code changes, sizes unchanged.
 | D2 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Consumer docs. NEW docs/UPGRADING.md (drop-in migration: import swap, 0.6 KB bridge-page swap, cache carry-over incl. msal.0/1/2 migration + KMSI, verification checklist, non-goals) + NEW docs/ALACARTE.md (step-down 61.7 compat → 56.3 explicit → 32.6 core+popup → 29.7 core; per-feature deltas measured: popup +2.9 / pop +2.0 / local-storage +2.6 / cache-migration +3.0 / broker +6.9 / telemetry +9.4 / naa +8.4 / react +10.0). README.md + docs/README.md rewritten as consumer guides (per-profile quick-starts, feature catalog, bridge rule) — stale 75/75-era numbers fixed. All 14 doc code samples mechanically type-checked against dist types (caught 2 sample bugs: MsalProvider instance needs AuthClient & PopupClient; undeclared config). Zero package-code changes: sizes unchanged. e2e 25/25, seams 10/10 |
 | D3 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Runnable examples. NEW examples/{core-redirect,core-popup,compat,react} — minimal app + placeholder authConfig + README each, with measured sizes 30.3 / 33.2 / 61.1 / 66.4 KB min (react = React-external, matrix methodology); built as permanent `npm run measure` variants (size regression fixture) plus *-smoke twins (authConfig swapped to the mock IdP via NormalModuleReplacementPlugin, React bundled). NEW `npm run examples:smoke`: headless sign-in per example via real UI clicks (redirect + popup roundtrips + silent token render) — 8/8 first run. READMEs link examples. Zero package-code changes; sizes unchanged. e2e 25/25, seams 10/10 |
 | D4 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Requirements audit (skeptic pass). All gates re-run fresh: 121/121, e2e 25/25, seams 10/10, smoke 8/8, pack:check OK, report 0-gap, sizes verified. Bullet 2 + 3 PASS. Bullet 1 GAPS → D5: 18 module exports missing from compat (SignedHttpRequest, stubbedPublicClientApplication, BrowserUtils, ResponseMode, AzureCloudInstance, storage classes, perf/event utils…) found by exhaustive export diff; PCA construction throws raw ReferenceError in Node while real supports SSR construction. Bullet 4 GAP → D6: doc-sample type-check was session-scratch, no committed docs:check. D7 filed as re-audit close-out. Zero code changes |
+| D5 | done 2026-07-14 | 122/122 | 72.0 KB min / 23.5 gz | Export-surface completion + SSR construction. Suite 121→122 (init.exported-surface-full pins FULL sorted key+typeof map w/ documented extras allowlist + behavior probes per export; green first mini run). seams 10→12 (node-side dist import: compat PCA + core createClient construct in plain Node; fix = lazy redirectUri closure). 18 exports in NEW compat surface.ts: exact constants, stubbedPublicClientApplication, AuthenticationHeaderParser, EventMessageUtils, EventHandler, Memory/Session/LocalStorage (reuses ./local-storage's exported cookie/AES-GCM helpers — interoperable at-rest), BrowserPerformanceMeasurement, StubPerformanceClient, enforceResourceParameter, BrowserUtils (22 fns), SignedHttpRequest (reuses ./pop's exported makeBoundKeyPair/signPop/keystore + claims-override param). waitForIframe/PopupResponse DESCOPED (absent from real .d.ts). compat 62.1 min (+0.4, tree-shakes away when unused; pack gates 29.9/32.5/59.9/65.4), mini-core 31.3 unchanged. e2e 25/25, smoke 8/8 |

@@ -393,6 +393,12 @@ const C = {
         mini: "None of these existed pre-C12 — import of LogLevel or any *ErrorCodes namespace failed at module load; getLogger() was undefined.",
         cost: 0.5,
     },
+    "init.exported-surface-full": {
+        class: "missing-feature",
+        real: "Exports the FULL 51-key module surface: ApiId, AzureCloudInstance, JsonWebTokenTypes, ResponseMode, DEFAULT_IFRAME_TIMEOUT_MS, BrowserRootPerformanceEvents, BrowserUtils namespace (22 fns), LocalStorage/SessionStorage/MemoryStorage, EventHandler, EventMessageUtils, AuthenticationHeaderParser, SignedHttpRequest, BrowserPerformanceMeasurement, StubPerformanceClient, enforceResourceParameter, stubbedPublicClientApplication.",
+        mini: "Pre-D5: 18 of these exports missing entirely (import failed at module load).",
+        cost: 0.5,
+    },
     "init.storage-before-login": {
         class: "behavioral-diff",
         real: "Bare initialize() writes only msal.version.",

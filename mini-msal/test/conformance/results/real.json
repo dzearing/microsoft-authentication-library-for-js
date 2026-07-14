@@ -1,12 +1,7 @@
 [
   {
-    "id": "pop.silent-shr",
-    "area": "pop",
-    "status": "captured"
-  },
-  {
-    "id": "pop.ssh-scheme-and-errors",
-    "area": "pop",
+    "id": "init.exported-surface-full",
+    "area": "init",
     "status": "captured"
   }
 ]
