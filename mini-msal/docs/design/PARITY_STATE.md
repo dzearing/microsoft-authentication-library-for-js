@@ -33,7 +33,8 @@ runnable size-tracked examples shipped. D5 closed the D4 audit's bullet-1
 gaps: full 51-key export surface pinned by scenario, 18 missing exports
 implemented, PCA constructs in plain Node (SSR). D6 closed bullet 4's
 gap: committed `npm run docs:check` strict-tscs all 14 doc code samples
-against dist types. Remaining: D7 (close-out re-audit).
+against dist types. Remaining: D6b (plain-language size-reduction
+reference doc, user-requested 2026-07-14), D7 (close-out re-audit).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
 ## Context budget (user-required 2026-07-13)
@@ -519,6 +520,33 @@ push → reset). "Consumer" below means someone who has never read this repo.
   into the SOP validate list (docs-affecting tasks). Zero package-code
   changes — sizes unchanged; e2e 25/25, seams 12/12. Details:
   PARITY_LOG D6 entry.
+
+- [ ] **D6b** `pending` — Size-reduction reference doc (user-requested
+  2026-07-14: "make sure that in the documentation there's a clear
+  reference doc on how we reduced the size. The reference doc needs to be
+  in plain language and provide examples where applicable of what we did
+  differently."). NEW `docs/SIZE.md`: plain-language explanation of HOW
+  mini-msal lands ~6–7× smaller than msal-browser at drop-in parity —
+  each technique as its own section with a concrete example where
+  applicable (short real-msal excerpt or description vs the mini
+  approach). Candidate techniques (verify each against the source before
+  writing; drop/add as reality dictates): plain closures over real's
+  class/controller/operating-context layers; pay-to-play feature modules
+  composed into createClient vs a monolith (with measured per-feature
+  deltas from ALACARTE); no msal-common duplication layer; table-driven
+  telemetry event shapes; single identity-constants block; lean error
+  model (code maps vs generated error classes); 0.6 KB bridge page vs
+  real's 6.5 KB; tree-shakable subpath exports + dist packaging. Use
+  measured numbers from the final matrix; audience is someone who has
+  never read this repo. Link it from README.md, docs/README.md, and
+  ALACARTE.md. Validate with `npm run docs:check` — illustrative
+  excerpts of real msal internals that aren't runnable get the
+  `<!-- docs-check:skip -->` marker (justified); mini-side samples must
+  type-check. Also refresh bundle-size-experiment.md's stale 75/75-era
+  results header if still stale. Zero package-code changes expected.
+  Context: `docs/ALACARTE.md`, `docs/design/bundle-size-experiment.md`,
+  `packages/browser/src/` (technique evidence), real source under
+  `node_modules/@azure/msal-browser/dist/` (contrast examples).
 
 - [ ] **D7** `pending` — Close-out re-audit + final summary. Re-run the D4
   skeptic pass over the four Mission bullets now that D5/D6 landed
