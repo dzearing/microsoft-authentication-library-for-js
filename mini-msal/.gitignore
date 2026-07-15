@@ -3,6 +3,7 @@ dist/
 dist-experiment/
 dist-experiment-mini/
 .cert/
+test/docs/.samples/
 
 # repo-root .gitignore has a NuGet rule "**/packages/*"; ours are npm workspaces
 !packages/*

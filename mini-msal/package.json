@@ -14,6 +14,7 @@
         "examples:smoke": "node test/examples/smoke.mjs",
         "seams": "node test/unit/seams.mjs",
         "pack:check": "node test/packaging/check.mjs",
+        "docs:check": "node test/docs/check.mjs",
         "conformance": "npm run conformance:real && npm run conformance:mini && node test/conformance/report.mjs",
         "conformance:real": "node test/conformance/run.mjs --target=real",
         "conformance:mini": "node test/conformance/run.mjs --target=mini",

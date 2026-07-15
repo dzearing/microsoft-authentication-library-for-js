@@ -1436,6 +1436,42 @@ Implementation decisions:
 All gates: conformance:mini **122/122**, e2e **25/25**, seams **12/12**,
 examples:smoke **8/8**, pack:check OK, GAP_REPORT 122-scenario all-pass.
 
+### D6 — 2026-07-14 — committed doc-sample check (npm run docs:check)
+
+- **NEW `npm run docs:check`** (`test/docs/check.mjs`): re-derives D2's
+  session-scratch sample check as a committed gate. tsc-builds the three
+  packages' dist (browser first), extracts every fenced ```ts / ```tsx
+  block from `README.md`, `docs/README.md`, `docs/UPGRADING.md`,
+  `docs/ALACARTE.md` into `test/docs/.samples/` (one file per sample,
+  named `<doc>-L<line>`, `export {}` appended so samples are modules and
+  can't collide), then strict-tscs the lot (moduleResolution bundler,
+  jsx react-jsx, DOM libs, noEmit). No network, no npm pack: the scratch
+  dir lives inside the repo, so `@mini-msal/*` resolves through the
+  workspace symlinks whose exports `"types"` condition points at the
+  dist d.ts — the same types a consumer gets.
+- **14 samples, 0 opt-outs.** Opt-out marker for intentionally-partial
+  samples: `<!-- docs-check:skip <reason> -->` on the nearest non-empty
+  line above the fence (logged as skipped). Zero samples extracted →
+  hard fail (extraction-regression guard). On tsc failure the scratch
+  dir is kept for debugging (gitignored: `test/docs/.samples/`).
+- **Self-test run as specced**: temporarily reintroduced D2's two caught
+  sample bugs — dropped the `as AuthClient & PopupClient` cast on the
+  ALACARTE react sample (→ TS2322 `AuthClient` not assignable to
+  `IPublicClientApplication`) and the `const config` declaration in the
+  full-composition sample (→ TS2304 cannot find name `config`). The check
+  failed on exactly both, then passed clean after revert.
+- SOP validate list gains `npm run docs:check` (docs-affecting tasks
+  only — it's ~15s, dominated by the three tsc dist builds).
+- Session gotcha (already covered by the stale-servers note): `npm run
+  seams` chained immediately after e2e crashed with a TimeoutError
+  (port contention) that a `| tail` pipe masked to exit 0 — standalone
+  rerun after killing 4173/4599 passed 12/12. Don't pipe gate commands
+  through tail when the exit code matters.
+- Zero package-code changes — all sizes unchanged.
+
+All gates: conformance:mini **122/122**, e2e **25/25**, seams **12/12**,
+docs:check **14 samples OK**, measure matches D5's matrix.
+
 ## Progress log
 
 | Task | Status | Pass | mini-stack size | Notes |
@@ -1480,3 +1516,4 @@ examples:smoke **8/8**, pack:check OK, GAP_REPORT 122-scenario all-pass.
 | D3 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Runnable examples. NEW examples/{core-redirect,core-popup,compat,react} — minimal app + placeholder authConfig + README each, with measured sizes 30.3 / 33.2 / 61.1 / 66.4 KB min (react = React-external, matrix methodology); built as permanent `npm run measure` variants (size regression fixture) plus *-smoke twins (authConfig swapped to the mock IdP via NormalModuleReplacementPlugin, React bundled). NEW `npm run examples:smoke`: headless sign-in per example via real UI clicks (redirect + popup roundtrips + silent token render) — 8/8 first run. READMEs link examples. Zero package-code changes; sizes unchanged. e2e 25/25, seams 10/10 |
 | D4 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Requirements audit (skeptic pass). All gates re-run fresh: 121/121, e2e 25/25, seams 10/10, smoke 8/8, pack:check OK, report 0-gap, sizes verified. Bullet 2 + 3 PASS. Bullet 1 GAPS → D5: 18 module exports missing from compat (SignedHttpRequest, stubbedPublicClientApplication, BrowserUtils, ResponseMode, AzureCloudInstance, storage classes, perf/event utils…) found by exhaustive export diff; PCA construction throws raw ReferenceError in Node while real supports SSR construction. Bullet 4 GAP → D6: doc-sample type-check was session-scratch, no committed docs:check. D7 filed as re-audit close-out. Zero code changes |
 | D5 | done 2026-07-14 | 122/122 | 72.0 KB min / 23.5 gz | Export-surface completion + SSR construction. Suite 121→122 (init.exported-surface-full pins FULL sorted key+typeof map w/ documented extras allowlist + behavior probes per export; green first mini run). seams 10→12 (node-side dist import: compat PCA + core createClient construct in plain Node; fix = lazy redirectUri closure). 18 exports in NEW compat surface.ts: exact constants, stubbedPublicClientApplication, AuthenticationHeaderParser, EventMessageUtils, EventHandler, Memory/Session/LocalStorage (reuses ./local-storage's exported cookie/AES-GCM helpers — interoperable at-rest), BrowserPerformanceMeasurement, StubPerformanceClient, enforceResourceParameter, BrowserUtils (22 fns), SignedHttpRequest (reuses ./pop's exported makeBoundKeyPair/signPop/keystore + claims-override param). waitForIframe/PopupResponse DESCOPED (absent from real .d.ts). compat 62.1 min (+0.4, tree-shakes away when unused; pack gates 29.9/32.5/59.9/65.4), mini-core 31.3 unchanged. e2e 25/25, smoke 8/8 |
+| D6 | done 2026-07-14 | 122/122 | 72.0 KB min / 23.5 gz | Committed doc-sample check. NEW `npm run docs:check` (test/docs/check.mjs): tsc-builds the 3 package dists, extracts every fenced ts/tsx block from README / docs/README / UPGRADING / ALACARTE into test/docs/.samples (one module per sample, `<doc>-L<line>`) and strict-tscs them against dist types via the workspace symlinks' exports "types" condition — 14 samples, 0 opt-outs (`<!-- docs-check:skip -->` supported; 0-samples-extracted hard-fails). Self-tested by reintroducing D2's two sample bugs (dropped MsalProvider cast → TS2322, undeclared config → TS2304): both caught, clean after revert. Scratch kept on failure (gitignored). SOP validate list gains docs:check for docs-affecting tasks. Zero package-code changes; sizes unchanged. e2e 25/25, seams 12/12 |

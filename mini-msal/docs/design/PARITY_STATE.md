@@ -31,8 +31,9 @@ GAP_REPORT all-pass. Size matrix: compat-no-react 62.1 KB min (real:
 consumer-ready (tsc dist + types, npm-pack-verified); consumer docs +
 runnable size-tracked examples shipped. D5 closed the D4 audit's bullet-1
 gaps: full 51-key export surface pinned by scenario, 18 missing exports
-implemented, PCA constructs in plain Node (SSR). Remaining: D6 (committed
-docs:check), D7 (close-out re-audit).
+implemented, PCA constructs in plain Node (SSR). D6 closed bullet 4's
+gap: committed `npm run docs:check` strict-tscs all 14 doc code samples
+against dist types. Remaining: D7 (close-out re-audit).
 History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
 
 ## Context budget (user-required 2026-07-13)
@@ -86,6 +87,10 @@ Work from `mini-msal/` on branch `dzearing/mini-msal`.
    - `npm run measure` → record mini-msal-stack size in the task row
    - `npm run pack:check` (needs network) only when a task touches
      package.json exports, tsconfigs, or public API surface
+   - `npm run docs:check` (no network, ~15s) when a task touches the
+     consumer docs (README.md, docs/README.md, UPGRADING.md, ALACARTE.md)
+     or exported types — strict-tscs every fenced ts/tsx doc sample
+     against the built dist types (D6)
 5. **Update docs**: set task status `done` with date, pass count, size in
    this file; append newly discovered work as new `pending` tasks here;
    append the task's decision entry to `PARITY_LOG.md` (Decision Log
@@ -499,20 +504,21 @@ push → reset). "Consumer" below means someone who has never read this repo.
   + `controllers/StandardController.mjs`; per-symbol source under
   `node_modules/@azure/msal-browser/dist/`.
 
-- [ ] **D6** `pending` — Committed doc-sample check (D4 audit, Mission
-  bullet 4). NEW `npm run docs:check` (e.g. `test/docs/check.mjs`):
-  extract fenced ts/tsx code samples from `README.md`, `docs/README.md`,
-  `docs/UPGRADING.md`, `docs/ALACARTE.md` and strict-tsc them against the
-  packages' built dist types (same approach D2 ran as session scratch —
-  re-derive it; D2's log entry notes the two sample bugs it caught, use
-  them as the check's self-test by temporarily breaking a sample). Samples
-  that are intentionally partial can opt out via an HTML comment marker —
-  keep the marker count low and justified. Wire it into the SOP validate
-  list (cheap, docs-affecting tasks only). Zero package-code changes
-  expected.
-  Context: the four doc files; PARITY_LOG D2 entry (what was checked and
-  how); `test/packaging/check.mjs` (existing strict-tsc consumer pattern
-  to crib).
+- [x] **D6** `done 2026-07-14 — pass 122/122, mini-stack 72.0 KB` —
+  Committed doc-sample check (D4 audit, Mission bullet 4). NEW
+  `npm run docs:check` (`test/docs/check.mjs`): tsc-builds the 3 package
+  dists, extracts all fenced ts/tsx blocks from README.md,
+  docs/README.md, UPGRADING.md, ALACARTE.md into `test/docs/.samples/`
+  (one module per sample, `<doc>-L<line>`, gitignored, kept on failure)
+  and strict-tscs them (bundler resolution, react-jsx) against dist
+  types via the workspace symlinks — no network/pack needed. 14 samples
+  green, 0 opt-outs (`<!-- docs-check:skip <reason> -->` marker above a
+  fence is supported; zero-samples-extracted hard-fails). Self-tested by
+  temporarily reintroducing D2's two caught sample bugs — both flagged
+  (TS2322 cast, TS2304 undeclared config), clean after revert. Wired
+  into the SOP validate list (docs-affecting tasks). Zero package-code
+  changes — sizes unchanged; e2e 25/25, seams 12/12. Details:
+  PARITY_LOG D6 entry.
 
 - [ ] **D7** `pending` — Close-out re-audit + final summary. Re-run the D4
   skeptic pass over the four Mission bullets now that D5/D6 landed
