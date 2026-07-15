@@ -215,3 +215,6 @@ fallback) never loads it.
 
 Add `@mini-msal/react` (+10.0) and/or the 0.6 KB bridge page per your flows;
 real's equivalents are +28.3 (msal-react) and 6.5 KB (bridge).
+
+Curious *why* the same behavior fits in a fraction of the bytes? The
+techniques are explained in plain language in [SIZE.md](./SIZE.md).

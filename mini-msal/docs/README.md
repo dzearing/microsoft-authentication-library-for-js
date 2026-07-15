@@ -43,6 +43,8 @@ bindings. Two standalone guides cover the details:
   swap; signed-in users stay signed in).
 - **[ALACARTE.md](./ALACARTE.md)** — step the bundle down profile by profile
   with measured sizes and the exact composition for each.
+- **[SIZE.md](./SIZE.md)** — how mini-msal got small: each size-reduction
+  technique explained in plain language, with examples.
 - **[../examples/](../examples/)** — a runnable minimal app per profile
   (core-redirect, core+popup, compat drop-in, react), each size-tracked in
   `npm run measure` and smoke-tested against the mock IdP

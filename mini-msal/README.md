@@ -16,6 +16,7 @@ consumption profiles, current parity status).
 | [docs/README.md](./docs/README.md) | The prototype: goals, architecture, quick-start per consumption profile |
 | [docs/UPGRADING.md](./docs/UPGRADING.md) | Migrating from `@azure/msal-browser`/`@azure/msal-react` — the one-import drop-in |
 | [docs/ALACARTE.md](./docs/ALACARTE.md) | Lowering your bundle cost profile-by-profile, with measured sizes |
+| [docs/SIZE.md](./docs/SIZE.md) | How mini-msal got small — the size-reduction techniques, in plain language |
 | [examples/](./examples/) | Runnable minimal app per profile (core-redirect 30.4 KB, core+popup 33.3, compat 61.5, react 66.8), each smoke-tested end-to-end |
 | [docs/GAP_REPORT.md](./docs/GAP_REPORT.md) | Generated 122-scenario parity report vs msal-browser 5.16.0 |
 | [docs/design/](./docs/design/) | Deep dives: conformance suite internals, broker/NAA wire protocols, bundle-size experiment, original spec |

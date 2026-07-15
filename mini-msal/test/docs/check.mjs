@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const TSC = path.join(ROOT, "node_modules", ".bin", "tsc");
-const DOCS = ["README.md", "docs/README.md", "docs/UPGRADING.md", "docs/ALACARTE.md"];
+const DOCS = ["README.md", "docs/README.md", "docs/UPGRADING.md", "docs/ALACARTE.md", "docs/SIZE.md"];
 const SCRATCH = path.join(ROOT, "test", "docs", ".samples");
 
 // 1. fresh dist (browser first: compat/react need its d.ts)

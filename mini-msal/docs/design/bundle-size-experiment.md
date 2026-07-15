@@ -46,7 +46,7 @@ so all variants exercise byte-identical usage.
 | `mini-redirect-bridge` | mini's counterpart of `msal-redirect-bridge` (`@mini-msal/browser/redirect-bridge`) |
 | `mini-mock-app`, `real-mock-app` | E2E builds against the mock IdP (react bundled; excluded from measurement) |
 
-## Results (2026-07-12, FINAL — full 75/75 conformance parity; msal-browser 5.16.0, msal-react 5.5.1)
+## Results (2026-07-14 — full 122/122 conformance parity; msal-browser 5.16.0, msal-react 5.5.1)
 
 | variant | minified | gzip -9 | brotli |
 |---|---:|---:|---:|
@@ -54,18 +54,24 @@ so all variants exercise byte-identical usage.
 | msal-stack | 248.8 KB | 64.9 KB | 53.9 KB |
 | msal-browser-core | 220.5 KB | 55.4 KB | 46.4 KB |
 | msal-redirect-bridge | 6.5 KB | 2.7 KB | 2.4 KB |
-| **mini-msal-stack** (compat + react) | **39.5 KB** | **13.4 KB** | **12.0 KB** |
-| **mini-compat** (every feature, no React) | **32.5 KB** | **11.0 KB** | **9.9 KB** |
-| **mini-core** (createClient core only) | **19.5 KB** | **7.1 KB** | **6.3 KB** |
+| **mini-msal-stack** (compat + react) | **72.0 KB** | **23.5 KB** | **20.9 KB** |
+| **mini-compat** (every feature, no React) | **62.1 KB** | **20.1 KB** | **17.9 KB** |
+| **mini-core** (createClient core only) | **31.3 KB** | **10.8 KB** | **9.8 KB** |
 | mini-redirect-bridge | 0.6 KB | 0.4 KB | 0.3 KB |
 
-At 100% conformance (75/75 scenarios identical, e2e 25/25), the full drop-in
-is **6.8× smaller** than tree-shaken msal-browser (32.5 vs 220.5 KB min) and
-the full React stack is **6.3× smaller** (39.5 vs 248.8 KB); a redirect-only
-SPA composing nothing pays 19.5 KB (**11.3×** smaller). For history: the
-original pre-parity prototype (2026-07-01 baseline, ~30% of the feature
-surface) measured 20.1 KB min / 6.9 KB gz for the whole react stack — full
-parity roughly doubled mini's size while real stayed constant.
+At 100% conformance (122/122 scenarios identical, e2e 25/25), the full
+drop-in is **3.5× smaller** than tree-shaken msal-browser (62.1 vs 220.5 KB
+min) and the full React stack is **3.5× smaller** (72.0 vs 248.8 KB); a
+redirect-only SPA composing nothing pays 31.3 KB (**7.0× smaller**). For
+history: at the 75-scenario milestone (2026-07-12) compat measured 32.5 /
+stack 39.5 / core 19.5 — the C11–C21 unobserved-surface parity push (perf
+events, error/logger namespaces, navigation seams, cache entity semantics,
+authority discovery, config knobs, PoP) plus the D-series export-surface
+completion roughly doubled mini while real stayed constant. The original
+pre-parity prototype (2026-07-01 baseline, ~30% of the feature surface)
+measured 20.1 KB min / 6.9 KB gz for the whole react stack. Per-profile
+consumption sizes and the plain-language technique write-up live in
+[../ALACARTE.md](../ALACARTE.md) and [../SIZE.md](../SIZE.md).
 
 Tree shaking is nearly powerless against MSAL: a full-flow app's tree-shaken
 msal-browser (220.5 KB) is only ~14% smaller than the entire library surface
@@ -75,8 +81,8 @@ regardless of what the app uses.
 
 Net of app code (~2.6 KB) and bundler runtime (~2.3 KB), the MSAL libraries
 cost ~243 KB min / ~63 KB gz (+6.5 KB bridge page for popup apps); mini's
-compat drop-in costs ~27.6 KB min for the same exercised behavior (+0.6 KB
-bridge page) — **~8×** at library-only accounting, at 100% conformance.
+compat drop-in costs ~57 KB min for the same exercised behavior (+0.6 KB
+bridge page) — **~4.3×** at library-only accounting, at 100% conformance.
 
 ## E2E verification
 

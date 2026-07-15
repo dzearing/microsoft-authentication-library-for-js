@@ -1472,6 +1472,60 @@ examples:smoke **8/8**, pack:check OK, GAP_REPORT 122-scenario all-pass.
 All gates: conformance:mini **122/122**, e2e **25/25**, seams **12/12**,
 docs:check **14 samples OK**, measure matches D5's matrix.
 
+### D6b — 2026-07-14 — size-reduction reference doc (docs/SIZE.md)
+
+- **NEW `docs/SIZE.md`** (user-requested 2026-07-14): plain-language
+  reference on HOW mini-msal got small, for readers who never opened this
+  repo. Headline table (per-profile real-vs-mini with the honest ratios:
+  drop-in 3.5×, popup SPA 6.8×, core 7.4×, bridge 10.8× — real's key
+  property being that it costs 220.5 KB REGARDLESS of profile), a
+  where-real's-bytes-go attribution, then 8 technique sections, each with
+  a concrete example: (1) pay-to-play composition vs StandardController's
+  static everything-imports (real excerpt) + per-feature price list;
+  (2) closures vs class layers — StandardOperatingContext boilerplate
+  excerpt + the minifier argument (property names can't mangle, locals
+  can); (3) one browser-only package vs the ~80 KB msal-common layer;
+  (4) one error family + AKA() default message vs per-subsystem
+  class/codes/factory modules; (5) telemetry event shapes as string
+  tables vs method-wrapping instrumentation; (6) the 0.6 KB bridge
+  (full source shown) vs real's 6.5 KB; (7) small habits (WIRE_ID
+  single-source constants, zero TS enums — verified by grep, es2022,
+  bytes-over-abstraction rule); (8) sideEffects:false + per-feature
+  subpath exports + pack:check size gates. Closes with what was NOT
+  traded away (parity gates) + non-goals link.
+- **Every claim verified against source before writing**: attribution
+  numbers re-measured via `npm run analyze -- msal-stack` (msal-common
+  rows sum ≈79.1 KB → "~80 KB"; interaction_client 44.9; cache
+  31.5+18.2; controllers 25.6); real excerpts copied from dist (the
+  StandardOperatingContext.initialize body corrected against the real
+  file rather than paraphrased); enum grep = 0 hits; AKA string matches
+  real's getDefaultErrorMessage; UPGRADING anchor fixed to
+  #known-non-goals. Softened two overclaims during self-review: bridge
+  described as "same {v:1,payload} contract" (interchangeability isn't
+  e2e-proven), msal-common described by its Node+browser generality
+  (not specific back-end counts).
+- **Doc-sample policy decision**: real-msal internals are shown in
+  ```js fences (docs:check only extracts ts/tsx — they're not consumer
+  code); mini-side samples are ```ts and MUST type-check — the
+  composition, feature-shape (ClientContext), error-family, and bridge
+  samples all pass strict tsc against dist types. ONE justified skip:
+  the telemetry table excerpt is abridged with "…"
+  (`<!-- docs-check:skip -->`). check.mjs DOCS list += docs/SIZE.md →
+  **18 samples + 1 skip**.
+- Linked from README.md (doc table), docs/README.md (guides list),
+  ALACARTE.md (closing pointer).
+- **bundle-size-experiment.md Results refreshed** (task's stale-header
+  clause): 75/75-era table (32.5/39.5/19.5) replaced with the
+  2026-07-14 122/122 matrix (62.1/72.0/31.3, same real numbers), the
+  old milestone kept as history prose; library-only accounting updated
+  ~27.6→~57 KB, ~8×→~4.3×; pointers to ALACARTE/SIZE added.
+- Zero package-code changes — measure re-run: all sizes unchanged
+  (72.0 stack / 62.1 compat / 31.3 core; examples 30.4/33.3/61.5/66.8
+  match the docs).
+
+All gates: conformance:mini **122/122**, e2e **25/25**, seams **12/12**,
+docs:check **18 samples OK (1 skip)**, measure matches D5's matrix.
+
 ## Progress log
 
 | Task | Status | Pass | mini-stack size | Notes |
@@ -1517,3 +1571,4 @@ docs:check **14 samples OK**, measure matches D5's matrix.
 | D4 | done 2026-07-14 | 121/121 | 71.7 KB min / 23.4 gz | Requirements audit (skeptic pass). All gates re-run fresh: 121/121, e2e 25/25, seams 10/10, smoke 8/8, pack:check OK, report 0-gap, sizes verified. Bullet 2 + 3 PASS. Bullet 1 GAPS → D5: 18 module exports missing from compat (SignedHttpRequest, stubbedPublicClientApplication, BrowserUtils, ResponseMode, AzureCloudInstance, storage classes, perf/event utils…) found by exhaustive export diff; PCA construction throws raw ReferenceError in Node while real supports SSR construction. Bullet 4 GAP → D6: doc-sample type-check was session-scratch, no committed docs:check. D7 filed as re-audit close-out. Zero code changes |
 | D5 | done 2026-07-14 | 122/122 | 72.0 KB min / 23.5 gz | Export-surface completion + SSR construction. Suite 121→122 (init.exported-surface-full pins FULL sorted key+typeof map w/ documented extras allowlist + behavior probes per export; green first mini run). seams 10→12 (node-side dist import: compat PCA + core createClient construct in plain Node; fix = lazy redirectUri closure). 18 exports in NEW compat surface.ts: exact constants, stubbedPublicClientApplication, AuthenticationHeaderParser, EventMessageUtils, EventHandler, Memory/Session/LocalStorage (reuses ./local-storage's exported cookie/AES-GCM helpers — interoperable at-rest), BrowserPerformanceMeasurement, StubPerformanceClient, enforceResourceParameter, BrowserUtils (22 fns), SignedHttpRequest (reuses ./pop's exported makeBoundKeyPair/signPop/keystore + claims-override param). waitForIframe/PopupResponse DESCOPED (absent from real .d.ts). compat 62.1 min (+0.4, tree-shakes away when unused; pack gates 29.9/32.5/59.9/65.4), mini-core 31.3 unchanged. e2e 25/25, smoke 8/8 |
 | D6 | done 2026-07-14 | 122/122 | 72.0 KB min / 23.5 gz | Committed doc-sample check. NEW `npm run docs:check` (test/docs/check.mjs): tsc-builds the 3 package dists, extracts every fenced ts/tsx block from README / docs/README / UPGRADING / ALACARTE into test/docs/.samples (one module per sample, `<doc>-L<line>`) and strict-tscs them against dist types via the workspace symlinks' exports "types" condition — 14 samples, 0 opt-outs (`<!-- docs-check:skip -->` supported; 0-samples-extracted hard-fails). Self-tested by reintroducing D2's two sample bugs (dropped MsalProvider cast → TS2322, undeclared config → TS2304): both caught, clean after revert. Scratch kept on failure (gitignored). SOP validate list gains docs:check for docs-affecting tasks. Zero package-code changes; sizes unchanged. e2e 25/25, seams 12/12 |
+| D6b | done 2026-07-14 | 122/122 | 72.0 KB min / 23.5 gz | Size-reduction reference doc (user-requested). NEW docs/SIZE.md: plain-language how-it-got-small for repo-outsiders — honest headline ratios (drop-in 3.5×, popup SPA 6.8×, core 7.4×, bridge 10.8×; real costs 220.5 KB regardless of profile), real-bundle byte attribution (analyze: msal-common ~80 KB, interaction_client 44.9, cache 49.7, controllers 25.6), 8 technique sections w/ verified examples (pay-to-play vs StandardController static imports; closures vs class layers + minifier property-name argument; no msal-common tier; one error family + AKA(); telemetry shape tables; 0.6 KB bridge source; WIRE_ID/zero-enums/es2022 habits; sideEffects+subpath exports+pack gates). Linked from README, docs/README, ALACARTE. docs:check DOCS += SIZE.md → 18 samples + 1 justified skip (abridged table excerpt); real excerpts are ```js by policy. bundle-size-experiment.md Results refreshed 75/75-era → 122/122 matrix (~8×→~4.3× library-only). Zero package-code changes; sizes unchanged. e2e 25/25, seams 12/12 |
