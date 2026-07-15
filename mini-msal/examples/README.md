@@ -8,10 +8,10 @@ smoke-tested end-to-end (real headless sign-in against the local mock IdP).
 
 | Example | Imports | Minified | Gzip | Bridge page needed? |
 |---|---|---:|---:|---|
-| [core-redirect](./core-redirect/) | `@mini-msal/browser` | 30.3 KB | 10.6 KB | no |
-| [core-popup](./core-popup/) | core + `…/popup` | 33.2 KB | 11.5 KB | yes |
-| [compat](./compat/) | `@mini-msal/compat` | 61.1 KB | 19.9 KB | yes |
-| [react](./react/) | compat + `@mini-msal/react` | 66.4 KB | 21.8 KB | for popups/ssoSilent |
+| [core-redirect](./core-redirect/) | `@mini-msal/browser` | 30.4 KB | 10.6 KB | no |
+| [core-popup](./core-popup/) | core + `…/popup` | 33.3 KB | 11.5 KB | yes |
+| [compat](./compat/) | `@mini-msal/compat` | 61.5 KB | 20.0 KB | yes |
+| [react](./react/) | compat + `@mini-msal/react` | 66.8 KB | 22.0 KB | for popups/ssoSilent |
 
 Sizes measured 2026-07-14 (`npm run measure`); react is measured with React
 external, like the rest of the matrix — it's what the auth stack adds to an

@@ -1526,6 +1526,44 @@ docs:check **14 samples OK**, measure matches D5's matrix.
 All gates: conformance:mini **122/122**, e2e **25/25**, seams **12/12**,
 docs:check **18 samples OK (1 skip)**, measure matches D5's matrix.
 
+### D7 — 2026-07-14 — close-out re-audit + final summary
+
+D4's skeptic pass repeated after D5/D6/D6b. Every gate re-run fresh this
+session: build clean, conformance:mini **122/122**, e2e **25/25**, seams
+**12/12** (incl. both node SSR construction checks), examples:smoke
+**8/8**, docs:check **18 samples OK (1 justified skip)**, pack:check OK
+(strict consumer types + tree-shake gates 29.9 / 32.5 / 59.9 / 65.4),
+report regenerated (0 behavioral-diff / 0 missing-feature / 0 bug, file
+unchanged), measure matches every recorded number (stack 72.0, compat
+62.1, core 31.3).
+
+D4's diffs repeated with fresh scripts:
+
+- **Module exports**: real 51 keys vs compat 54 — **0 missing**; extras
+  are exactly the 3 documented harmless ones (NativeAuthError,
+  NestedAppAuthError, createAuth), which the exported-surface-full
+  scenario's allowlist pins.
+- **PCA instance surface**: mini lacks only `controller`,
+  `waitForPopupResponse`, `waitForIframeResponse` — verified in real's
+  `types/app/PublicClientApplication.d.ts` that all three are
+  `protected`/`@internal` (not public typed surface); D5's descope
+  stands. Zero mini extras.
+- **React exports**: real 12 ⊆ mini 13; only extra is ReactAuthError
+  (harmless, D4-noted).
+- **docs:check spot-check**: injected a `const pca: number = …` type
+  error into docs/README.md — check failed with 2 TS2339 errors;
+  reverted → 18 samples green. The check detects, not just passes.
+
+ONE gap found and fixed in-session: `examples/README.md`'s size table
+still carried D3-era numbers (30.3/33.2/61.1/66.4 KB) after D5 grew the
+packages; per-example READMEs had been refreshed but the index table was
+missed. Updated to the measured 30.4 / 33.3 / 61.5 / 66.8 (gzip 10.6 /
+11.5 / 20.0 / 22.0). No other doc/code drift found.
+
+Verdict: all four Mission bullets **PASS**. No new tasks filed;
+D-series and the parity project are complete. Final summary delivered to
+the user (no context reset, per SOP).
+
 ## Progress log
 
 | Task | Status | Pass | mini-stack size | Notes |
@@ -1572,3 +1610,4 @@ docs:check **18 samples OK (1 skip)**, measure matches D5's matrix.
 | D5 | done 2026-07-14 | 122/122 | 72.0 KB min / 23.5 gz | Export-surface completion + SSR construction. Suite 121→122 (init.exported-surface-full pins FULL sorted key+typeof map w/ documented extras allowlist + behavior probes per export; green first mini run). seams 10→12 (node-side dist import: compat PCA + core createClient construct in plain Node; fix = lazy redirectUri closure). 18 exports in NEW compat surface.ts: exact constants, stubbedPublicClientApplication, AuthenticationHeaderParser, EventMessageUtils, EventHandler, Memory/Session/LocalStorage (reuses ./local-storage's exported cookie/AES-GCM helpers — interoperable at-rest), BrowserPerformanceMeasurement, StubPerformanceClient, enforceResourceParameter, BrowserUtils (22 fns), SignedHttpRequest (reuses ./pop's exported makeBoundKeyPair/signPop/keystore + claims-override param). waitForIframe/PopupResponse DESCOPED (absent from real .d.ts). compat 62.1 min (+0.4, tree-shakes away when unused; pack gates 29.9/32.5/59.9/65.4), mini-core 31.3 unchanged. e2e 25/25, smoke 8/8 |
 | D6 | done 2026-07-14 | 122/122 | 72.0 KB min / 23.5 gz | Committed doc-sample check. NEW `npm run docs:check` (test/docs/check.mjs): tsc-builds the 3 package dists, extracts every fenced ts/tsx block from README / docs/README / UPGRADING / ALACARTE into test/docs/.samples (one module per sample, `<doc>-L<line>`) and strict-tscs them against dist types via the workspace symlinks' exports "types" condition — 14 samples, 0 opt-outs (`<!-- docs-check:skip -->` supported; 0-samples-extracted hard-fails). Self-tested by reintroducing D2's two sample bugs (dropped MsalProvider cast → TS2322, undeclared config → TS2304): both caught, clean after revert. Scratch kept on failure (gitignored). SOP validate list gains docs:check for docs-affecting tasks. Zero package-code changes; sizes unchanged. e2e 25/25, seams 12/12 |
 | D6b | done 2026-07-14 | 122/122 | 72.0 KB min / 23.5 gz | Size-reduction reference doc (user-requested). NEW docs/SIZE.md: plain-language how-it-got-small for repo-outsiders — honest headline ratios (drop-in 3.5×, popup SPA 6.8×, core 7.4×, bridge 10.8×; real costs 220.5 KB regardless of profile), real-bundle byte attribution (analyze: msal-common ~80 KB, interaction_client 44.9, cache 49.7, controllers 25.6), 8 technique sections w/ verified examples (pay-to-play vs StandardController static imports; closures vs class layers + minifier property-name argument; no msal-common tier; one error family + AKA(); telemetry shape tables; 0.6 KB bridge source; WIRE_ID/zero-enums/es2022 habits; sideEffects+subpath exports+pack gates). Linked from README, docs/README, ALACARTE. docs:check DOCS += SIZE.md → 18 samples + 1 justified skip (abridged table excerpt); real excerpts are ```js by policy. bundle-size-experiment.md Results refreshed 75/75-era → 122/122 matrix (~8×→~4.3× library-only). Zero package-code changes; sizes unchanged. e2e 25/25, seams 12/12 |
+| D7 | done 2026-07-14 | 122/122 | 72.0 KB min / 23.5 gz | Close-out re-audit. All gates fresh: 122/122, e2e 25/25, seams 12/12, smoke 8/8, docs:check 18 OK (1 skip), pack:check OK (29.9/32.5/59.9/65.4), report 0-gap, measure matches. D4 diffs repeated: module exports 0 missing (3 pinned extras); PCA deltas all protected/@internal in real .d.ts (descope stands); react surface complete (+ReactAuthError). docs:check spot-check: injected type error caught, green after revert. ONE fix: examples/README.md size table was D3-stale → refreshed to 30.4/33.3/61.5/66.8. All 4 Mission bullets PASS — project COMPLETE, final summary delivered, no reset |

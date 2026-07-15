@@ -24,17 +24,16 @@ Deliver a drop-in msal replacement that is also à-la-carte consumable
 
 Track bundle size on every task (core + compat).
 
-**Status (2026-07-14)**: Phases A0–C21 + D1–D6b COMPLETE — conformance
-122/122, e2e 25/25, seams 12/12, examples:smoke 8/8, pack:check green,
-GAP_REPORT all-pass. Size matrix: compat-no-react 62.1 KB min (real:
-220.5), compat+react stack 72.0 (real: 248.8), core-only 31.3. Packages
-consumer-ready (tsc dist + types, npm-pack-verified); consumer docs +
-runnable size-tracked examples shipped; `npm run docs:check` strict-tscs
-all 18 doc code samples against dist types. D6b added the user-requested
-plain-language size-reduction reference (`docs/SIZE.md`, linked from all
-consumer docs) and refreshed bundle-size-experiment.md's results to the
-122/122 matrix. Remaining: D7 (close-out re-audit + final summary).
-History and per-task decisions: [PARITY_LOG.md](./PARITY_LOG.md).
+**Status (2026-07-14): PROJECT COMPLETE.** All tasks A0–D7 done. Final
+close-out audit (D7) re-verified everything fresh: conformance 122/122,
+e2e 25/25, seams 12/12 (incl. node SSR), examples:smoke 8/8, docs:check
+18/18 samples, pack:check green, GAP_REPORT all-pass, export/method/react
+surface diffs clean. Size matrix: compat-no-react 62.1 KB min (real:
+220.5), compat+react stack 72.0 (real: 248.8), core-only 31.3. All four
+Mission bullets PASS. Packages consumer-ready (tsc dist + types,
+npm-pack-verified); consumer docs + runnable size-tracked examples
+shipped. History and per-task decisions:
+[PARITY_LOG.md](./PARITY_LOG.md).
 
 ## Context budget (user-required 2026-07-13)
 
@@ -549,11 +548,20 @@ push → reset). "Consumer" below means someone who has never read this repo.
   `docs/design/bundle-size-experiment.md`, `packages/browser/src/`,
   real source under `node_modules/@azure/msal-browser/dist/`.
 
-- [ ] **D7** `pending` — Close-out re-audit + final summary. Re-run the D4
-  skeptic pass over the four Mission bullets now that D5/D6 landed
-  (re-run all gates fresh; re-run the export/method/SSR diffs from the D4
-  entry; spot-check docs:check). File any new gap as a task before this
-  one; when clean, write the final summary for the user and do NOT
-  reset-context.
-  Context: PARITY_LOG D4 entry (the exact diffs/checks to repeat), this
-  file's Mission section.
+- [x] **D7** `done 2026-07-14 — pass 122/122, mini-stack 72.0 KB` —
+  Close-out re-audit + final summary. D4's skeptic pass repeated after
+  D5/D6/D6b: ALL gates re-run fresh (conformance 122/122, e2e 25/25,
+  seams 12/12, examples:smoke 8/8, docs:check 18 OK + 1 justified skip,
+  pack:check OK 29.9/32.5/59.9/65.4, report 0-gap unchanged, measure
+  matches all recorded numbers). D4 diffs repeated: module exports 0
+  missing (only the 3 allowlisted extras); PCA deltas (`controller`,
+  `waitFor*Response`) verified `protected`/`@internal` in real's .d.ts —
+  D5 descope stands; react surface complete. docs:check spot-checked by
+  injecting a type error (caught: 2×TS2339; green after revert). ONE gap
+  found + fixed: examples/README.md's size table was D3-stale after D5's
+  growth → refreshed to measured 30.4/33.3/61.5/66.8 (gzip
+  10.6/11.5/20.0/22.0). All four Mission bullets PASS — no new tasks;
+  project COMPLETE. Details: PARITY_LOG D7 entry. Original spec: re-run
+  the D4 skeptic pass over the four Mission bullets now that D5/D6
+  landed; file any new gap as a task before this one; when clean, write
+  the final summary and do NOT reset-context.
